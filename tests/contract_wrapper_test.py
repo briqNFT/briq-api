@@ -1,6 +1,6 @@
 import pytest
 
-from starknet_proxy.contract import ContractWrapper
+from briq_api.contract import ContractWrapper
 
 abi = [
     {
@@ -30,7 +30,7 @@ abi = [
 
 from unittest.mock import patch
 
-@patch('starknet_proxy.contract.feeder_client.call_contract', autospec=True)
+@patch('briq_api.contract.feeder_client.call_contract', autospec=True)
 @pytest.mark.asyncio
 async def test_wrapper(MockFuncInvocation):
     MockFuncInvocation.return_value = { "result": ["0x5"] }

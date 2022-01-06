@@ -1,2 +1,2 @@
 #!/bin/sh
-uvicorn starknet_proxy.server:app --port 5000
+uvicorn briq_api.server:app --port 5000

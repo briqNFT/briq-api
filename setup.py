@@ -1,11 +1,11 @@
 from setuptools import setup
 
-setup(name='starknet_proxy',
+setup(name='briq_api',
       version='0.1',
-      description='Proxy for starknet calls',
-      url='http://github.com/S-L-Technologies/briq-protocol',
-      author='S&L Technologies',
-      author_email='contact@sltech.company',
+      description='API for briq',
+      url='http://github.com/S-L-Technologies/briq-api',
+      author='briq',
+      author_email='founders@sltech.company',
       license='MIT',
-      packages=['starknet_proxy'],
+      packages=['briq_api'],
       zip_safe=False)

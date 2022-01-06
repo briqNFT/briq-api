@@ -28,7 +28,7 @@ spec:
             cpu: #@ data.values.resources.cpu
             memory: #@ data.values.resources.memory 
         #@ #command: ["gunicorn"]
-        #@ #args: ["starknet_proxy.proxy_fapi:app", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:5000"]
+        #@ #args: ["briq_api.proxy_fapi:app", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:5000"]
         livenessProbe:
           httpGet:
             path: /health

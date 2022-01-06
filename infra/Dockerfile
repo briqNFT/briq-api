@@ -7,7 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # somehow necessary
 RUN pip uninstall -y lark-parser && pip install lark-parser
 
-COPY starknet_proxy/ starknet_proxy
+COPY briq_api/ briq_api
 COPY gunicorn.conf.py gunicorn.conf.py
 
-CMD [ "gunicorn", "starknet_proxy.server:app" ]
+CMD [ "gunicorn", "briq_api.server:app" ]
