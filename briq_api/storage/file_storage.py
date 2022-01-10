@@ -1,6 +1,8 @@
 import os
 import json
 
+from pydantic.errors import PathError
+
 from .storage import IStorage
 
 class FileStorage(IStorage):
@@ -29,6 +31,18 @@ class FileStorage(IStorage):
         except:
             return False
 
-
     def list_json(self):
         return [x for x in os.listdir(self.path) if x.endswith(".json")]
+
+
+    def store_image(self, path: str, data: bytes):
+        print("storing image to " + path)
+        with open(self.path + path + ".jpg", "wb+") as f:
+            f.write(data)
+        return True
+
+
+    def load_image(self, path: str):
+        print("loading image at " + path)
+        with open(self.path + path + ".jpg", "rb") as f:
+            return f.read()

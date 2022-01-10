@@ -1,3 +1,6 @@
+from abc import abstractmethod
+
+
 class IStorage:
     def __init__(self) -> None:
         pass
@@ -12,6 +15,13 @@ class IStorage:
         pass
 
     def list_files(self, path):
+        pass
+
+    def store_image(self, path: str, data: bytes):
+        pass
+
+    @abstractmethod
+    def load_image(self, path: str) -> bytes:
         pass
 
 def get_storage():

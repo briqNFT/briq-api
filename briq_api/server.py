@@ -45,6 +45,20 @@ async def store_get(token_id: str):
         "data": data
     }
 
+import io
+from starlette.responses import StreamingResponse
+
+@app.get("/preview/{token_id}")
+async def get_preview(token_id: str):
+    try:
+        data = storage_client.load_image(path=token_id)
+        return StreamingResponse(io.BytesIO(data), media_type="image/png", headers={
+            "Cache-Control": f"public, max-age={3600 * 24}"
+        })
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="File not found")
+
 @app.post("/store_list")
 @app.get("/store_list")
 def store_list():
@@ -53,10 +67,14 @@ def store_list():
         "sets": storage_client.list_json()
     }
 
-from starknet.contract import Contract
-from starknet.net.client import Client
+import base64
 
+from starknet_py.contract import Contract
+from starknet_py.net.client import Client
 from starkware.crypto.signature.signature import verify
+
+from PIL import Image
+
 class StoreSetRequest(BaseModel):
     owner: str
     token_id: str
@@ -64,6 +82,7 @@ class StoreSetRequest(BaseModel):
     transaction_hash: str
     message_hash: str
     signature: Tuple[int, int]
+    image_base64: bytes
 
 @app.post("/store_set")
 async def store_set(set: StoreSetRequest):
@@ -85,7 +104,7 @@ async def store_set(set: StoreSetRequest):
     # Wait for the transaction to be in a certain state.
     start = time.time()
     while transaction["status"] == 'RECEIVED' or transaction["status"] == 'NOT_RECEIVED':
-        if time.time() - start > 60:
+        if time.time() - start > 400:
             raise HTTPException(status_code=503, detail="Timeout while trying to get transaction status")
         await asyncio.sleep(1)
         transaction = await client.get_transaction(set.transaction_hash, None)
@@ -106,7 +125,28 @@ async def store_set(set: StoreSetRequest):
 
     # Will overwrite, which is OK
     storage_client.store_json(path=set.token_id, data=set.data)
-    
+
+    if len(set.image_base64) > 0:
+        try:
+            if set.image_base64[0:23] != b'data:image/jpeg;base64,':
+                raise ValueError("Only base-64 encoded JPEGs are accepted.")
+            if len(set.image_base64) > 1000 * 1000:
+                raise ValueError("Image is too heavy, max size is 1MB")
+            
+            png_data = base64.decodebytes(set.image_base64[23:])
+            image = Image.open(io.BytesIO(png_data))
+
+            storage_client.store_image(path=set.token_id, data=png_data)
+
+            if image.width > 400 or image.height > 300 or image.width < 10 or image.height < 10:
+                raise ValueError("Image is too large, acceptable size range from 10x10 to 400x300")
+
+            storage_client.store_image(path=set.token_id, data=png_data)
+        except Exception as err:
+            # Ignore errors for now...
+            print(err)
+            pass
+
     return {
         "code": 200,
         "value": set.token_id
