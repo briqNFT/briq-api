@@ -37,12 +37,12 @@ class FileStorage(IStorage):
 
     def store_image(self, path: str, data: bytes):
         print("storing image to " + path)
-        with open(self.path + path + ".jpg", "wb+") as f:
+        with open(self.path + path + ".png", "wb+") as f:
             f.write(data)
         return True
 
 
     def load_image(self, path: str):
         print("loading image at " + path)
-        with open(self.path + path + ".jpg", "rb") as f:
+        with open(self.path + path + ".png", "rb") as f:
             return f.read()

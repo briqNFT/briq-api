@@ -79,73 +79,54 @@ class StoreSetRequest(BaseModel):
     owner: str
     token_id: str
     data: Dict[str, Any]
-    transaction_hash: str
     message_hash: str
     signature: Tuple[int, int]
     image_base64: bytes
 
+client = Client("testnet")
+get_set_contract = Contract.from_address("0x01618ffcb9f43bfd894eb4a176ce265323372bb4d833a77e20363180efca3a65", client)
+set_contract = None
+
 @app.post("/store_set")
 async def store_set(set: StoreSetRequest):
+    global set_contract
     # Fetch the public key from the account - this confirms that owner is indeed sending the message.
-    client = Client("testnet")
+    if set_contract is None:
+        set_contract = await get_set_contract
+    (owner,) = await set_contract.functions["owner_of"].call(int(set.token_id, base=16))
 
-    transaction_query = client.get_transaction(set.transaction_hash, None)
-
-    # TODO: add ABI here.
-    contract = await Contract.from_address(set.owner, client)
-    (public_key,) = await contract.functions["get_signer"].call()
-    signature_ok = verify(int(set.message_hash, base=16), set.signature[0], set.signature[1], int(public_key))
-    if not signature_ok:
-        raise HTTPException(status_code=403, detail="Wrong signature for the public key.")
-
-    # Now we need to check that owner indeed has the right to define data for this token.
-    transaction = await transaction_query
-
-    # Wait for the transaction to be in a certain state.
-    start = time.time()
-    while transaction["status"] == 'RECEIVED' or transaction["status"] == 'NOT_RECEIVED':
-        if time.time() - start > 400:
-            raise HTTPException(status_code=503, detail="Timeout while trying to get transaction status")
-        await asyncio.sleep(1)
-        transaction = await client.get_transaction(set.transaction_hash, None)
-
-    # Prelim check - that we didn't lie about the owner.
-    if transaction["transaction"]["contract_address"] != set.owner:
-        raise HTTPException(status_code=403, detail="Owner does not match transaction owner.")
-
-    # Validate transaction arguments
-    if int(transaction["transaction"]["calldata"][0]) != int("0x01618ffcb9f43bfd894eb4a176ce265323372bb4d833a77e20363180efca3a65", base=16):
-        raise HTTPException(status_code=422, detail="Transaction not called on the set contract")
-
-    if int(transaction["transaction"]["calldata"][4]) != int(set.token_id, base=16):
-        raise HTTPException(status_code=422, detail="Transaction not called with the given token_id")
-
-    if transaction["status"] != 'PENDING' and transaction["status"] != 'ACCEPTED_ON_L1' and transaction["status"] != 'ACCEPTED_ON_L2':
-        raise HTTPException(status_code=500, detail="Transaction failed")
-
-    # Will overwrite, which is OK
-    storage_client.store_json(path=set.token_id, data=set.data)
+    # NB: this is a data-race, as there may be pending transactions, but we'll ignore that for now.
+    if owner != 0:
+        # Check that we are the owner.
+        # TODO: add ABI here.
+        contract = await Contract.from_address(set.owner, client)
+        (is_valid,) = await contract.functions["is_valid_signature"].call(hash=int(set.message_hash, base=16), sig=set.signature)
+        if not is_valid:
+            raise HTTPException(status_code=403, detail="Wrong signature for the public key.")
+        if owner != set.owner:
+            raise HTTPException(status_code=403, detail="You are not the owner of the NFT.")
 
     if len(set.image_base64) > 0:
-        try:
-            if set.image_base64[0:23] != b'data:image/jpeg;base64,':
-                raise ValueError("Only base-64 encoded JPEGs are accepted.")
-            if len(set.image_base64) > 1000 * 1000:
-                raise ValueError("Image is too heavy, max size is 1MB")
-            
-            png_data = base64.decodebytes(set.image_base64[23:])
-            image = Image.open(io.BytesIO(png_data))
+        HEADER = b'data:image/png;base64,'
+        if set.image_base64[0:len(HEADER)] != HEADER:
+            raise HTTPException(status_code=403, detail="Only base-64 encoded PNGs are accepted.")
+        if len(set.image_base64) > 1000 * 1000:
+            raise HTTPException(status_code=403, detail="Image is too heavy, max size is 1MB")
 
-            storage_client.store_image(path=set.token_id, data=png_data)
+        png_data = base64.decodebytes(set.image_base64[len(HEADER):])
+        image = Image.open(io.BytesIO(png_data))
 
-            if image.width > 400 or image.height > 300 or image.width < 10 or image.height < 10:
-                raise ValueError("Image is too large, acceptable size range from 10x10 to 400x300")
+        if image.width > 1000 or image.height > 1000 or image.width < 10 or image.height < 10:
+            raise HTTPException(status_code=403, detail="Image is too large, acceptable size range from 10x10 to 1000x1000")
 
-            storage_client.store_image(path=set.token_id, data=png_data)
-        except Exception as err:
-            # Ignore errors for now...
-            print(err)
-            pass
+        storage_client.store_image(path=set.token_id, data=png_data)
+
+    # ERC 721 metadata compliance
+    set.data["image"] = f"https://briq.construction/preview/{set.token_id}"
+    set.data["description"] = "A set made of briqs"
+
+    # Will overwrite, which is OK since we checked the owner.
+    storage_client.store_json(path=set.token_id, data=set.data)
 
     return {
         "code": 200,
