@@ -4,6 +4,8 @@ from google.cloud import storage
 import asyncio
 import time
 
+from briq_api.storage.file_storage import FileStorage
+
 app = FastAPI()
 
 app.add_middleware(
@@ -67,11 +69,79 @@ def store_list():
         "sets": storage_client.list_json()
     }
 
-import base64
-
 from starknet_py.contract import Contract
 from starknet_py.net.client import Client
-from starkware.crypto.signature.signature import verify
+client = Client("testnet")
+set_contract_promise = Contract.from_address("0x01618ffcb9f43bfd894eb4a176ce265323372bb4d833a77e20363180efca3a65", client)
+set_contract = None
+
+async def get_set_contract():
+    global set_contract
+    if set_contract is None:
+        try:
+            set_contract = await set_contract_promise
+        except RuntimeError:
+            # if we're here, someone is already awaiting it, so we'll just wait.
+            while set_contract is None:
+                await asyncio.sleep(1)
+    return set_contract
+
+gallery_items = []
+future_gallery_items = []
+updating_task = None
+
+async def update_gallery_items():
+    global future_gallery_items
+    global gallery_items
+    global updating_task
+    future_gallery_items = []
+
+    print("UPDATING GALLERY ITEMS")
+    files = storage_client.list_json()
+
+    async def get_set_if_owner(filename: str) -> str:
+        set_id = filename.replace(".json", "")
+        try:
+            (owner,) = await (await get_set_contract()).functions["owner_of"].call(int(set_id, base=16))
+            if owner == 0:
+                return ""
+            return set_id
+        except Exception as err:
+            print("Error querying gallery item ", set_id)
+            print(err)
+            return ""
+
+    # Send some requests in parallel but throttle to avoid problems.
+    GROUP = 4
+    for i in range(len(files) // GROUP):
+        futures = []
+        for j in range(GROUP):
+            if len(files) > i * GROUP + j:
+                futures.append(get_set_if_owner(files[i * GROUP + j]))
+        ids = await asyncio.gather(*futures)
+        for id in ids:
+            if len(id) > 0:
+                future_gallery_items.append(id)
+    print("DONE UPDATING, FOUND ", len(future_gallery_items), " items")
+    gallery_items = future_gallery_items
+    updating_task = None
+
+@app.on_event("startup")
+async def startup_event():
+    global updating_task
+    updating_task = asyncio.create_task(update_gallery_items())
+
+@app.get("/gallery_items")
+async def get_gallery_items():
+    global updating_task
+    if updating_task is None:
+        updating_task = asyncio.create_task(update_gallery_items())
+    return {
+        "code": 200,
+        "sets": gallery_items if len(gallery_items) > 0 else future_gallery_items
+    }
+
+import base64
 
 from PIL import Image
 
@@ -83,17 +153,9 @@ class StoreSetRequest(BaseModel):
     signature: Tuple[int, int]
     image_base64: bytes
 
-client = Client("testnet")
-get_set_contract = Contract.from_address("0x01618ffcb9f43bfd894eb4a176ce265323372bb4d833a77e20363180efca3a65", client)
-set_contract = None
-
 @app.post("/store_set")
 async def store_set(set: StoreSetRequest):
-    global set_contract
-    # Fetch the public key from the account - this confirms that owner is indeed sending the message.
-    if set_contract is None:
-        set_contract = await get_set_contract
-    (owner,) = await set_contract.functions["owner_of"].call(int(set.token_id, base=16))
+    (owner,) = await (await get_set_contract()).functions["owner_of"].call(int(set.token_id, base=16))
 
     # NB: this is a data-race, as there may be pending transactions, but we'll ignore that for now.
     if owner != 0:

@@ -14,7 +14,7 @@ class IStorage:
     def has_json(self, path):
         pass
 
-    def list_files(self, path):
+    def list_json(self, path):
         pass
 
     def store_image(self, path: str, data: bytes):
