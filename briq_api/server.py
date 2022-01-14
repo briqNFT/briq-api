@@ -90,7 +90,7 @@ gallery_items = []
 future_gallery_items = []
 updating_task = None
 
-async def update_gallery_items():
+async def update_gallery_items_unused():
     global future_gallery_items
     global gallery_items
     global updating_task
@@ -112,8 +112,10 @@ async def update_gallery_items():
             return ""
 
     # Send some requests in parallel but throttle to avoid problems.
-    GROUP = 4
+    GROUP = 1
     for i in range(len(files) // GROUP):
+        future_gallery_items.append(files[i].replace(".json", ""))
+        continue
         futures = []
         for j in range(GROUP):
             if len(files) > i * GROUP + j:
@@ -122,6 +124,21 @@ async def update_gallery_items():
         for id in ids:
             if len(id) > 0:
                 future_gallery_items.append(id)
+    print("DONE UPDATING, FOUND ", len(future_gallery_items), " items")
+    gallery_items = future_gallery_items
+    updating_task = None
+
+async def update_gallery_items():
+    global future_gallery_items
+    global gallery_items
+    global updating_task
+    future_gallery_items = []
+
+    print("UPDATING GALLERY ITEMS")
+    if isinstance(storage_client, FileStorage):
+        future_gallery_items = [x.replace(".json", "") for x in storage_client.list_json()]
+    else:
+        future_gallery_items = [x for x in storage_client.bucket.blob("gallery_sets.txt").download_as_text().split('\n') if len(x) > 0]
     print("DONE UPDATING, FOUND ", len(future_gallery_items), " items")
     gallery_items = future_gallery_items
     updating_task = None
