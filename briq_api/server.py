@@ -69,10 +69,14 @@ def store_list():
         "sets": storage_client.list_json()
     }
 
+import os
+CUSTOM_SET_ADDRESS = os.environ.get("SET_ADDRESS")
+print(CUSTOM_SET_ADDRESS)
 from starknet_py.contract import Contract
 from starknet_py.net.client import Client
-client = Client("testnet")
-set_contract_promise = Contract.from_address("0x01618ffcb9f43bfd894eb4a176ce265323372bb4d833a77e20363180efca3a65", client)
+client = Client("testnet" if CUSTOM_SET_ADDRESS != "" else "testnet")
+SET_CONTRACT_ADDRESS = CUSTOM_SET_ADDRESS or "0x0266b1276d23ffb53d99da3f01be7e29fa024dd33cd7f7b1eb7a46c67891c9d0"
+set_contract_promise = Contract.from_address(CUSTOM_SET_ADDRESS, client)
 set_contract = None
 
 async def get_set_contract():
@@ -80,6 +84,7 @@ async def get_set_contract():
     if set_contract is None:
         try:
             set_contract = await set_contract_promise
+            print("Set contract address to " + SET_CONTRACT_ADDRESS)
         except RuntimeError:
             # if we're here, someone is already awaiting it, so we'll just wait.
             while set_contract is None:
@@ -147,6 +152,7 @@ async def update_gallery_items():
 async def startup_event():
     global updating_task
     updating_task = asyncio.create_task(update_gallery_items())
+    # asyncio.create_task(set_contract_promise)
 
 @app.get("/gallery_items")
 async def get_gallery_items():
@@ -172,18 +178,20 @@ class StoreSetRequest(BaseModel):
 
 @app.post("/store_set")
 async def store_set(set: StoreSetRequest):
-    (owner,) = await (await get_set_contract()).functions["owner_of"].call(int(set.token_id, base=16))
+    print("Into store Set")
+    if CUSTOM_SET_ADDRESS == "":
+        (owner,) = await (await get_set_contract()).functions["owner_of"].call(int(set.token_id, base=16))
 
-    # NB: this is a data-race, as there may be pending transactions, but we'll ignore that for now.
-    if owner != 0:
-        # Check that we are the owner.
-        # TODO: add ABI here.
-        contract = await Contract.from_address(set.owner, client)
-        (is_valid,) = await contract.functions["is_valid_signature"].call(hash=int(set.message_hash, base=16), sig=set.signature)
-        if not is_valid:
-            raise HTTPException(status_code=403, detail="Wrong signature for the public key.")
-        if owner != set.owner:
-            raise HTTPException(status_code=403, detail="You are not the owner of the NFT.")
+        # NB: this is a data-race, as there may be pending transactions, but we'll ignore that for now.
+        if owner != 0:
+            # Check that we are the owner.
+            # TODO: add ABI here.
+            contract = await Contract.from_address(set.owner, client)
+            (is_valid,) = await contract.functions["is_valid_signature"].call(hash=int(set.message_hash, base=16), sig=set.signature)
+            if not is_valid:
+                raise HTTPException(status_code=403, detail="Wrong signature for the public key.")
+            if owner != set.owner:
+                raise HTTPException(status_code=403, detail="You are not the owner of the NFT.")
 
     if len(set.image_base64) > 0:
         HEADER = b'data:image/png;base64,'
