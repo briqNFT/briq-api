@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import storage
 import asyncio
 import time
+from briq_api.storage.cloud_storage import CloudStorage
 
 from briq_api.storage.file_storage import FileStorage
 
@@ -91,8 +92,8 @@ async def get_set_contract():
                 await asyncio.sleep(1)
     return set_contract
 
-gallery_items = []
-future_gallery_items = []
+gallery_items = { "sets": [], "sets_v06": [] }
+future_gallery_items = { "sets": [], "sets_v06": [] }
 updating_task = None
 
 async def update_gallery_items_unused():
@@ -133,6 +134,12 @@ async def update_gallery_items_unused():
     gallery_items = future_gallery_items
     updating_task = None
 
+import json
+def parse_gallery_data(storage: CloudStorage):
+    data = storage.bucket.blob("gallery_sets.json").download_as_text()
+    data = json.loads(data)
+    return data
+
 async def update_gallery_items():
     global future_gallery_items
     global gallery_items
@@ -141,9 +148,12 @@ async def update_gallery_items():
 
     print("UPDATING GALLERY ITEMS")
     if isinstance(storage_client, FileStorage):
-        future_gallery_items = [x.replace(".json", "") for x in storage_client.list_json()]
+        future_gallery_items = {
+            "items": [x.replace(".json", "") for x in storage_client.list_json()],
+            "items_vO6": []
+        }
     else:
-        future_gallery_items = [x for x in storage_client.bucket.blob("gallery_sets.txt").download_as_text().split('\n') if len(x) > 0]
+        future_gallery_items = parse_gallery_data(storage_client)
     print("DONE UPDATING, FOUND ", len(future_gallery_items), " items")
     gallery_items = future_gallery_items
     updating_task = None
@@ -161,7 +171,9 @@ async def get_gallery_items():
         updating_task = asyncio.create_task(update_gallery_items())
     return {
         "code": 200,
-        "sets": gallery_items if len(gallery_items) > 0 else future_gallery_items
+        "version": 2,
+        "sets": gallery_items['items'] if len(gallery_items) > 0 else future_gallery_items['items'],
+        "sets_v06": gallery_items['items_v06'] if len(gallery_items) > 0 else future_gallery_items['items_v06']
     }
 
 import base64
