@@ -154,7 +154,7 @@ async def update_gallery_items():
         }
     else:
         future_gallery_items = parse_gallery_data(storage_client)
-    print("DONE UPDATING, FOUND ", len(future_gallery_items), " items")
+    print("DONE UPDATING, FOUND ", len(future_gallery_items['items']), " items")
     gallery_items = future_gallery_items
     updating_task = None
 
