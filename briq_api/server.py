@@ -45,7 +45,10 @@ async def store_get(token_id: str):
     return {
         "code": 200,
         "token_id": token_id,
-        "data": data
+        "data": data,
+        "name": data['name'] if 'name' in data else '',
+        "description": data['description'] if 'description' in data else '',
+        "image": data['image'] if 'image' in data else '',
     }
 
 import io
