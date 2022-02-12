@@ -48,7 +48,7 @@ async def store_get(token_id: str):
         "data": data,
         "name": data['name'] if 'name' in data else '',
         "description": data['description'] if 'description' in data else '',
-        "image": data['image'] if 'image' in data else '',
+        "image": data['image'].replace('://briq.construction', '://api.briq.construction') if 'image' in data else '',
     }
 
 import io
@@ -224,7 +224,7 @@ async def store_set(set: StoreSetRequest):
         storage_client.store_image(path=set.token_id, data=png_data)
 
     # ERC 721 metadata compliance
-    set.data["image"] = f"https://briq.construction/preview/{set.token_id}"
+    set.data["image"] = f"https://api.briq.construction/preview/{set.token_id}"
     set.data["description"] = "A set made of briqs"
 
     # Will overwrite, which is OK since we checked the owner.
