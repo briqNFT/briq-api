@@ -40,7 +40,6 @@ async def store_get(token_id: str):
     try:
         data = storage_client.load_json(path=token_id)
     except Exception as e:
-        logger.exception(e)
         raise HTTPException(status_code=500, detail="File not found")
     return {
         "code": 200,
@@ -62,7 +61,6 @@ async def get_preview(token_id: str):
             "Cache-Control": f"public, max-age={3600 * 24}"
         })
     except Exception as e:
-        logger.exception(e)
         raise HTTPException(status_code=500, detail="File not found")
 
 @app.post("/store_list")
@@ -156,7 +154,7 @@ async def update_gallery_items():
         }
     else:
         future_gallery_items = parse_gallery_data(storage_client)
-    logger.info("DONE UPDATING, FOUND %s items", str(len(future_gallery_items['items'])))
+    logger.info("DONE UPDATING, FOUND %(items)s items", {"items": len(future_gallery_items['items'])})
     gallery_items = future_gallery_items
     updating_task = None
 
@@ -227,6 +225,11 @@ async def store_set(set: StoreSetRequest):
 
     # Will overwrite, which is OK since we checked the owner.
     storage_client.store_json(path=set.token_id, data=set.data)
+
+    logging.info("Stored new set %(token_id)s for %(owner)s", {
+        "token_id": set.token_id,
+        "owner": set.owner
+    })
 
     return {
         "code": 200,

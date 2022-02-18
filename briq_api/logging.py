@@ -1,6 +1,7 @@
 import logging
 import json
 import datetime
+import os
 
 from gunicorn import glogging
 
@@ -28,7 +29,13 @@ class CustomLoggingFormatter(logging.Formatter):
             "message": record.message,
             "name": record.name,
         }
-        if record.name == "uvicorn.access":
+        if isinstance(record.args, dict):
+            for key in record.args:
+                if key not in input_data:
+                    input_data[key] = record.args[key]
+                else:
+                    input_data[key + "_"] = record.args[key]
+        elif record.name == "uvicorn.access":
             try:
                 input_data['method'] = record.args[1]
                 input_data['endpoint'] = record.args[2]
@@ -48,7 +55,7 @@ def setup_logging():
     # sys.stdout = old_stdout # reset old stdout
 
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging._nameToLevel[os.getenv('LOGLEVEL') or "INFO"])
 
     ch = logging.StreamHandler()
     ch.setStream(old_stderr)
