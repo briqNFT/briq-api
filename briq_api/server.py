@@ -1,10 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from google.cloud import storage
 import asyncio
-import time
-from briq_api.storage.cloud_storage import CloudStorage
+import logging
 
+logger = logging.getLogger(__name__)
+
+from briq_api.storage.cloud_storage import CloudStorage
 from briq_api.storage.file_storage import FileStorage
 
 app = FastAPI()
@@ -39,9 +40,8 @@ async def store_get(token_id: str):
     try:
         data = storage_client.load_json(path=token_id)
     except Exception as e:
-        print(e)
+        logger.exception(e)
         raise HTTPException(status_code=500, detail="File not found")
-
     return {
         "code": 200,
         "token_id": token_id,
@@ -62,7 +62,7 @@ async def get_preview(token_id: str):
             "Cache-Control": f"public, max-age={3600 * 24}"
         })
     except Exception as e:
-        print(e)
+        logger.exception(e)
         raise HTTPException(status_code=500, detail="File not found")
 
 @app.post("/store_list")
@@ -75,7 +75,7 @@ def store_list():
 
 import os
 CUSTOM_SET_ADDRESS = os.environ.get("SET_ADDRESS")
-print(CUSTOM_SET_ADDRESS)
+logger.info("Set address at %s", CUSTOM_SET_ADDRESS)
 from starknet_py.contract import Contract
 from starknet_py.net.client import Client
 client = Client("testnet" if CUSTOM_SET_ADDRESS != "" else "testnet")
@@ -88,7 +88,6 @@ async def get_set_contract():
     if set_contract is None:
         try:
             set_contract = await set_contract_promise
-            print("Set contract address to " + SET_CONTRACT_ADDRESS)
         except RuntimeError:
             # if we're here, someone is already awaiting it, so we'll just wait.
             while set_contract is None:
@@ -105,7 +104,7 @@ async def update_gallery_items_unused():
     global updating_task
     future_gallery_items = []
 
-    print("UPDATING GALLERY ITEMS")
+    logger.info("UPDATING GALLERY ITEMS")
     files = storage_client.list_json()
 
     async def get_set_if_owner(filename: str) -> str:
@@ -116,8 +115,8 @@ async def update_gallery_items_unused():
                 return ""
             return set_id
         except Exception as err:
-            print("Error querying gallery item ", set_id)
-            print(err)
+            logger.error("Error querying gallery item ", set_id)
+            logger.error(err)
             return ""
 
     # Send some requests in parallel but throttle to avoid problems.
@@ -133,7 +132,7 @@ async def update_gallery_items_unused():
         for id in ids:
             if len(id) > 0:
                 future_gallery_items.append(id)
-    print("DONE UPDATING, FOUND ", len(future_gallery_items), " items")
+    logger.info("DONE UPDATING, FOUND %s items", str(len(future_gallery_items)))
     gallery_items = future_gallery_items
     updating_task = None
 
@@ -149,7 +148,7 @@ async def update_gallery_items():
     global updating_task
     future_gallery_items = []
 
-    print("UPDATING GALLERY ITEMS")
+    logger.info("UPDATING GALLERY ITEMS")
     if isinstance(storage_client, FileStorage):
         future_gallery_items = {
             "items": [x.replace(".json", "") for x in storage_client.list_json()],
@@ -157,7 +156,7 @@ async def update_gallery_items():
         }
     else:
         future_gallery_items = parse_gallery_data(storage_client)
-    print("DONE UPDATING, FOUND ", len(future_gallery_items['items']), " items")
+    logger.info("DONE UPDATING, FOUND %s items", str(len(future_gallery_items['items'])))
     gallery_items = future_gallery_items
     updating_task = None
 
@@ -193,7 +192,6 @@ class StoreSetRequest(BaseModel):
 
 @app.post("/store_set")
 async def store_set(set: StoreSetRequest):
-    print("Into store Set")
     if CUSTOM_SET_ADDRESS == "":
         (owner,) = await (await get_set_contract()).functions["owner_of"].call(int(set.token_id, base=16))
 
