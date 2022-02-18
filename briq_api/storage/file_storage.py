@@ -5,6 +5,9 @@ from pydantic.errors import PathError
 
 from .storage import IStorage
 
+import logging
+logger = logging.getLogger(__name__)
+
 class FileStorage(IStorage):
     def __init__(self) -> None:
         self.path = 'temp/'
@@ -14,13 +17,13 @@ class FileStorage(IStorage):
             pass
 
     def store_json(self, path, data):
-        print("storing JSON")
+        logger.info("storing JSON")
         with open(self.path + path + ".json", "w+") as f:
             json.dump(data, f)
         return True
 
     def load_json(self, path):
-        print("loading JSON")
+        logger.info("loading JSON")
         with open(self.path + path + ".json", "r") as f:
             return json.load(f)
 
@@ -36,13 +39,13 @@ class FileStorage(IStorage):
 
 
     def store_image(self, path: str, data: bytes):
-        print("storing image to " + path)
+        logger.info("storing image to %s", path)
         with open(self.path + path + ".png", "wb+") as f:
             f.write(data)
         return True
 
 
     def load_image(self, path: str):
-        print("loading image at " + path)
+        logger.info("loading image at %s", path)
         with open(self.path + path + ".png", "rb") as f:
             return f.read()

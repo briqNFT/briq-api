@@ -5,6 +5,9 @@ from .storage import IStorage
 # Imports the Google Cloud client library
 from google.cloud import storage
 
+import logging
+logger = logging.getLogger(__name__)
+
 BUCKET = os.environ.get('CLOUD_STORAGE_BUCKET') or 'test-bucket'
 
 class CloudStorage(IStorage):
@@ -14,12 +17,12 @@ class CloudStorage(IStorage):
         self.path = "sets/"
 
     def store_json(self, path, data):
-        print("storing JSON")
-        print(str(self.bucket.blob(self.path + path + ".json").upload_from_string(json.dumps(data), content_type='application/json', timeout=10)))
+        logger.debug("storing JSON at %s", path)
+        self.bucket.blob(self.path + path + ".json").upload_from_string(json.dumps(data), content_type='application/json', timeout=10)
         return True
 
     def load_json(self, path):
-        print("loading JSON")
+        logger.debug("loading JSON from %s", path)
         return json.loads(self.bucket.blob(self.path + path + ".json").download_as_text())
 
     def has_json(self, path):
@@ -29,10 +32,10 @@ class CloudStorage(IStorage):
         return [x.name.replace(self.path, "") for x in self.storage_client.list_blobs(self.bucket, prefix=self.path, timeout=5) if ".json" in x.name]
 
     def store_image(self, path: str, data: bytes):
-        print("storing image to " + path)
+        logger.debug("Storing image to %s", path)
         self.bucket.blob(self.path + path + ".png").upload_from_string(data, content_type='image/png', timeout=10)
         return True
 
     def load_image(self, path: str) -> bytes:
-        print("loading image at " + path)
+        logger.debug("loading image from %s", path)
         return self.bucket.blob(self.path + path + ".png").download_as_bytes()

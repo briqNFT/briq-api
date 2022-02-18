@@ -1,5 +1,7 @@
 from abc import abstractmethod
 
+import logging
+logger = logging.getLogger(__name__)
 
 class IStorage:
     def __init__(self) -> None:
@@ -30,5 +32,5 @@ def get_storage():
         return CloudStorage()
     except:
         from .file_storage import FileStorage
-        print("Falling back to local storage")
+        logger.warning("Falling back to local storage")
         return FileStorage()
