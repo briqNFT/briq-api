@@ -64,6 +64,16 @@ async def get_preview(token_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail="File not found")
 
+@app.get("/get_model/{token_id}.{kind}")
+async def get_model(kind: str, token_id: str):
+    try:
+        data = storage_client.load_bytes(path_including_ext=token_id + '.' + kind)
+        return StreamingResponse(io.BytesIO(data), media_type="model/gltf-binary", headers={
+            "Cache-Control": f"public, max-age={3600 * 24}"
+        })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Model not found. Try another format.")
+
 @app.post("/store_list")
 @app.get("/store_list")
 def store_list():
@@ -222,7 +232,7 @@ async def store_set(set: StoreSetRequest):
         storage_client.store_image(path=set.token_id, data=png_data)
 
     briqData = BriqData().load(set.data)
-    storage_client.store_bytes(path_including_ext=set.token_id + ".gltf", data=b''.join(briqData.to_gltf().save_to_bytes()))
+    storage_client.store_bytes(path_including_ext=set.token_id + ".glb", data=b''.join(briqData.to_gltf().save_to_bytes()))
 
     # ERC 721 metadata compliance
     set.data["image"] = f"https://api.briq.construction/preview/{set.token_id}"
@@ -230,7 +240,7 @@ async def store_set(set: StoreSetRequest):
     set.data["external_url"] = f"https://briq.construction/share?set_id={set.token_id}&network=testnet&version=2"
     if 'recommendedSettings' in set.data:
         set.data['background_color'] = set.data['recommendedSettings']['backgroundColor'][1:]
-    set.data["animation_url"] = f"https://api.briq.construction/get_model/gltf/{set.token_id}"
+    set.data["animation_url"] = f"https://api.briq.construction/get_model/{set.token_id}.glb"
 
     # Will overwrite, which is OK since we checked the owner.
     storage_client.store_json(path=set.token_id, data=set.data)
