@@ -1,3 +1,4 @@
+from asyncore import read
 import os
 import json
 
@@ -37,6 +38,16 @@ class FileStorage(IStorage):
     def list_json(self):
         return [x for x in os.listdir(self.path) if x.endswith(".json")]
 
+    def store_bytes(self, path_including_ext: str, data: bytes):
+        logger.info("Storing data to %s", path_including_ext)
+        with open(self.path + path_including_ext, "wb") as f:
+            f.write(data)
+        return True
+
+    def load_bytes(self, path_including_ext: str):
+        logger.info("Loading data from %s", path_including_ext)
+        with open(self.path + path_including_ext, "rb") as f:
+            return f.read()
 
     def store_image(self, path: str, data: bytes):
         logger.info("storing image to %s", path)

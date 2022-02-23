@@ -31,6 +31,15 @@ class CloudStorage(IStorage):
     def list_json(self):
         return [x.name.replace(self.path, "") for x in self.storage_client.list_blobs(self.bucket, prefix=self.path, timeout=5) if ".json" in x.name]
 
+    def store_bytes(self, path_including_ext: str, data: bytes):
+        logger.debug("Storing data to %s", path_including_ext)
+        self.bucket.blob(self.path + path_including_ext).upload_from_string(data, content_type="application/octet-stream", timeout=10)
+        return True
+
+    def load_bytes(self, path_including_ext: str):
+        logger.debug("Loading data from %s", path_including_ext)
+        return self.bucket.blob(self.path + path_including_ext).download_as_bytes()
+
     def store_image(self, path: str, data: bytes):
         logger.debug("Storing image to %s", path)
         self.bucket.blob(self.path + path + ".png").upload_from_string(data, content_type='image/png', timeout=10)

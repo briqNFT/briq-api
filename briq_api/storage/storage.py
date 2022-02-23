@@ -19,6 +19,15 @@ class IStorage:
     def list_json(self, path):
         pass
 
+    @abstractmethod
+    def store_bytes(self, path_including_ext: str, data: bytes):
+        pass
+
+    @abstractmethod
+    def load_bytes(self, path_including_ext: str):
+        pass
+
+    @abstractmethod
     def store_image(self, path: str, data: bytes):
         pass
 

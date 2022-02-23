@@ -4,8 +4,10 @@ import asyncio
 import logging
 logger = logging.getLogger(__name__)
 
-from briq_api.storage.cloud_storage import CloudStorage
-from briq_api.storage.file_storage import FileStorage
+from .storage.cloud_storage import CloudStorage
+from .storage.file_storage import FileStorage
+
+from .mesh.briq import BriqData
 
 app = FastAPI()
 
@@ -219,9 +221,16 @@ async def store_set(set: StoreSetRequest):
 
         storage_client.store_image(path=set.token_id, data=png_data)
 
+    briqData = BriqData().load(set.data)
+    storage_client.store_bytes(path_including_ext=set.token_id + ".gltf", data=b''.join(briqData.to_gltf().save_to_bytes()))
+
     # ERC 721 metadata compliance
     set.data["image"] = f"https://api.briq.construction/preview/{set.token_id}"
     set.data["description"] = "A set made of briqs"
+    set.data["external_url"] = f"https://briq.construction/share?set_id={set.token_id}&network=testnet&version=2"
+    if 'recommendedSettings' in set.data:
+        set.data['background_color'] = set.data['recommendedSettings']['backgroundColor'][1:]
+    set.data["animation_url"] = f"https://api.briq.construction/get_model/gltf/{set.token_id}"
 
     # Will overwrite, which is OK since we checked the owner.
     storage_client.store_json(path=set.token_id, data=set.data)
