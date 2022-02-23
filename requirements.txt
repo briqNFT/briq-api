@@ -6,3 +6,5 @@ fastapi[all]>=0
 flake8>=0
 Pillow>=9.0
 starknet_py>=0.1.3a
+pygltflib>=1.15
+git+https://github.com/Claytone/numpy-vox-io@master#egg=numpy-vox-io
