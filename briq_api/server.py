@@ -72,24 +72,25 @@ def store_list():
 
 import os
 CUSTOM_SET_ADDRESS = os.environ.get("SET_ADDRESS")
-logger.info("Set address at %s", CUSTOM_SET_ADDRESS)
-from starknet_py.contract import Contract
-from starknet_py.net.client import Client
-client = Client("testnet" if CUSTOM_SET_ADDRESS != "" else "testnet")
-SET_CONTRACT_ADDRESS = CUSTOM_SET_ADDRESS or "0x0266b1276d23ffb53d99da3f01be7e29fa024dd33cd7f7b1eb7a46c67891c9d0"
-set_contract_promise = Contract.from_address(SET_CONTRACT_ADDRESS, client)
-set_contract = None
+#logger.info("Set address at %s", CUSTOM_SET_ADDRESS)
+#from starknet_py.contract import Contract
+#from starknet_py.net.client import Client
+#client = Client("testnet" if CUSTOM_SET_ADDRESS != "" else "testnet")
+#SET_CONTRACT_ADDRESS = CUSTOM_SET_ADDRESS or "0x0266b1276d23ffb53d99da3f01be7e29fa024dd33cd7f7b1eb7a46c67891c9d0"
+#set_contract_promise = Contract.from_address(SET_CONTRACT_ADDRESS, client)
+#set_contract = None
 
 async def get_set_contract():
-    global set_contract
-    if set_contract is None:
-        try:
-            set_contract = await set_contract_promise
-        except RuntimeError:
-            # if we're here, someone is already awaiting it, so we'll just wait.
-            while set_contract is None:
-                await asyncio.sleep(1)
-    return set_contract
+    return None
+#    global set_contract
+#    if set_contract is None:
+#        try:
+#            set_contract = await set_contract_promise
+#        except RuntimeError:
+#            # if we're here, someone is already awaiting it, so we'll just wait.
+#            while set_contract is None:
+#                await asyncio.sleep(1)
+#    return set_contract
 
 gallery_items = { "sets": [], "sets_v06": [] }
 future_gallery_items = { "sets": [], "sets_v06": [] }
