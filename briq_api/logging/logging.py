@@ -29,6 +29,11 @@ class CustomLoggingFormatter(logging.Formatter):
             "message": record.message,
             "name": record.name,
         }
+        if record.exc_info is not None:
+            input_data['exc_info'] = self.formatException(record.exc_info)
+        if record.stack_info is not None:
+            input_data['stack_info'] = self.formatStack(record.stack_info)
+
         if isinstance(record.args, dict):
             for key in record.args:
                 if key not in input_data:
@@ -59,6 +64,7 @@ def setup_logging():
 
     ch = logging.StreamHandler()
     ch.setStream(old_stderr)
-    formatter = CustomLoggingFormatter()
-    ch.setFormatter(formatter)
+    if os.getenv('LOGHUMAN') != '1':
+        formatter = CustomLoggingFormatter()
+        ch.setFormatter(formatter)
     logger.addHandler(ch)

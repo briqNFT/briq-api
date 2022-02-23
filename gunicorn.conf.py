@@ -5,10 +5,10 @@ bind = ['0.0.0.0:5000']
 accesslog = "-"
 errorlog = "-"
 loglevel = "info"  # for error log
-logger_class = "briq_api.logging.GunicornLoggerOverride"
+logger_class = "briq_api.logging.logging.GunicornLoggerOverride"
 
 # Worker configuration
 workers = 2
-worker_class = 'briq_api.uvicorn_setup.CustomLogUvicornWorker'
+worker_class = 'briq_api.logging.uvicorn_setup.CustomLogUvicornWorker'
 timeout = 60
 keepalive = 5  # behind load balancer

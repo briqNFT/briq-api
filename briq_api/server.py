@@ -77,7 +77,7 @@ from starknet_py.contract import Contract
 from starknet_py.net.client import Client
 client = Client("testnet" if CUSTOM_SET_ADDRESS != "" else "testnet")
 SET_CONTRACT_ADDRESS = CUSTOM_SET_ADDRESS or "0x0266b1276d23ffb53d99da3f01be7e29fa024dd33cd7f7b1eb7a46c67891c9d0"
-set_contract_promise = Contract.from_address(CUSTOM_SET_ADDRESS, client)
+set_contract_promise = Contract.from_address(SET_CONTRACT_ADDRESS, client)
 set_contract = None
 
 async def get_set_contract():
@@ -107,7 +107,7 @@ async def update_gallery_items_unused():
     async def get_set_if_owner(filename: str) -> str:
         set_id = filename.replace(".json", "")
         try:
-            (owner,) = await (await get_set_contract()).functions["owner_of"].call(int(set_id, base=16))
+            (owner,) = await (await get_set_contract()).functions["ownerOf"].call(int(set_id, base=16))
             if owner == 0:
                 return ""
             return set_id
@@ -189,8 +189,8 @@ class StoreSetRequest(BaseModel):
 
 @app.post("/store_set")
 async def store_set(set: StoreSetRequest):
-    if CUSTOM_SET_ADDRESS == "":
-        (owner,) = await (await get_set_contract()).functions["owner_of"].call(int(set.token_id, base=16))
+    if False and CUSTOM_SET_ADDRESS == "":
+        (owner,) = await (await get_set_contract()).functions["ownerOf"].call(int(set.token_id, base=16))
 
         # NB: this is a data-race, as there may be pending transactions, but we'll ignore that for now.
         if owner != 0:

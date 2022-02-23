@@ -1,3 +1,3 @@
-from .logging import setup_logging
+from .logging.logging import setup_logging
 
 setup_logging()
