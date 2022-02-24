@@ -44,7 +44,9 @@ class CustomLoggingFormatter(logging.Formatter):
             try:
                 input_data['method'] = record.args[1]
                 input_data['endpoint'] = record.args[2]
-                input_data['status'] = record.args[5]
+                input_data['status'] = record.args[4]
+                if input_data['status'] != 200 and input_data['severity'] == logging.getLevelName(logging.INFO):
+                    input_data['severity'] = logging.getLevelName(logging.WARNING)
             except:
                 pass
         return json.dumps(input_data)
