@@ -35,6 +35,7 @@ storage_client = get_storage()
 def health():
     return "ok"
 
+@app.head("/store_get/{token_id}")
 @app.post("/store_get/{token_id}")
 @app.get("/store_get/{token_id}")
 async def store_get(token_id: str):
@@ -54,6 +55,7 @@ async def store_get(token_id: str):
 import io
 from starlette.responses import StreamingResponse
 
+@app.head("/preview/{token_id}")
 @app.get("/preview/{token_id}")
 async def get_preview(token_id: str):
     try:
@@ -64,6 +66,7 @@ async def get_preview(token_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail="File not found")
 
+@app.head("/get_model/{token_id}.{kind}")
 @app.get("/get_model/{token_id}.{kind}")
 async def get_model(kind: str, token_id: str):
     try:
