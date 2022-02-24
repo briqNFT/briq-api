@@ -233,6 +233,7 @@ async def store_set(set: StoreSetRequest):
 
     briqData = BriqData().load(set.data)
     storage_client.store_bytes(path_including_ext=set.token_id + ".glb", data=b''.join(briqData.to_gltf().save_to_bytes()))
+    storage_client.store_bytes(path_including_ext=set.token_id + ".vox", data=briqData.to_vox(set.token_id).to_bytes())
 
     # ERC 721 metadata compliance
     set.data["image"] = f"https://api.briq.construction/preview/{set.token_id}"
