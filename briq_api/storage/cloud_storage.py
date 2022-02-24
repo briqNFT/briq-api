@@ -4,6 +4,7 @@ import json
 from .storage import IStorage
 # Imports the Google Cloud client library
 from google.cloud import storage
+from google.cloud.exceptions import NotFound as NotFoundException
 
 import logging
 logger = logging.getLogger(__name__)

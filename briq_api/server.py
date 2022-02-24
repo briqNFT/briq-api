@@ -4,7 +4,7 @@ import asyncio
 import logging
 logger = logging.getLogger(__name__)
 
-from .storage.cloud_storage import CloudStorage
+from .storage.cloud_storage import CloudStorage, NotFoundException
 from .storage.file_storage import FileStorage
 
 from .mesh.briq import BriqData
@@ -69,13 +69,38 @@ async def get_preview(token_id: str):
 @app.head("/get_model/{token_id}.{kind}")
 @app.get("/get_model/{token_id}.{kind}")
 async def get_model(kind: str, token_id: str):
+    mime_type = {
+        "glb": "model/gltf-binary",
+        "vox": "application/octet-stream",
+    }
     try:
         data = storage_client.load_bytes(path_including_ext=token_id + '.' + kind)
-        return StreamingResponse(io.BytesIO(data), media_type="model/gltf-binary", headers={
+        return StreamingResponse(io.BytesIO(data), media_type=mime_type[kind], headers={
             "Cache-Control": f"public, max-age={3600 * 24}"
         })
+    except NotFoundException:
+        try:
+            data = storage_client.load_json(path=token_id)
+            briqData = BriqData().load(data)
+            output = None
+            if kind == "glb":
+                output = b''.join(briqData.to_gltf().save_to_bytes())
+                storage_client.store_bytes(path_including_ext=token_id + ".glb", data=output)
+            elif kind == "vox":
+                output = briqData.to_vox(token_id).to_bytes()
+                storage_client.store_bytes(path_including_ext=token_id + ".vox", data=output)
+            else:
+                raise Exception("Unknown model type " + kind)
+            logging.info("Created %(type)s model for %(set)s on the fly.", {"type": kind, "set": token_id})
+            return StreamingResponse(io.BytesIO(output), media_type=mime_type[kind], headers={
+                "Cache-Control": f"public, max-age={3600 * 24}"
+            })
+        except Exception as e:
+            logging.error(e, exc_info=e)
+            raise HTTPException(status_code=500, detail="Error while creating model.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Model not found. Try another format.")
+        logging.error(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="Error while fetching model.")
 
 @app.post("/store_list")
 @app.get("/store_list")
