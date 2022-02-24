@@ -234,9 +234,13 @@ async def store_set(set: StoreSetRequest):
 
         storage_client.store_image(path=set.token_id, data=png_data)
 
-    briqData = BriqData().load(set.data)
-    storage_client.store_bytes(path_including_ext=set.token_id + ".glb", data=b''.join(briqData.to_gltf().save_to_bytes()))
-    storage_client.store_bytes(path_including_ext=set.token_id + ".vox", data=briqData.to_vox(set.token_id).to_bytes())
+    try:
+        briqData = BriqData().load(set.data)
+        storage_client.store_bytes(path_including_ext=set.token_id + ".glb", data=b''.join(briqData.to_gltf().save_to_bytes()))
+        storage_client.store_bytes(path_including_ext=set.token_id + ".vox", data=briqData.to_vox(set.token_id).to_bytes())
+    except Exception as err:
+        logging.warning("Error when converting the set data to 3D models. Set data: %(setdata)s", { "setdata": set.data }, exc_info=err)
+        raise HTTPException(status_code=500, detail="Error when converting the set data to 3D models. Details: \n" + str(err))
 
     # ERC 721 metadata compliance
     set.data["image"] = f"https://api.briq.construction/preview/{set.token_id}"
@@ -247,7 +251,11 @@ async def store_set(set: StoreSetRequest):
     set.data["animation_url"] = f"https://api.briq.construction/get_model/{set.token_id}.glb"
 
     # Will overwrite, which is OK since we checked the owner.
-    storage_client.store_json(path=set.token_id, data=set.data)
+    try:
+        storage_client.store_json(path=set.token_id, data=set.data)
+    except Exception as err:
+        logging.error("Error exporting JSON", exc_info=err)
+        raise HTTPException(status_code=500, detail="Error saving JSON")
 
     logging.info("Stored new set %(token_id)s for %(owner)s", {
         "token_id": set.token_id,
