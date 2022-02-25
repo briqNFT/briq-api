@@ -12,10 +12,10 @@ logger = logging.getLogger(__name__)
 BUCKET = os.environ.get('CLOUD_STORAGE_BUCKET') or 'test-bucket'
 
 class CloudStorage(IStorage):
-    def __init__(self) -> None:
+    def __init__(self, path="sets/") -> None:
         self.storage_client = storage.Client()
         self.bucket = self.storage_client.bucket(BUCKET)
-        self.path = "sets/"
+        self.path = path
 
     def store_json(self, path, data):
         logger.debug("storing JSON at %s", path)
@@ -31,6 +31,10 @@ class CloudStorage(IStorage):
 
     def list_json(self):
         return [x.name.replace(self.path, "") for x in self.storage_client.list_blobs(self.bucket, prefix=self.path, timeout=5) if ".json" in x.name]
+
+    def iterate_files(self):
+        for blob in self.storage_client.list_blobs(self.bucket, prefix=self.path, timeout=5):
+            yield blob.name.replace(self.path, "")
 
     def store_bytes(self, path_including_ext: str, data: bytes):
         logger.debug("Storing data to %s", path_including_ext)

@@ -1,6 +1,7 @@
 from abc import abstractmethod
 
 import logging
+from typing import Iterable
 logger = logging.getLogger(__name__)
 
 class IStorage:
@@ -20,6 +21,10 @@ class IStorage:
         pass
 
     @abstractmethod
+    def iterate_files(self) -> Iterable:
+        pass
+
+    @abstractmethod
     def store_bytes(self, path_including_ext: str, data: bytes):
         pass
 
@@ -35,11 +40,18 @@ class IStorage:
     def load_image(self, path: str) -> bytes:
         pass
 
-def get_storage():
+
+def get_storage(path=None):
     try:
         from .cloud_storage import CloudStorage
-        return CloudStorage()
+        if path is not None:
+            return CloudStorage(path)
+        else:
+            return CloudStorage()
     except:
-        from .file_storage import FileStorage
         logger.warning("Falling back to local storage")
-        return FileStorage()
+        from .file_storage import FileStorage
+        if path is not None:
+            return FileStorage(path)
+        else:
+            return FileStorage()

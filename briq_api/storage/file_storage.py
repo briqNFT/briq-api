@@ -10,12 +10,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 class FileStorage(IStorage):
-    def __init__(self) -> None:
-        self.path = 'temp/'
+    def __init__(self, path="temp/") -> None:
+        self.path = path
         try:
-            os.mkdir(self.path)
+            os.makedirs(self.path, exist_ok=True)
         except:
-            pass
+            logging.exception("Could not create folder at %(path)s", {"path": path})
+            raise
 
     def store_json(self, path, data):
         logger.info("storing JSON")
@@ -37,6 +38,10 @@ class FileStorage(IStorage):
 
     def list_json(self):
         return [x for x in os.listdir(self.path) if x.endswith(".json")]
+
+    def iterate_files(self):
+        for file in os.listdir(self.path):
+            yield file
 
     def store_bytes(self, path_including_ext: str, data: bytes):
         logger.info("Storing data to %s", path_including_ext)
