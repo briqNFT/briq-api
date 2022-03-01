@@ -79,7 +79,7 @@ async def get_model(kind: str, token_id: str):
         return StreamingResponse(io.BytesIO(data), media_type=mime_type[kind], headers={
             "Cache-Control": f"public, max-age={3600 * 24}"
         })
-    except NotFoundException:
+    except (NotFoundException, OSError):
         try:
             data = storage_client.load_json(path=token_id)
             briqData = BriqData().load(data)

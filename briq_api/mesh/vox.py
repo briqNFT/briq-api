@@ -20,6 +20,7 @@ def to_vox(briqData: BriqData):
     x1 = None
     y1 = None
     z1 = None
+    # Vox is Y-up, so we need to rotate coordinates
     for briq in briqData.briqs:
         col = briq['data']['color']
         if col not in colorSet:
@@ -45,7 +46,7 @@ def to_vox(briqData: BriqData):
     z1 += 1
 
     for briq in briqData.briqs:
-        voxels.append(Voxel(x=briq["pos"][0] - x0, y=briq["pos"][2] - y0, z=briq["pos"][1] - z0, c=colorSet[briq['data']['color']]))
+        voxels.append(Voxel(x=x1 - briq["pos"][0] - 1, y=briq["pos"][2] - y0, z=briq["pos"][1] - z0, c=colorSet[briq['data']['color']]))
 
     vox = Vox(models=[Model(size=Size(x=x1 - x0, y=y1 - y0, z=z1 - z0), voxels=voxels)], palette=colors)
     return VoxWriter("temp.vox", vox)
