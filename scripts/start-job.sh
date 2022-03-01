@@ -16,7 +16,7 @@ fi
 
 echo "RUNNING ${NAME}"
 
-ytt -f infra/schema.yaml -f jobs/_schema.yaml  -f infra/vals-${K8S_ENV}.yaml -f jobs/_generic_job.yaml --data-value "job_name=briq-job-${NAME//_/-}" --data-value "job=jobs/${NAME}.py" --data-value "image_tag=$TAG" > "jobs/${NAME}_${K8S_ENV}.yaml"
+ytt -f infra/schema.yaml -f jobs/_schema.yaml  -f infra/vals-${K8S_ENV}.yaml -f jobs/_generic_job.yaml --data-value "job_name=briq-job-${NAME//_/-}" --data-value "job=jobs/${NAME}.py" --data-value "image_tag=$TAG" > "/tmp/jobs/${NAME}_${K8S_ENV}.yaml"
 
 echo "validating client-side"
 kubectl apply -f "jobs/${NAME}_${K8S_ENV}.yaml" --validate=true --dry-run=client
@@ -27,4 +27,4 @@ echo "Creating docker image"
 TAG=$TAG ./infra/run-docker.sh
 
 echo "Now running job"
-kubectl apply -f "jobs/${NAME}_${K8S_ENV}.yaml"
+kubectl apply -f "/tmp/jobs/${NAME}_${K8S_ENV}.yaml"
