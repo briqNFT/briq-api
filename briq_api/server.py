@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
+import json
 import logging
 logger = logging.getLogger(__name__)
 
@@ -174,11 +175,16 @@ async def update_gallery_items_unused():
     gallery_items = future_gallery_items
     updating_task = None
 
-import json
+
 def parse_gallery_data(storage: CloudStorage):
-    data = storage.bucket.blob("gallery_sets.json").download_as_text()
-    data = json.loads(data)
+    try:
+        data = storage.bucket.blob("gallery_sets.json").download_as_text()
+        data = json.loads(data)
+    except Exception as ex:
+        logging.exception(ex, exc_info=ex)
+        raise
     return data
+
 
 async def update_gallery_items():
     global future_gallery_items
@@ -207,7 +213,7 @@ async def startup_event():
 @app.get("/gallery_items")
 async def get_gallery_items():
     global updating_task
-    if updating_task is None:
+    if updating_task is None or updating_task.done():
         updating_task = asyncio.create_task(update_gallery_items())
     return {
         "code": 200,
