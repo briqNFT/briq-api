@@ -15,11 +15,14 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "http://realms.localhost:3000",
         "http://localhost:3000",
-        "https://sltech.company",
-        "https://www.sltech.company",
         "https://briq.construction",
         "https://www.briq.construction",
+        "https://realms.briq.construction",
+        "https://test-realms.briq.construction",
+        "https://sltech.company",
+        "https://www.sltech.company",
         "https://test.sltech.company",
     ],
     allow_credentials=True,
