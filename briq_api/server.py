@@ -269,11 +269,14 @@ async def store_set(set: StoreSetRequest):
         storage_client.store_image(path=set.token_id, data=png_data)
 
     try:
+        # Attempt converting to GLTF but don't store it before it's first accessed.
+        # Further, don't try .vox because that can fail somewhat spuriously.
         briqData = BriqData().load(set.data)
-        storage_client.store_bytes(path_including_ext=set.token_id + ".glb", data=b''.join(briqData.to_gltf().save_to_bytes()))
-        storage_client.store_bytes(path_including_ext=set.token_id + ".vox", data=briqData.to_vox(set.token_id).to_bytes())
+        briqData.to_gltf()
+        #storage_client.store_bytes(path_including_ext=set.token_id + ".glb", data=b''.join(briqData.to_gltf().save_to_bytes()))
+        #storage_client.store_bytes(path_including_ext=set.token_id + ".vox", data=briqData.to_vox(set.token_id).to_bytes())
     except Exception as err:
-        logging.warning("Error when converting the set data to 3D models. Set data: %(setdata)s", { "setdata": set.data }, exc_info=err)
+        logging.warning("Error when converting the set data to 3D models. Set data: %(setdata)s", {"setdata": set.data}, exc_info=err)
         raise HTTPException(status_code=500, detail="Error when converting the set data to 3D models. Details: \n" + str(err))
 
     # ERC 721 metadata compliance
