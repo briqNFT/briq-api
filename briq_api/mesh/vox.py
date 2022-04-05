@@ -4,6 +4,9 @@ from pyvox.parser import VoxParser
 from pyvox.writer import VoxWriter
 from pyvox.models import Vox, Model, Voxel, Size, Color
 
+import logging
+logger = logging.getLogger(__name__)
+
 # sometimes Python is horrible
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -45,8 +48,24 @@ def to_vox(briqData: BriqData):
     y1 += 1
     z1 += 1
 
-    for briq in briqData.briqs:
-        voxels.append(Voxel(x=x1 - briq["pos"][0] - 1, y=briq["pos"][2] - y0, z=briq["pos"][1] - z0, c=colorSet[briq['data']['color']]))
+    # Vox cannot support more than 255 colors or more than 255*255*255 so for now, clamp to that.
+    # For now, we prefer truncating the model over failing to export.
+    MAX_VALUE = 255
+    if len(colors) > MAX_VALUE or x1 > MAX_VALUE or y1 > MAX_VALUE or z1 > MAX_VALUE:
+        logger.info("Set will be truncated, some briqs are outside the supported range")
 
-    vox = Vox(models=[Model(size=Size(x=x1 - x0, y=y1 - y0, z=z1 - z0), voxels=voxels)], palette=colors)
+    x1 = min(MAX_VALUE, x1)
+    y1 = min(MAX_VALUE, y1)
+    z1 = min(MAX_VALUE, z1)
+
+    for briq in briqData.briqs:
+        x = x1 - briq["pos"][0] - 1
+        y = briq["pos"][2] - y0
+        z = briq["pos"][1] - z0
+        # Have to invert the condition for x
+        if x < 0 or y > MAX_VALUE or z > MAX_VALUE:
+            continue
+        voxels.append(Voxel(x, y, z, c=min(255, colorSet[briq['data']['color']])))
+
+    vox = Vox(models=[Model(size=Size(x=x1 - x0, y=y1 - y0, z=z1 - z0), voxels=voxels)], palette=colors[0:255])
     return VoxWriter("temp.vox", vox)
