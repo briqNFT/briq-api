@@ -54,6 +54,9 @@ async def store_get(token_id: str):
         "name": data['name'] if 'name' in data else '',
         "description": data['description'] if 'description' in data else '',
         "image": data['image'].replace('://briq.construction', '://api.briq.construction') if 'image' in data else '',
+        "external_url": data['external_url'] if 'external_url' in data else '',
+        "animation_url": data['animation_url'] if 'animation_url' in data else '',
+        "background_color": data['background_color'] if 'background_color' in data else '',
     }
 
 import io
