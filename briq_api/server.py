@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 import json
 import logging
+
+import requests
 logger = logging.getLogger(__name__)
 
 from .storage.cloud_storage import CloudStorage, NotFoundException
@@ -301,6 +303,22 @@ async def store_set(set: StoreSetRequest):
         "token_id": set.token_id,
         "owner": set.owner
     })
+
+    # Realms only
+    try:
+        if all([briq["data"]["material"] == "0x2" for briq in set.data["briqs"]]):
+            requests.post(url="https://squire-25q7c.ondigitalocean.app/briq", json={
+                "token_id": set.token_id,
+                "minter": set.owner,
+                "name": set.data["name"],
+                "backgroundColor": set.data["backgroundColor"],
+                "image": set.data["image"],
+                "external_url": set.data["external_url"],
+                "animation_url": set.data["animation_url"],
+            })
+    except Exception as err:
+        logging.warning(err, exc_info=err)
+        pass
 
     return {
         "code": 200,
