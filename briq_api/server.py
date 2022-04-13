@@ -308,12 +308,12 @@ async def store_set(set: StoreSetRequest):
 
     # Realms only
     try:
-        if all([briq["data"]["material"] == "0x2" for briq in set.data["briqs"]]):
+        if len(set.data["briqs"]) > 0 and all([briq["data"]["material"] == "0x2" for briq in set.data["briqs"]]):
             requests.post(url="https://squire-25q7c.ondigitalocean.app/briq", json={
                 "token_id": set.token_id,
                 "minter": set.owner,
                 "name": set.data["name"],
-                "backgroundColor": set.data["backgroundColor"],
+                "backgroundColor": set.data["background_color"],
                 "image": set.data["image"],
                 "external_url": set.data["external_url"],
                 "animation_url": set.data["animation_url"],
