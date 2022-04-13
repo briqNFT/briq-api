@@ -66,6 +66,8 @@ from starlette.responses import StreamingResponse
 
 @app.head("/preview/{token_id}")
 @app.get("/preview/{token_id}")
+@app.head("/preview/{token_id}.png")
+@app.get("/preview/{token_id}.png")
 async def get_preview(token_id: str):
     try:
         data = storage_client.load_image(path=token_id)
@@ -285,7 +287,7 @@ async def store_set(set: StoreSetRequest):
         raise HTTPException(status_code=500, detail="Error when converting the set data to 3D models. Details: \n" + str(err))
 
     # ERC 721 metadata compliance
-    set.data["image"] = f"https://api.briq.construction/preview/{set.token_id}"
+    set.data["image"] = f"https://api.briq.construction/preview/{set.token_id}.png"
     set.data["description"] = "A set made of briqs"
     set.data["external_url"] = f"https://briq.construction/share?set_id={set.token_id}&network=testnet&version=2"
     if 'recommendedSettings' in set.data:
