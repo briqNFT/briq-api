@@ -318,6 +318,9 @@ async def store_set(set: StoreSetRequest):
                 "external_url": set.data["external_url"],
                 "animation_url": set.data["animation_url"],
             })
+            logging.info("Sent Realms web hook about set %(token_id)s", {
+                "token_id": set.token_id
+            })
     except Exception as err:
         logging.warning(err, exc_info=err)
         pass
