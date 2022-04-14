@@ -5,6 +5,6 @@ google-cloud-storage>=1.4
 fastapi[all]>=0
 flake8>=0
 Pillow>=9.0
-starknet_py>=0.1.6a
+git+https://github.com/software-mansion/starknet.py.git@development#egg=starknet_py
 pygltflib>=1.15
 git+https://github.com/briqNFT/numpy-vox-io@master#egg=numpy-vox-io

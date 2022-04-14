@@ -4,13 +4,14 @@ import asyncio
 import json
 import logging
 
-import requests
-logger = logging.getLogger(__name__)
-
 from .storage.cloud_storage import CloudStorage, NotFoundException
 from .storage.file_storage import FileStorage
 
 from .mesh.briq import BriqData
+
+from . import app_logic
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -121,27 +122,6 @@ def store_list():
         "sets": storage_client.list_json()
     }
 
-import os
-CUSTOM_SET_ADDRESS = os.environ.get("SET_ADDRESS")
-#logger.info("Set address at %s", CUSTOM_SET_ADDRESS)
-#from starknet_py.contract import Contract
-#from starknet_py.net.client import Client
-#client = Client("testnet" if CUSTOM_SET_ADDRESS != "" else "testnet")
-#SET_CONTRACT_ADDRESS = CUSTOM_SET_ADDRESS or "0x0266b1276d23ffb53d99da3f01be7e29fa024dd33cd7f7b1eb7a46c67891c9d0"
-#set_contract_promise = Contract.from_address(SET_CONTRACT_ADDRESS, client)
-#set_contract = None
-
-async def get_set_contract():
-    return None
-#    global set_contract
-#    if set_contract is None:
-#        try:
-#            set_contract = await set_contract_promise
-#        except RuntimeError:
-#            # if we're here, someone is already awaiting it, so we'll just wait.
-#            while set_contract is None:
-#                await asyncio.sleep(1)
-#    return set_contract
 
 gallery_items = { "sets": [], "sets_v06": [] }
 future_gallery_items = { "sets": [], "sets_v06": [] }
@@ -159,7 +139,7 @@ async def update_gallery_items_unused():
     async def get_set_if_owner(filename: str) -> str:
         set_id = filename.replace(".json", "")
         try:
-            (owner,) = await (await get_set_contract()).functions["ownerOf"].call(int(set_id, base=16))
+            owner = 0  #(owner,) = await (await app_logic.get_set_contract()).functions["ownerOf"].call(int(set_id, base=16))
             if owner == 0:
                 return ""
             return set_id
@@ -236,29 +216,20 @@ import base64
 
 from PIL import Image
 
-class StoreSetRequest(BaseModel):
-    owner: str
-    token_id: str
-    data: Dict[str, Any]
-    message_hash: str
-    signature: Tuple[int, int]
-    image_base64: bytes
-
 @app.post("/store_set")
-async def store_set(set: StoreSetRequest):
-    if False and CUSTOM_SET_ADDRESS == "":
-        (owner,) = await (await get_set_contract()).functions["ownerOf"].call(int(set.token_id, base=16))
-
-        # NB: this is a data-race, as there may be pending transactions, but we'll ignore that for now.
-        if owner != 0:
-            # Check that we are the owner.
-            # TODO: add ABI here.
-            contract = await Contract.from_address(set.owner, client)
-            (is_valid,) = await contract.functions["is_valid_signature"].call(hash=int(set.message_hash, base=16), sig=set.signature)
-            if not is_valid:
-                raise HTTPException(status_code=403, detail="Wrong signature for the public key.")
-            if owner != set.owner:
-                raise HTTPException(status_code=403, detail="You are not the owner of the NFT.")
+async def store_set(set: app_logic.StoreSetRequest):
+    #if False and CUSTOM_SET_ADDRESS == "":
+    #    (owner,) = await (await get_set_contract()).functions["ownerOf"].call(int(set.token_id, base=16))
+    #    # NB: this is a data-race, as there may be pending transactions, but we'll ignore that for now.
+    #    if owner != 0:
+    #        # Check that we are the owner.
+    #        # TODO: add ABI here.
+    #        contract = await Contract.from_address(set.owner, client)
+    #        (is_valid,) = await contract.functions["is_valid_signature"].call(hash=int(set.message_hash, base=16), sig=set.signature)
+    #        if not is_valid:
+    #            raise HTTPException(status_code=403, detail="Wrong signature for the public key.")
+    #        if owner != set.owner:
+    #            raise HTTPException(status_code=403, detail="You are not the owner of the NFT.")
 
     if len(set.image_base64) > 0:
         HEADER = b'data:image/png;base64,'
@@ -306,24 +277,8 @@ async def store_set(set: StoreSetRequest):
         "owner": set.owner
     })
 
-    # Realms only
-    try:
-        if len(set.data["briqs"]) > 0 and all([briq["data"]["material"] == "0x2" for briq in set.data["briqs"]]):
-            requests.post(url="https://squire-25q7c.ondigitalocean.app/briq", json={
-                "token_id": set.token_id,
-                "minter": set.owner,
-                "name": set.data["name"],
-                "backgroundColor": set.data["background_color"],
-                "image": set.data["image"],
-                "external_url": set.data["external_url"],
-                "animation_url": set.data["animation_url"],
-            })
-            logging.info("Sent Realms web hook about set %(token_id)s", {
-                "token_id": set.token_id
-            })
-    except Exception as err:
-        logging.warning(err, exc_info=err)
-        pass
+    # Run the webhook job asynchronously.
+    app_logic.store_set(set)
 
     return {
         "code": 200,

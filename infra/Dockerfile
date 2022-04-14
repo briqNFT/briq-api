@@ -3,6 +3,10 @@ FROM python:3.9-buster
 WORKDIR /usr/src/app
 
 COPY requirements.txt ./
+
+# Starknet_py has a submodule using SSH, so use HTTPS to avoid issues with keys (for now anyways)
+RUN git config --global url."https://github.com/".insteadOf "git@github.com:"
+
 RUN pip install --no-cache-dir -r requirements.txt
 # somehow necessary
 RUN pip uninstall -y lark-parser && pip install lark-parser
