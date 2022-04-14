@@ -55,7 +55,7 @@ async def store_get(token_id: str):
         "token_id": token_id,
         "data": data,
         "name": data['name'] if 'name' in data else '',
-        "description": data['description'] if 'description' in data else '',
+        "description": data['description'] if 'description' in data else 'A set made of briqs',
         "image": data['image'].replace('://briq.construction', '://api.briq.construction') if 'image' in data else '',
         "external_url": data['external_url'] if 'external_url' in data else '',
         "animation_url": data['animation_url'] if 'animation_url' in data else '',
@@ -259,7 +259,6 @@ async def store_set(set: app_logic.StoreSetRequest):
 
     # ERC 721 metadata compliance
     set.data["image"] = f"https://api.briq.construction/preview/{set.token_id}.png"
-    set.data["description"] = "A set made of briqs"
     set.data["external_url"] = f"https://briq.construction/share?set_id={set.token_id}&network=testnet&version=2"
     if 'recommendedSettings' in set.data:
         set.data['background_color'] = set.data['recommendedSettings']['backgroundColor'][1:]
