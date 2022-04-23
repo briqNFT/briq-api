@@ -15,4 +15,5 @@ try:
     with open(args.file.replace(".json", ".glb"), "wb") as f:
         f.write(b''.join(data.to_gltf().save_to_bytes()))
 except Exception as err:
+    print("Error running")
     print(err)

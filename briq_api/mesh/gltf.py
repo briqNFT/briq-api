@@ -140,7 +140,7 @@ def to_gltf(prims: List[Primitive]):
             ))
 
         points = np.array(primitive.points, dtype="float32")
-        triangles = np.array(primitive.triangles, dtype="uint16")
+        triangles = np.array(primitive.triangles, dtype="uint32")
         triangles_binary_blob = triangles.flatten().tobytes()
         points_binary_blob = points.tobytes()
         primitives.append(pygltflib.Primitive(
@@ -150,7 +150,7 @@ def to_gltf(prims: List[Primitive]):
         ))
         accessors.append(pygltflib.Accessor(
             bufferView=i * 2,
-            componentType=pygltflib.UNSIGNED_SHORT,
+            componentType=pygltflib.UNSIGNED_INT,
             count=triangles.size,
             type=pygltflib.SCALAR,
             max=[int(triangles.max())],
