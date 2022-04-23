@@ -27,6 +27,7 @@ app.add_middleware(
         "https://sltech.company",
         "https://www.sltech.company",
         "https://test.sltech.company",
+        "https://testnet.playoasis.xyz",
     ],
     allow_credentials=True,
     allow_methods=["*"],
