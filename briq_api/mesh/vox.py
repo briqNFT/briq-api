@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pyvox.parser import VoxParser
 from pyvox.writer import VoxWriter
-from pyvox.models import Vox, Model, Voxel, Size, Color
+from pyvox.models import Vox, Model, Voxel, Size, Color, Material
 
 import logging
 logger = logging.getLogger(__name__)
