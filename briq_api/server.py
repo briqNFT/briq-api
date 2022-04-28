@@ -44,6 +44,9 @@ storage_client = get_storage()
 def health():
     return "ok"
 
+import io
+from starlette.responses import StreamingResponse
+
 @app.head("/store_get/{token_id}")
 @app.post("/store_get/{token_id}")
 @app.get("/store_get/{token_id}")
@@ -52,7 +55,7 @@ async def store_get(token_id: str):
         data = storage_client.load_json(path=token_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail="File not found")
-    return {
+    output = {
         "code": 200,
         "token_id": token_id,
         "data": data,
@@ -63,9 +66,12 @@ async def store_get(token_id: str):
         "animation_url": data['animation_url'] if 'animation_url' in data else '',
         "background_color": data['background_color'] if 'background_color' in data else '',
     }
-
-import io
-from starlette.responses import StreamingResponse
+    out = io.StringIO()
+    output = json.dump(output, out)
+    out.seek(0)
+    return StreamingResponse(out, media_type="application/json", headers={
+        "Cache-Control": f"public, max-age={2 * 60}"
+    })
 
 @app.head("/preview/{token_id}")
 @app.get("/preview/{token_id}")
