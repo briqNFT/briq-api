@@ -13,7 +13,8 @@ args = parser.parse_args()
 try:
     data = BriqData().load_file(args.file)
     with open(args.file.replace(".json", ".glb"), "wb") as f:
-        f.write(b''.join(data.to_gltf().save_to_bytes()))
+        data = data.to_gltf()
+        f.write(b''.join(data.save_to_bytes()))
 except Exception as err:
     print("Error running gltf conversion of ", args.file)
     raise err

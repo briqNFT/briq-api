@@ -3,8 +3,7 @@ from typing import Dict, Sequence
 
 from .vox import to_vox
 
-from .gltf import to_primitives, to_gltf
-
+from .gltf import to_gltf
 
 class BriqData:
     briqs: Sequence
@@ -28,6 +27,6 @@ class BriqData:
         writer.filename = filename
         return writer
 
-
     def to_gltf(self):
-        return to_gltf(to_primitives(self.briqs))
+        return to_gltf(self.briqs)
+

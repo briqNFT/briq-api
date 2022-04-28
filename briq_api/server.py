@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 import json
 import logging
+from anyio import to_process
 
 from .storage.cloud_storage import CloudStorage, NotFoundException
 from .storage.file_storage import FileStorage
@@ -97,10 +98,13 @@ async def get_model(kind: str, token_id: str):
             briqData = BriqData().load(data)
             output = None
             if kind == "glb":
-                output = b''.join(briqData.to_gltf().save_to_bytes())
+                # Run this in a separate process, it can take a while and we need to not block.
+                data = await to_process.run_sync(briqData.to_gltf)
+                output = b''.join(data.save_to_bytes())
                 storage_client.store_bytes(path_including_ext=token_id + ".glb", data=output)
             elif kind == "vox":
-                output = briqData.to_vox(token_id).to_bytes()
+                data = await to_process.run_sync(briqData.to_vox, token_id)
+                output = data.to_bytes()
                 storage_client.store_bytes(path_including_ext=token_id + ".vox", data=output)
             else:
                 raise Exception("Unknown model type " + kind)
