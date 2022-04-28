@@ -8,7 +8,7 @@ loglevel = "info"  # for error log
 logger_class = "briq_api.logging.logging.GunicornLoggerOverride"
 
 # Worker configuration
-workers = 2
+workers = 4
 worker_class = 'briq_api.logging.uvicorn_setup.CustomLogUvicornWorker'
 timeout = 60
 keepalive = 5  # behind load balancer
