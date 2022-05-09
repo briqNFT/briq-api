@@ -5,7 +5,7 @@ bind = ['0.0.0.0:5000']
 accesslog = "-"
 errorlog = "-"
 loglevel = "info"  # for error log
-logger_class = "briq_api.logging.logging.GunicornLoggerOverride"
+logger_class = "briq_api.logging.gunicorn.GunicornLoggerOverride"
 
 # Worker configuration
 workers = 3

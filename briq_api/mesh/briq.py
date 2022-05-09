@@ -1,10 +1,6 @@
 import json
 from typing import Dict, Sequence
 
-from .vox import to_vox
-
-from .gltf import to_gltf
-
 class BriqData:
     briqs: Sequence
     def __init__(self):
@@ -23,10 +19,12 @@ class BriqData:
 
 
     def to_vox(self, filename: str):
+        from .vox import to_vox
         writer = to_vox(self)
         writer.filename = filename
         return writer
 
     def to_gltf(self):
+        from .gltf import to_gltf
         return to_gltf(self.briqs)
 
