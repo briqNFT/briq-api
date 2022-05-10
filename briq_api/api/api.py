@@ -100,6 +100,3 @@ async def store_set(rid: SetRID, setData: dict, image_base64: bytes):
     if len(image_base64) > 0:
         store_preview_image(rid, image_base64)
     storage_client.store_json(metadata_storage_path(rid), data=setData)
-
-    # Run the webhook job asynchronously.
-    #app_logic.store_set(set)
