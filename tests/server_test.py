@@ -1,11 +1,11 @@
-from unittest.mock import patch, MagicMock
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
-from briq_api import server
+from briq_api.server import app
 
-# TODO: figure out why I can't test the server?
-@patch('briq_api.storage.storage.get_storage', autospec=True)
-def test_store_list(get_storage):
-    ret = MagicMock()
-    get_storage.return_value = ret
-    server.store_list()
-    ret.list_json.assert_called_once
+client = TestClient(app)
+
+def test_health():
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.text == '"ok"'

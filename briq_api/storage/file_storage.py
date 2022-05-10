@@ -24,7 +24,7 @@ class FileStorage(IStorage):
             json.dump(data, f)
         return True
 
-    def load_json(self, path):
+    def load_json(self, path) -> dict:
         logger.info("loading JSON")
         with open(self.path + path + ".json", "r") as f:
             return json.load(f)

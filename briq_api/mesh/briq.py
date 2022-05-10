@@ -1,10 +1,9 @@
 import json
 from typing import Dict, Sequence
 
+
 class BriqData:
     briqs: Sequence
-    def __init__(self):
-        pass
 
     def load_file(self, filename):
         filedata = None
@@ -16,7 +15,6 @@ class BriqData:
     def load(self, jsonData: Dict):
         self.briqs = jsonData['briqs']
         return self
-
 
     def to_vox(self, filename: str):
         from .vox import to_vox
