@@ -36,8 +36,8 @@ class FileStorage(IStorage):
         except:
             return False
 
-    def list_json(self):
-        return [x for x in os.listdir(self.path) if x.endswith(".json")]
+    def list_json(self, path=""):
+        return [x for x in os.listdir(self.path + path) if x.endswith(".json")]
 
     def iterate_files(self):
         for file in os.listdir(self.path):
