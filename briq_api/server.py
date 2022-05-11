@@ -40,7 +40,7 @@ def health():
 @app.on_event("startup")
 def startup_event():
     if not os.getenv("USE_MOCK_CHAIN"):
-        storage_client.connect(CloudStorage())
+        storage_client.connect_for_chain(chain_id="starknet-testnet", backend=CloudStorage('briq-bucket-test-1'))
         storage_client.connect_for_chain(legacy_chain_id, LegacyCloudStorage())
     else:
         # Don't attempt connecting to the cloud in that mode,
