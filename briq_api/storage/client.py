@@ -9,6 +9,10 @@ SET_STORAGE_PREFIX = "sets/"
 
 
 class StorageClient:
+    """
+    This is basically a bare-bones ORM.
+    TODO: expand logically upon this structure.
+    """
     def __init__(self):
         # Fallback backend.
         self.backend: Union[None, StorageBackend] = None
