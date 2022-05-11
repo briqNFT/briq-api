@@ -4,8 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from briq_api.legacy_api import on_startup, app as legacy_api_router
-
-from .storage.client import setup_storage
+from briq_api.storage.backends.cloud_storage import CloudStorage
+from briq_api.storage.backends.file_storage import FileStorage
+from briq_api.storage.client import storage_client
 from .api.router import router as api_router
 from .mock_chain.router import router as mock_chain_router
 
@@ -38,5 +39,9 @@ def health():
 @app.on_event("startup")
 def startup_event():
     if not os.getenv("USE_MOCK_CHAIN"):
-        setup_storage()
+        storage_client.connect(CloudStorage())
+    else:
+        # Don't attempt connecting to the cloud in that mode,
+        # we expect to run locally and it makes it faster to reload the API
+        storage_client.connect(FileStorage())
     on_startup()

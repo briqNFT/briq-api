@@ -3,7 +3,7 @@
 
 import copy
 import logging
-from briq_api.storage.cloud_storage import CloudStorage
+from briq_api.storage.backends.cloud_storage import CloudStorage
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ if __name__ != '__main__':
     logger.error("Must be called as a script")
 
 
-from briq_api.storage.storage import get_storage
+from briq_api.storage.backend_interface import get_storage
 set_storage = get_storage()
 state_storate = get_storage("jobs/delete_existing_vox/")
 

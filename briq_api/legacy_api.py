@@ -7,14 +7,16 @@ from anyio import to_process
 from fastapi import APIRouter, HTTPException
 from starlette.responses import StreamingResponse
 
-from .storage.cloud_storage import CloudStorage, NotFoundException
-from .storage.file_storage import FileStorage
+from briq_api.set_identifier import SetRID
+
+from .storage.backends.cloud_storage import CloudStorage, NotFoundException
+from .storage.backends.file_storage import FileStorage
 
 from .mesh.briq import BriqData
 
 from . import app_logic
 
-from .storage.client import storage_client, setup_storage
+from .storage.client import storage_client
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +27,11 @@ app = APIRouter()
 @app.get("/store_get/{token_id}")
 async def store_get(token_id: str):
     try:
-        data = storage_client.load_json(path=token_id)
+        data = storage_client.load_set_metadata(rid=SetRID(chain_id="testnet", token_id=token_id))
+    except FileNotFoundError:
+        raise HTTPException(status_code=500, detail="File not found")
     except Exception as e:
+        logging.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
     output = {
         "code": 200,
@@ -52,7 +57,7 @@ async def store_get(token_id: str):
 @app.get("/preview/{token_id}.png")
 async def get_preview(token_id: str):
     try:
-        data = storage_client.load_image(path=token_id)
+        data = storage_client.load_set_preview(rid=SetRID(chain_id="testnet", token_id=token_id))
         return StreamingResponse(io.BytesIO(data), media_type="image/png", headers={
             "Cache-Control": f"public, max-age={3600 * 24}"
         })
@@ -68,24 +73,24 @@ async def get_model(kind: str, token_id: str):
         "vox": "application/octet-stream",
     }
     try:
-        data = storage_client.load_bytes(path_including_ext=token_id + '.' + kind)
+        data = storage_client.load_set_model(rid=SetRID(chain_id="testnet", token_id=token_id), kind=kind)
         return StreamingResponse(io.BytesIO(data), media_type=mime_type[kind], headers={
             "Cache-Control": f"public, max-age={3600 * 24}"
         })
     except (NotFoundException, OSError):
         try:
-            data = storage_client.load_json(path=token_id)
+            data = storage_client.load_set_metadata(rid=SetRID(chain_id="testnet", token_id=token_id))
             briqData = BriqData().load(data)
             output = None
             if kind == "glb":
                 # Run this in a separate process, it can take a while and we need to not block.
                 data = await to_process.run_sync(briqData.to_gltf)
                 output = b''.join(data.save_to_bytes())
-                storage_client.store_bytes(path_including_ext=token_id + ".glb", data=output)
+                storage_client.store_set_model(rid=SetRID(chain_id="testnet", token_id=token_id), kind='glb', data=output)
             elif kind == "vox":
                 data = await to_process.run_sync(briqData.to_vox, token_id)
                 output = data.to_bytes()
-                storage_client.store_bytes(path_including_ext=token_id + ".vox", data=output)
+                storage_client.store_set_model(rid=SetRID(chain_id="testnet", token_id=token_id), kind='vox', data=output)
             else:
                 raise Exception("Unknown model type " + kind)
             logger.info("Created %(type)s model for %(set)s on the fly.", {"type": kind, "set": token_id})
@@ -111,7 +116,7 @@ async def update_gallery_items_unused():
     future_gallery_items = []
 
     logger.info("UPDATING GALLERY ITEMS")
-    files = storage_client.list_json()
+    #files = storage_client.list_json()
 
     async def get_set_if_owner(filename: str) -> str:
         set_id = filename.replace(".json", "")
@@ -160,13 +165,13 @@ async def update_gallery_items():
     future_gallery_items = []
 
     logger.info("UPDATING GALLERY ITEMS")
-    if isinstance(storage_client, FileStorage):
+    if isinstance(storage_client.backend, FileStorage):
         future_gallery_items = {
-            "items": [x.replace(".json", "") for x in storage_client.list_json()],
+            "items": [x.replace(".json", "") for x in storage_client.backend.list_json()],
             "items_vO6": []
         }
     else:
-        future_gallery_items = parse_gallery_data(storage_client)
+        future_gallery_items = parse_gallery_data(storage_client.backend)
     logger.info("DONE UPDATING, FOUND %(items)s items", {"items": len(future_gallery_items['items'])})
     gallery_items = future_gallery_items
     updating_task = None
@@ -224,7 +229,7 @@ async def store_set(set: app_logic.StoreSetRequest):
         if image.width > 1000 or image.height > 1000 or image.width < 10 or image.height < 10:
             raise HTTPException(status_code=403, detail="Image is too large, acceptable size range from 10x10 to 1000x1000")
 
-        storage_client.store_image(path=set.token_id, data=png_data)
+        storage_client.store_set_preview(rid=SetRID(chain_id="testnet", token_id=set.token_id), data=png_data)
 
     try:
         # Attempt converting to GLTF but don't store it before it's first accessed.
@@ -246,7 +251,7 @@ async def store_set(set: app_logic.StoreSetRequest):
 
     # Will overwrite, which is OK since we checked the owner.
     try:
-        storage_client.store_json(path=set.token_id, data=set.data)
+        storage_client.store_set_metadata(rid=SetRID(chain_id="testnet", token_id=set.token_id), data=set.data)
     except Exception as err:
         logger.error("Error exporting JSON", exc_info=err)
         raise HTTPException(status_code=500, detail="Error saving JSON")

@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from briq_api.server import app
 from briq_api.set_identifier import SetRID
 from briq_api.storage import client as storage_client
+from briq_api.storage.backends.file_storage import FileStorage
 
 from tests.conftest import BRIQ_DATA
 
@@ -25,8 +26,8 @@ SET_DATA = {
 @pytest.fixture()
 def temp_storage_client(tmp_path: Path):
     (tmp_path / "sets" / "test").mkdir(parents=True, exist_ok=True)
-    storage_client.setup_local_storage(str(tmp_path) + "/")
-    with patch('briq_api.api.api.storage_client', new=storage_client.get_storage_client()) as mock:
+    storage_client.storage_client.connect(FileStorage(str(tmp_path) + "/"))
+    with patch('briq_api.api.api.storage_client', new=storage_client.storage_client) as mock:
         yield mock
 
 

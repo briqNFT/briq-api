@@ -11,8 +11,8 @@ from starkware.starknet.public.abi import get_selector_from_name
 
 from briq_api.mesh.briq import BriqData
 from briq_api.set_identifier import SetRID
-from briq_api.storage.client import get_storage_client
-from briq_api.storage.cloud_storage import NotFoundException
+from briq_api.storage.client import storage_client
+from briq_api.storage.backends.cloud_storage import NotFoundException
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ async def call_contract(body: ContractCall):
     elif body.contract_address == '0xB':
         if int(body.entry_point_selector, 16) == get_selector_from_name('balanceDetailsOf'):
             # Load local sets.
-            sets = get_storage_client().list_json("sets/mock/")
+            sets = storage_client.list_json("sets/mock/")
             return {'result': [hex(len(sets)), *[x.replace('_metadata.json', '') for x in sets]]}
     elif body.contract_address == '0xcafebabe':
         if int(body.entry_point_selector, 16) == get_selector_from_name('get_nonce'):
