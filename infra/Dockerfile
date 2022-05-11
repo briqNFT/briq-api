@@ -1,11 +1,14 @@
-FROM python:3.9-buster
+FROM python:3.9-buster as initial
 
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
+# Install some libs that are less likely to change
+# TODO: keep synched with requirements.txt
+RUN pip install --no-cache-dir gunicorn>=20.1 google-cloud-storage>=2.3 flake8>=4.0 Pillow>=9.0 pygltflib>=1.15 ecdsa fastecdsa sympy
 
-# Starknet_py has a submodule using SSH, so use HTTPS to avoid issues with keys (for now anyways)
-RUN git config --global url."https://github.com/".insteadOf "git@github.com:"
+FROM initial
+
+COPY requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 # somehow necessary
