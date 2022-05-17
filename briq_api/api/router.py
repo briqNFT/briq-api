@@ -18,7 +18,9 @@ router = APIRouter()
 
 
 @router.head("/metadata/{chain_id}/{token_id}")
+@router.head("/metadata/{chain_id}/{token_id}.json")
 @router.get("/metadata/{chain_id}/{token_id}")
+@router.get("/metadata/{chain_id}/{token_id}.json")
 async def metadata(chain_id: str, token_id: str):
     rid = SetRID(chain_id=chain_id, token_id=token_id)
 
