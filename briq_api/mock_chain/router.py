@@ -24,14 +24,14 @@ async def call_contract(body: ContractCall):
     if body.contract_address == '0xA':
         # briq contract
         if int(body.entry_point_selector, 16) == get_selector_from_name('fullBalanceOf_'):
-            return {'result': ['0x1', '0x1', '0x145']}
+            return {'result': ['0x4', '0x1', '0x141', '0x3', '0x143', '0x4', '0x144', '0x5', '0x145']}
 
     elif body.contract_address == '0xB':
         if int(body.entry_point_selector, 16) == get_selector_from_name('balanceDetailsOf_'):
             # Load local sets.
-            #sets = storage_client.list_json("sets/mock/")
-            #return {'result': [hex(len(sets)), *[x.replace('_metadata.json', '') for x in sets]]}
-            return {'result': ['0x0']}
+            sets = storage_client.get_backend('mock').list_json("sets/mock/")
+            return {'result': [hex(len(sets)), *[x.replace('_metadata.json', '') for x in sets]]}
+            #return {'result': ['0x0']}
         elif int(body.entry_point_selector, 16) == get_selector_from_name('ownerOf_'):
             return {'result': ['0x0']}
 
