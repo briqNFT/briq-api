@@ -167,13 +167,13 @@ async def update_gallery_items():
     future_gallery_items = []
 
     logger.info("UPDATING GALLERY ITEMS")
-    if isinstance(storage_client.backend, FileStorage):
+    if isinstance(storage_client.get_backend(legacy_chain_id), FileStorage):
         future_gallery_items = {
-            "items": [x.replace(".json", "") for x in storage_client.backend.list_json()],
+            "items": [x.replace(".json", "") for x in storage_client.get_backend(legacy_chain_id).list_json()],
             "items_vO6": []
         }
     else:
-        future_gallery_items = parse_gallery_data(storage_client.backend)
+        future_gallery_items = parse_gallery_data(storage_client.get_backend(legacy_chain_id))
     logger.info("DONE UPDATING, FOUND %(items)s items", {"items": len(future_gallery_items['items'])})
     gallery_items = future_gallery_items
     updating_task = None
