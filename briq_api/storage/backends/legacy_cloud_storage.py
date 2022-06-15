@@ -40,6 +40,9 @@ class LegacyCloudStorage(StorageBackend):
         path = path.replace(f'{legacy_chain_id}/', '').replace('_metadata', '')
         return self.bucket.blob(self.path + path).exists()
 
+    def list_paths(self, path: str) -> list[str]:
+        return []
+
     def store_bytes(self, path: str, data: bytes):
         logger.debug("Storing data to %s", path)
         path = path.replace(f'{legacy_chain_id}/', '')
