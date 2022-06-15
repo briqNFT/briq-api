@@ -49,6 +49,10 @@ class FileStorage(StorageBackend):
         self.ensure_path(path)
         return [x for x in os.listdir(self.path + path) if x.endswith(".json")]
 
+    def list_paths(self, path: str):
+        self.ensure_path(path)
+        return [x for x in os.listdir(self.path + path) if x != ".DS_Store"]
+
     def iterate_files(self):
         self.ensure_path("")
         for file in os.listdir(self.path):

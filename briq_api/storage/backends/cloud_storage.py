@@ -32,6 +32,10 @@ class CloudStorage(StorageBackend):
     def has_json(self, path):
         return self.bucket.blob(path).exists()
 
+    def list_paths(self, path: str):
+        """ Potentially slow method, take care """
+        return list(self.storage_client.list_blobs(self.bucket, prefix=path, timeout=5))
+
     def store_bytes(self, path: str, data: bytes):
         logger.debug("Storing data to %s", path)
         self.bucket.blob(path).upload_from_string(data, content_type="application/octet-stream", timeout=10)

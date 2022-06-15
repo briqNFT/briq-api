@@ -16,6 +16,10 @@ class StorageBackend(ABC):
         pass
 
     @abstractmethod
+    def list_paths(self, path: str) -> list[str]:
+        pass
+
+    @abstractmethod
     def store_bytes(self, path: str, data: bytes):
         pass
 
