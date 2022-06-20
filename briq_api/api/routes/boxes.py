@@ -27,6 +27,22 @@ async def box_data(chain_id: str, theme_id: str, token_id: str):
     })
 
 
+@router.head("/box/texture/{chain_id}/{theme_id}/{token_id}")
+@router.head("/box/texture/{chain_id}/{theme_id}/{token_id}.png")
+@router.get("/box/texture/{chain_id}/{theme_id}/{token_id}")
+@router.get("/box/texture/{chain_id}/{theme_id}/{token_id}.png")
+async def box_texture(chain_id: str, theme_id: str, token_id: str):
+    rid = BoxRID(chain_id, theme_id, token_id)
+
+    try:
+        image = boxes.get_box_texture(rid)
+    except Exception:
+        raise HTTPException(status_code=500, detail="File not found")
+
+    return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
+        "Cache-Control": f"public, max-age={3600 * 24}"
+    })
+
 @router.head("/box/cover_item/{chain_id}/{theme_id}/{token_id}")
 @router.head("/box/cover_item/{chain_id}/{theme_id}/{token_id}.png")
 @router.get("/box/cover_item/{chain_id}/{theme_id}/{token_id}")

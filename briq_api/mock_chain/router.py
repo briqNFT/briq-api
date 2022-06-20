@@ -25,7 +25,7 @@ class getUnopenedBoxesCall(BaseModel):
 
 @router.post("/getUnopenedBoxes")
 async def getUnopenedBoxes(body: getUnopenedBoxesCall):
-    return mock_user['available_boxes']
+    return [hex(x) for x in mock_user['available_boxes']]
 
 
 class ContractCall(BaseModel):

@@ -43,6 +43,9 @@ class BoxStorage:
     def load_cover_box(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/cover_box.png")
 
+    def load_box_texture(self, rid: BoxRID):
+        return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/box_texture.png")
+
     # Themes
 
     def list_themes(self, chain_id: str):
@@ -70,3 +73,7 @@ def get_box_cover_item(rid: BoxRID):
 
 def get_box_cover_box(rid: BoxRID):
     return box_storage.load_cover_box(rid)
+
+
+def get_box_texture(rid: BoxRID):
+    return box_storage.load_box_texture(rid)
