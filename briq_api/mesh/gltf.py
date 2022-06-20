@@ -117,7 +117,7 @@ def to_gltf(briqs: Sequence):
         if primitive.material.material == "0x3":
             materials.append(pygltflib.Material(
                 name=primitive.material.name,
-                pbrMetallicRoughness=pygltflib.PbrMetallicRoughness(baseColorFactor=rgbaCol + [0.5],),
+                pbrMetallicRoughness=pygltflib.PbrMetallicRoughness(baseColorFactor=rgbaCol + [0.7], metallicFactor=0.5, roughnessFactor=0.1),
                 alphaMode="BLEND",
             ))
         elif primitive.material.material == "0x4":
@@ -134,13 +134,14 @@ def to_gltf(briqs: Sequence):
                 name=primitive.material.name,
                 pbrMetallicRoughness=pygltflib.PbrMetallicRoughness(
                     baseColorFactor=rgbaCol + [1.0],
+                    metallicFactor=0.0, roughnessFactor=0.05
                 ),
                 emissiveFactor=rgbaCol,
             ))
         else:
             materials.append(pygltflib.Material(
                 name=primitive.material.name,
-                pbrMetallicRoughness=pygltflib.PbrMetallicRoughness(baseColorFactor=rgbaCol + [1]),
+                pbrMetallicRoughness=pygltflib.PbrMetallicRoughness(baseColorFactor=rgbaCol + [1], metallicFactor=0.0, roughnessFactor=0.2),
                 alphaCutoff=None,
             ))
 
