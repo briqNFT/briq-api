@@ -100,6 +100,14 @@ def to_primitives(briqs: Sequence):
 
     return primitives
 
+def srgb2lin(s):
+    """GLTF uses linear-space vertex colors, which won't give the result we want."""
+    if s <= 0.0404482362771082:
+        lin = s / 12.92
+    else:
+        lin = pow(((s + 0.055) / 1.055), 2.4)
+    return lin
+
 def to_gltf(briqs: Sequence):
     prims = to_primitives(briqs)
 
@@ -113,7 +121,7 @@ def to_gltf(briqs: Sequence):
 
     for (i, primitive) in enumerate(prims):
 
-        rgbaCol = [int(primitive.material.color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+        rgbaCol = [srgb2lin(int(primitive.material.color[i:i + 2], 16) / 255) for i in (1, 3, 5)]
         if primitive.material.material == "0x3":
             materials.append(pygltflib.Material(
                 name=primitive.material.name,
