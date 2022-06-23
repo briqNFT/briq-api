@@ -33,8 +33,13 @@ class CloudStorage(StorageBackend):
         return self.bucket.blob(path).exists()
 
     def list_paths(self, path: str):
-        """ Potentially slow method, take care """
-        return list(self.storage_client.list_blobs(self.bucket, prefix=path, timeout=5))
+        """ Potentially slow method, take care. """
+        # There seems to be a weird bug, but this should work.
+        # See https://github.com/googleapis/python-storage/issues/294 for the for loop thing.
+        results = self.storage_client.list_blobs(self.bucket, prefix=path, delimiter="/", timeout=5)
+        for x in results.prefixes:
+            pass
+        return [x.name[len(path):] for x in results] + [x[len(path):-1] for x in results.prefixes]
 
     def store_bytes(self, path: str, data: bytes):
         logger.debug("Storing data to %s", path)
