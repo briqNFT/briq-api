@@ -22,4 +22,7 @@ COPY gunicorn.conf.py gunicorn.conf.py
 COPY setup.py ./
 RUN pip install -e .
 
+# For temporary testing, copy the temp folder for sets.
+COPY temp/genesis_themes/ temp/genesis_themes
+
 CMD [ "gunicorn", "briq_api.server:app" ]
