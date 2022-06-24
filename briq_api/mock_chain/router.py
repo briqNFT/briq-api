@@ -23,6 +23,18 @@ mock_user = {
 
 BOX_CONTRACT = 0xD
 
+@router.post('/reset')
+def reset():
+    global mock_user
+    mock_user = {
+        "available_boxes": [
+            int("0xb0a001", 16), int("0xb0a001", 16), int("0xb0a002", 16),
+            int("0xb0a001", 16), int("0xb0a001", 16), int("0xb0a002", 16),
+            int("0xb0a001", 16), int("0xb0a001", 16), int("0xb0a002", 16),
+        ],
+        "opened_boxes": [],
+    }
+
 class getUnopenedBoxesCall(BaseModel):
     owner: str
 
