@@ -39,15 +39,17 @@ def health():
 
 @app.on_event("startup")
 def startup_event():
-    if not os.getenv("USE_MOCK_CHAIN"):
+    if not os.getenv("LOCAL"):
         storage_client.connect_for_chain(chain_id="starknet-testnet", backend=CloudStorage('briq-bucket-test-1'))
         storage_client.connect_for_chain(legacy_chain_id, LegacyCloudStorage())
     else:
         # Don't attempt connecting to the cloud in that mode,
         # we expect to run locally and it makes it faster to reload the API
         storage_client.connect(FileStorage())
+    if os.getenv("USE_MOCK_CHAIN"):
         mock_storage = FileStorage()
         # Add an artificial slowdown
         mock_storage.slowdown = 0.5
         storage_client.connect_for_chain('mock', mock_storage)
+
     on_startup()

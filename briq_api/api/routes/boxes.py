@@ -35,7 +35,7 @@ async def get_box_saledata(chain_id: str, theme_id: str, box_id: str):
         raise HTTPException(status_code=500, detail="Could not get sale data")
 
     return JSONResponse(output, headers={
-        "Cache-Control": f"public, max-age={60}"
+        "Cache-Control": f"public, max-age={2}"
     })
 
 

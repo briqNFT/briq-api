@@ -40,8 +40,6 @@ class ContractCall(BaseModel):
 
 @router.post("/feeder_gateway/call_contract")
 async def call_contract(body: ContractCall):
-    print(body)
-
     if body.contract_address == '0xA':
         # briq contract
         if int(body.entry_point_selector, 16) == get_selector_from_name('fullBalanceOf_'):

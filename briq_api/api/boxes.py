@@ -58,7 +58,6 @@ class BoxStorage:
         return self.storage.get_backend(chain_id).load_json(f"{BoxStorage.PREFIX}/{theme_id}/data.json")
 
 
-
 box_storage = BoxStorage(storage_client)
 
 
@@ -68,20 +67,21 @@ def get_box_metadata(rid: BoxRID):
 
 def get_box_saledata(rid: BoxRID):
     # TODO: on chain query
+    import time
     if rid.box_id == 'spaceman':
         return {
             'quantity_left': 24,
             'total_quantity': 80,
             'price': 0.4,
-            'sale_start': 1662890480,
+            'sale_start': time.time() - 60 if 'ongoing' in rid.theme_id else time.time() + 24*60*60*10,
             'sale_duration': 24*3600*6,
         }
     return {
         'quantity_left': 1,
         'total_quantity': 1,
         'price': 0.4,
-        'sale_start': 1662890480 + 3600*6,
-        'sale_duration': 24*3600*2,
+        'sale_start': time.time() - 60 if 'ongoing' in rid.theme_id else time.time() + 24*60*60*10,
+        'sale_duration': 3600*2,
     }
 
 

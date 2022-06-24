@@ -23,6 +23,10 @@ spec:
         env:
         - name: CLOUD_STORAGE_BUCKET
           value: #@ data.values.storage_bucket
+        #@ if data.values.env == 'test':
+        - name: USE_MOCK_CHAIN
+          value: "1"
+        #@ end
         resources:
           requests:
             cpu: #@ data.values.resources.cpu
