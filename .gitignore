@@ -4,5 +4,7 @@ __pycache__
 *.egg-info/
 venv/
 
+.vscode/
+
 infra/dist/
 temp/

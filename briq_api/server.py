@@ -32,6 +32,7 @@ app.include_router(legacy_api_router)
 if os.getenv("USE_MOCK_CHAIN"):
     app.include_router(mock_chain_router, prefix='/mock_chain')
 
+
 @app.get("/health")
 def health():
     return "ok"

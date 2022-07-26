@@ -29,6 +29,7 @@ async def get_owner(token_id: str):
     set_contract = await get_set_contract()
     return (await set_contract.functions["ownerOf_"].call(int(token_id, 16))).owner
 
+
 async def trigger_hook_once_complete(set: StoreSetRequest):
     # Realms only
     tries = 0
