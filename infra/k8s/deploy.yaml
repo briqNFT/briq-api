@@ -26,6 +26,8 @@ spec:
         #@ if data.values.env == 'test':
         - name: USE_MOCK_CHAIN
           value: "1"
+        - name: LOGLEVEL
+          value: "DEBUG"
         #@ end
         resources:
           requests:
