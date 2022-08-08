@@ -4,6 +4,7 @@ import logging
 from briq_api.chain.contracts import NETWORKS
 
 from briq_api.storage.client import StorageClient, storage_client
+from briq_api.genesis_data.genesis_data import genesis_storage
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,12 @@ box_storage = BoxStorage(storage_client)
 
 
 def get_box_metadata(rid: BoxRID):
-    return box_storage.load_metadata(rid)
+    metadata = box_storage.load_metadata(rid)
+    box_data = genesis_storage.get_backend(rid.chain_id).load_json("box_spec.json")
+    auction_data = genesis_storage.get_backend(rid.chain_id).load_json("auction_spec.json")
+    metadata['token_id'] = box_data[f'{rid.theme_id}/{rid.box_id}']
+    metadata['auction_id'] = list(auction_data.keys()).index(f'{rid.theme_id}/{rid.box_id}')
+    return metadata
 
 
 def get_box_saledata(rid: BoxRID):

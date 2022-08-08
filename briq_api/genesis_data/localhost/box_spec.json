@@ -1,0 +1,22 @@
+{
+    "starknet_city/base_module_1": 1,
+    "starknet_city/module_argentx": 2,
+    "starknet_city/module_aspect": 3,
+    "starknet_city/module_braavos": 4,
+    "starknet_city/module_dopewars": 5,
+    "starknet_city/module_eykar": 6,
+    "starknet_city/module_mintsquare": 7,
+    "starknet_city/module_realms": 8,
+    "starknet_city/spaceman": 9,
+    "starknet_city/starkgate": 10,
+    "starknet_city/starknet_cabin": 11,
+    "starknet_city/starknet_container": 12,
+    "starknet_city/starknet_hospital": 13,
+    "starknet_city/starknet_hub": 14,
+    "starknet_city/starknet_porch": 15,
+    "starknet_city/starknet_restaurant": 16,
+    "starknet_city/starknet_skeleton": 17,
+    "starknet_city_ongoing/base_module_1": 18,
+    "starknet_city_ongoing/spaceman": 19,
+    "starknet_city_ongoing/starkgate": 20
+}

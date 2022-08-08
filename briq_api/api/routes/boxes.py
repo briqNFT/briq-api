@@ -1,10 +1,13 @@
 import io
+import logging
 
 from starlette.responses import JSONResponse, StreamingResponse
 from fastapi import APIRouter, HTTPException
 
 from .. import boxes
 from ..boxes import BoxRID
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -18,7 +21,8 @@ async def box_data(chain_id: str, theme_id: str, box_id: str):
 
     try:
         output = boxes.get_box_metadata(rid)
-    except Exception:
+    except Exception as e:
+        logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return JSONResponse(output, headers={
@@ -30,8 +34,9 @@ async def box_data(chain_id: str, theme_id: str, box_id: str):
 @router.get("/{chain_id}/{theme_id}/{box_id}/saledata")
 async def get_box_saledata(chain_id: str, theme_id: str, box_id: str):
     try:
-        output = boxes.get_box_saledata(rid = BoxRID(chain_id, theme_id, box_id))
-    except Exception:
+        output = boxes.get_box_saledata(rid=BoxRID(chain_id, theme_id, box_id))
+    except Exception as e:
+        logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get sale data")
 
     return JSONResponse(output, headers={
@@ -48,7 +53,8 @@ async def box_texture(chain_id: str, theme_id: str, box_id: str):
 
     try:
         image = boxes.get_box_texture(rid)
-    except Exception:
+    except Exception as e:
+        logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
@@ -64,7 +70,8 @@ async def box_cover_item(chain_id: str, theme_id: str, box_id: str):
 
     try:
         image = boxes.get_box_cover_item(rid)
-    except Exception:
+    except Exception as e:
+        logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
@@ -81,7 +88,8 @@ async def box_step_image(chain_id: str, theme_id: str, box_id: str, step: int):
 
     try:
         image = boxes.get_box_step_image(rid, step)
-    except Exception:
+    except Exception as e:
+        logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
@@ -94,7 +102,8 @@ async def box_step_image(chain_id: str, theme_id: str, box_id: str, step: int):
 async def box_themes_list(chain_id: str):
     try:
         output = boxes.list_themes(chain_id)
-    except Exception:
+    except Exception as e:
+        logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not list themes")
 
     return JSONResponse(output, headers={
@@ -121,7 +130,8 @@ async def list_boxes_of_theme(chain_id: str, theme_id: str):
 async def get_theme_data(chain_id: str, theme_id: str):
     try:
         output = boxes.get_theme_data(chain_id, theme_id)
-    except Exception:
+    except Exception as e:
+        logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get theme data")
 
     return JSONResponse(output, headers={

@@ -8,6 +8,7 @@ from briq_api.storage.backends.cloud_storage import CloudStorage
 from briq_api.storage.backends.file_storage import FileStorage
 from briq_api.storage.backends.legacy_cloud_storage import LegacyCloudStorage
 from briq_api.storage.client import storage_client
+from briq_api.genesis_data.genesis_data import genesis_storage
 from .api.router import router as api_router
 from .mock_chain.router import router as mock_chain_router
 
@@ -49,6 +50,9 @@ def startup_event():
         # we expect to run locally and it makes it faster to reload the API
         logger.info("Connecting locally.")
         storage_client.connect(FileStorage())
+        # TODO: change this
+        genesis_storage.connect(FileStorage("briq_api/genesis_data/localhost/"))
+
     if os.getenv("USE_MOCK_CHAIN"):
         logger.info("Connecting for mock chain.")
         mock_storage = FileStorage()

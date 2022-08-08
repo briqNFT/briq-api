@@ -9,6 +9,9 @@ from briq_api.chain.contracts import NETWORKS
 from briq_api.set_identifier import SetRID
 from briq_api.storage.client import storage_client
 
+from briq_api.genesis_data.genesis_data import genesis_storage
+from briq_api.indexer.storage import mongo_storage
+
 from briq_api.mesh.briq import BriqData
 
 logger = logging.getLogger(__name__)
@@ -85,3 +88,38 @@ async def store_set(rid: SetRID, setData: dict, image_base64: bytes):
     if len(image_base64) > 0:
         store_preview_image(rid, image_base64)
     storage_client.store_set_metadata(rid, setData)
+
+
+def get_user_bids(chain_id: str, user_id: str):
+    try:
+        encoded_user_id = int(user_id)
+    except:
+        encoded_user_id = int(user_id, 16)
+    data = mongo_storage.get_backend(chain_id).db["bids"].find({"bidder": encoded_user_id.to_bytes(32, "big"), "valid_to": None})
+    bids = [
+        {
+            "box_token_id": hex(int.from_bytes(item['box_token_id'], "big")),
+            "bid_amount": str(int.from_bytes(item['bid_amount'], "big")),
+            "tx_hash": hex(int.from_bytes(item['_tx_hash'], "big")),
+            "block": item['_block'],
+            "timestamp": item['_timestamp'],
+        }
+        for item in data
+    ]
+    return bids
+
+
+def get_bids_for_box(chain_id: str, box_id: str):
+    box_data = genesis_storage.get_backend(chain_id).load_json("box_spec.json")
+    data = mongo_storage.get_backend(chain_id).db["bids"].find({"box_token_id": box_data[box_id].to_bytes(32, "big"), "valid_to": None})
+    bids = [
+        {
+            "bidder": hex(int.from_bytes(item['bidder'], "big")),
+            "bid_amount": str(int.from_bytes(item['bid_amount'], "big")),
+            "tx_hash": hex(int.from_bytes(item['_tx_hash'], "big")),
+            "block": item['_block'],
+            "timestamp": item['_timestamp'],
+        }
+        for item in data
+    ]
+    return bids

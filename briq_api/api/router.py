@@ -135,3 +135,27 @@ async def store_set(set: StoreSetRequest):
         "rid": rid.json(),
         "owner": set.owner
     })
+
+
+@router.head("/bids/user/{chain_id}/{user_id}")
+@router.get("/bids/user/{chain_id}/{user_id}")
+async def get_user_bids(chain_id: str, user_id: str):
+    try:
+        output = api.get_user_bids(chain_id, user_id)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="Could not get user bids data")
+
+    return output
+
+@router.head("/bids/box/{chain_id}/{theme_name}/{box_name}")
+@router.get("/bids/box/{chain_id}/{theme_name}/{box_name}")
+async def get_bids_for_box(chain_id: str, theme_name: str, box_name: str):
+    try:
+        box_id = f"{theme_name}/{box_name}"
+        output = api.get_bids_for_box(chain_id, box_id)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="Could not get box bids data")
+
+    return output

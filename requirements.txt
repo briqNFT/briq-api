@@ -5,8 +5,9 @@ google-cloud-storage>=2.3
 fastapi>=0.77
 flake8>=4.0
 Pillow>=9.0
-starknet_py>=0.2.2a0
+starknet_py>=0.3.4a0,<0.4
 pygltflib>=1.15
+apibara>=0.4.1
 git+https://github.com/briqNFT/numpy-vox-io@master#egg=numpy-vox-io
 
 # uvicorn 0.17 requires websockets 10, but we have a conflict with some other dependency,
