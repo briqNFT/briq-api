@@ -20,7 +20,6 @@ class GenesisBackend():
 
 
 class GenesisStorage(StorageClient[GenesisBackend]):
-
     def connect(self, backend):
         if backend:
             backend = GenesisBackend(backend)
@@ -31,3 +30,12 @@ class GenesisStorage(StorageClient[GenesisBackend]):
 
     def get_auction_id(self, chain_id: str, box_id: str):
         return list(self.get_backend(chain_id).get_auction_data().keys()).index(box_id)
+
+    def get_auction_static_data(self, chain_id: str, box_id: str):
+        data = self.get_backend(chain_id).get_auction_data()[box_id]
+        return {
+            "total_quantity": data['quantity'],
+            "auction_start": data['auction_start'],
+            "auction_duration": data['auction_duration'],
+            "initial_price": data['initial_price'],
+        }

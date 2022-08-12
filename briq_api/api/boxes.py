@@ -5,6 +5,7 @@ from briq_api.chain.contracts import NETWORKS
 
 from briq_api.storage.multi_backend_client import StorageClient
 from briq_api.stores import genesis_storage, file_storage
+from briq_api.indexer.storage import mongo_storage
 
 logger = logging.getLogger(__name__)
 
@@ -70,23 +71,13 @@ def get_box_metadata(rid: BoxRID):
 
 
 def get_box_saledata(rid: BoxRID):
-    # TODO: on chain query
+    auction_data = genesis_storage.get_auction_static_data(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
+    box_token_id = genesis_storage.get_box_token_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
+    auction_data['quantity_left'] = mongo_storage.get_available_boxes(rid.chain_id, box_token_id)
+    # temp hack
     import time
-    if rid.box_id == 'spaceman':
-        return {
-            'quantity_left': 24,
-            'total_quantity': 80,
-            'price': 0.4,
-            'sale_start': time.time() - 60 if 'ongoing' in rid.theme_id else time.time() + 24*60*60*10,
-            'sale_duration': 24*3600*6,
-        }
-    return {
-        'quantity_left': 1,
-        'total_quantity': 1,
-        'price': 0.4,
-        'sale_start': time.time() - 60 if 'ongoing' in rid.theme_id else time.time() + 24*60*60*10,
-        'sale_duration': 3600*2,
-    }
+    auction_data['auction_start'] = time.time() - 60 if 'ongoing' in rid.theme_id else time.time() + 24*60*60*10
+    return auction_data
 
 
 def list_themes(chain_id: str):
@@ -97,8 +88,10 @@ def list_boxes_of_theme(chain_id: str, theme_id: str):
     # TODO -> change this?
     return [f"{theme_id}/{box}" for box in box_storage.list_boxes_of_theme(chain_id, theme_id)]
 
+
 def get_theme_data(chain_id: str, theme_id: str):
     return box_storage.get_theme_data(chain_id, theme_id)
+
 
 def get_box_step_image(rid: BoxRID, step: int):
     return box_storage.load_step_image(rid, step)
