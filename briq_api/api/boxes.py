@@ -64,10 +64,8 @@ box_storage = BoxStorage(file_storage)
 
 def get_box_metadata(rid: BoxRID):
     metadata = box_storage.load_metadata(rid)
-    box_data = genesis_storage.get_backend(rid.chain_id).load_json("box_spec.json")
-    auction_data = genesis_storage.get_backend(rid.chain_id).load_json("auction_spec.json")
-    metadata['token_id'] = box_data[f'{rid.theme_id}/{rid.box_id}']
-    metadata['auction_id'] = list(auction_data.keys()).index(f'{rid.theme_id}/{rid.box_id}')
+    metadata['token_id'] = genesis_storage.get_box_token_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
+    metadata['auction_id'] = genesis_storage.get_auction_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
     return metadata
 
 

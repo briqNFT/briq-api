@@ -2,16 +2,16 @@ import logging
 
 from .chain.networks import TESTNET, TESTNET_LEGACY
 
+from briq_api.genesis_data.genesis_storage import GenesisStorage
 from briq_api.storage.file.backends.cloud_storage import CloudStorage
 from briq_api.storage.file.backends.file_storage import FileStorage
 from briq_api.storage.file.backends.legacy_cloud_storage import LegacyCloudStorage
-from briq_api.storage.multi_backend_client import StorageClient
 from .storage.file.file_client import FileClient
 
 logger = logging.getLogger(__name__)
 
 file_storage = FileClient()
-genesis_storage = StorageClient[FileStorage]()
+genesis_storage = GenesisStorage()
 
 
 def setup_stores(local: bool, use_mock_chain: bool):

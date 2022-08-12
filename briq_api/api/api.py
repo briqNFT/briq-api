@@ -108,8 +108,8 @@ def get_user_bids(chain_id: str, user_id: str):
 
 
 def get_bids_for_box(chain_id: str, box_id: str):
-    box_data = genesis_storage.get_backend(chain_id).load_json("box_spec.json")
-    data = mongo_storage.get_backend(chain_id).db["bids"].find({"box_token_id": box_data[box_id].to_bytes(32, "big"), "valid_to": None})
+    box_token_id = genesis_storage.get_box_token_id(chain_id, box_id)
+    data = mongo_storage.get_backend(chain_id).db["bids"].find({"box_token_id": box_token_id.to_bytes(32, "big"), "valid_to": None})
     bids = [
         {
             "bidder": hex(int.from_bytes(item['bidder'], "big")),
