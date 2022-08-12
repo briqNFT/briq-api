@@ -3,8 +3,8 @@ import logging
 
 from briq_api.chain.contracts import NETWORKS
 
-from briq_api.storage.client import StorageClient, storage_client
-from briq_api.genesis_data.genesis_data import genesis_storage
+from briq_api.storage.multi_backend_client import StorageClient
+from briq_api.stores import genesis_storage, file_storage
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ class BoxStorage:
         return self.storage.get_backend(chain_id).load_json(f"{BoxStorage.PREFIX}/{theme_id}/data.json")
 
 
-box_storage = BoxStorage(storage_client)
+box_storage = BoxStorage(file_storage)
 
 
 def get_box_metadata(rid: BoxRID):

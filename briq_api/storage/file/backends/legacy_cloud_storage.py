@@ -7,16 +7,18 @@ from google.cloud import storage
 # Imported by other files
 from google.cloud.exceptions import NotFound as NotFoundException
 
-from ..backend_interface import StorageBackend
+from ....chain.networks import TESTNET_LEGACY
 
-from briq_api.legacy_api import legacy_chain_id
+from ..file_client import FileStorageBackend
 
 logger = logging.getLogger(__name__)
 
 BUCKET = os.environ.get('CLOUD_STORAGE_BUCKET') or 'test-bucket'
 
+legacy_chain_id = TESTNET_LEGACY.id
 
-class LegacyCloudStorage(StorageBackend):
+
+class LegacyCloudStorage(FileStorageBackend):
     def __init__(self, path="") -> None:
         self.storage_client = storage.Client()
         self.bucket = self.storage_client.bucket(BUCKET)

@@ -3,12 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 
-from briq_api.legacy_api import on_startup, app as legacy_api_router, legacy_chain_id
-from briq_api.storage.backends.cloud_storage import CloudStorage
-from briq_api.storage.backends.file_storage import FileStorage
-from briq_api.storage.backends.legacy_cloud_storage import LegacyCloudStorage
-from briq_api.storage.client import storage_client
-from briq_api.genesis_data.genesis_data import genesis_storage
+from briq_api.legacy_api import on_startup, app as legacy_api_router
+from .stores import setup_stores
 from .api.router import router as api_router
 from .mock_chain.router import router as mock_chain_router
 
@@ -41,25 +37,5 @@ def health():
 
 @app.on_event("startup")
 def startup_event():
-    if not os.getenv("LOCAL"):
-        logger.info("Connecting normally.")
-        storage_client.connect_for_chain(chain_id="starknet-testnet", backend=CloudStorage('briq-bucket-test-1'))
-        storage_client.connect_for_chain(legacy_chain_id, LegacyCloudStorage())
-        # For now connect genesis storage to local files regardless
-        genesis_storage.connect(FileStorage("briq_api/genesis_data/localhost/"))
-    else:
-        # Don't attempt connecting to the cloud in that mode,
-        # we expect to run locally and it makes it faster to reload the API
-        logger.info("Connecting locally.")
-        storage_client.connect(FileStorage())
-        # TODO: change this
-        genesis_storage.connect(FileStorage("briq_api/genesis_data/localhost/"))
-
-    if os.getenv("USE_MOCK_CHAIN"):
-        logger.info("Connecting for mock chain.")
-        mock_storage = FileStorage()
-        # Add an artificial slowdown
-        mock_storage.slowdown = 0.5
-        storage_client.connect_for_chain('mock', mock_storage)
-
+    setup_stores(os.getenv("LOCAL"), os.getenv("USE_MOCK_CHAIN"))
     on_startup()

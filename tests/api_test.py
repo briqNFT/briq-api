@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 from briq_api.api import api
 from briq_api.set_identifier import SetRID
-from briq_api.storage import client
+from briq_api.storage import multi_backend_client
 from briq_api.storage.backends.file_storage import FileStorage
 
 from tests.conftest import BRIQ_DATA
@@ -23,8 +23,8 @@ SET_DATA = {
 @pytest.fixture()
 def temp_storage_client(tmp_path: Path):
     (tmp_path / "sets" / "test").mkdir(parents=True, exist_ok=True)
-    client.storage_client.connect(FileStorage(str(tmp_path) + "/"))
-    with patch('briq_api.api.api.storage_client', new=client.storage_client) as mock:
+    multi_backend_client.storage_client.connect(FileStorage(str(tmp_path) + "/"))
+    with patch('briq_api.api.api.storage_client', new=multi_backend_client.storage_client) as mock:
         yield mock
 
 @pytest.mark.asyncio

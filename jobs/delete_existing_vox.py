@@ -11,7 +11,7 @@ if __name__ != '__main__':
     logger.error("Must be called as a script")
 
 
-from briq_api.storage.backend_interface import get_storage
+from briq_api.storage.file.file_client import get_storage
 set_storage = get_storage()
 state_storate = get_storage("jobs/delete_existing_vox/")
 

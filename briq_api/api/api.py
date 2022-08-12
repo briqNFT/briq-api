@@ -7,9 +7,7 @@ from PIL import Image
 from briq_api.chain.contracts import NETWORKS
 
 from briq_api.set_identifier import SetRID
-from briq_api.storage.client import storage_client
-
-from briq_api.genesis_data.genesis_data import genesis_storage
+from briq_api.stores import genesis_storage, file_storage
 from briq_api.indexer.storage import mongo_storage
 
 from briq_api.mesh.briq import BriqData
@@ -18,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_metadata(rid: SetRID):
-    data = storage_client.load_set_metadata(rid)
+    data = file_storage.load_set_metadata(rid)
     if 'version' not in data:
         data['description'] = data['description'] if 'description' in data else 'A set made of briqs'
         data['image'] = data['image'].replace('://briq.construction', '://api.briq.construction') if 'image' in data else ''
@@ -30,11 +28,11 @@ def get_metadata(rid: SetRID):
 
 
 def get_preview(rid: SetRID):
-    return storage_client.load_set_preview(rid)
+    return file_storage.load_set_preview(rid)
 
 
 def get_model(rid: SetRID, kind: str) -> bytes:
-    return storage_client.load_set_model(rid, kind)
+    return file_storage.load_set_model(rid, kind)
 
 
 def create_model(metadata: dict, kind: str) -> bytes:
@@ -49,9 +47,9 @@ def create_model(metadata: dict, kind: str) -> bytes:
 
 def store_model(rid: SetRID, kind: str, model_data: bytes):
     if kind == "glb" or kind == "gltf":
-        storage_client.store_set_model(rid, "glb", model_data)
+        file_storage.store_set_model(rid, "glb", model_data)
     elif kind == "vox":
-        storage_client.store_set_model(rid, "vox", model_data)
+        file_storage.store_set_model(rid, "vox", model_data)
     else:
         raise Exception("Unknown model type " + kind)
 
@@ -69,7 +67,7 @@ def store_preview_image(rid: SetRID, image_base64: bytes):
     if image.width > 1000 or image.height > 1000 or image.width < 10 or image.height < 10:
         raise Exception("Image is too large, acceptable size range from 10x10 to 1000x1000")
 
-    storage_client.store_set_preview(rid, png_data)
+    file_storage.store_set_preview(rid, png_data)
 
 
 def get_set_owner(rid: SetRID):
@@ -79,7 +77,7 @@ def get_set_owner(rid: SetRID):
 async def store_set(rid: SetRID, setData: dict, image_base64: bytes):
     # If we already have data stored, it may have been from an earlier failed attempt.
     # Check that the NFT has no owner on-chain
-    if storage_client.has_set_metadata(rid):
+    if file_storage.has_set_metadata(rid):
         owner = get_set_owner(rid)
         if await owner != 0:
             raise Exception("NFT already exists")
@@ -87,7 +85,7 @@ async def store_set(rid: SetRID, setData: dict, image_base64: bytes):
     # Will overwrite, which is OK since we checked the owner.
     if len(image_base64) > 0:
         store_preview_image(rid, image_base64)
-    storage_client.store_set_metadata(rid, setData)
+    file_storage.store_set_metadata(rid, setData)
 
 
 def get_user_bids(chain_id: str, user_id: str):

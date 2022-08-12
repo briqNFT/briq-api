@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from briq_api.server import app
 from briq_api.set_identifier import SetRID
-from briq_api.storage import client as storage_client
+from briq_api.storage import multi_backend_client as storage_client
 from briq_api.storage.backends.file_storage import FileStorage
 
 from tests.conftest import BRIQ_DATA

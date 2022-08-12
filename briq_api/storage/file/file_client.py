@@ -1,41 +1,47 @@
-from typing import Union
 import logging
+from abc import ABC, abstractmethod
 from briq_api.set_identifier import SetRID
-from briq_api.storage.backend_interface import StorageBackend
+from ..multi_backend_client import StorageClient
 
 logger = logging.getLogger(__name__)
 
 SET_STORAGE_PREFIX = "sets/"
 
 
-class StorageClient:
+class FileStorageBackend(ABC):
+
+    @abstractmethod
+    def store_json(self, path: str, data: dict):
+        pass
+
+    @abstractmethod
+    def load_json(self, path: str) -> dict:
+        pass
+
+    @abstractmethod
+    def has_json(self, path: str) -> bool:
+        pass
+
+    @abstractmethod
+    def list_paths(self, path: str) -> list[str]:
+        pass
+
+    @abstractmethod
+    def store_bytes(self, path: str, data: bytes):
+        pass
+
+    @abstractmethod
+    def load_bytes(self, path: str) -> bytes:
+        pass
+
+
+class FileClient(StorageClient[FileStorageBackend]):
     """
     This is basically a bare-bones ORM.
     TODO: expand logically upon this structure.
     """
-    def __init__(self):
-        # Fallback backend.
-        self.backend: Union[None, StorageBackend] = None
-        # Backend for a specific chain. Higher priority than the fallback backend
-        self.backend_for = {}
 
-    def connect(self, backend: Union[None, StorageBackend]):
-        self.backend = backend
-
-    def connect_for_chain(self, chain_id: str, backend: Union[None, StorageBackend]):
-        self.backend_for[chain_id] = backend
-
-    def get_backend(self, chain_id: str) -> StorageBackend:
-        # note: this on purpose returns None if that was explicitly specified.
-        if chain_id in self.backend_for:
-            if not self.backend_for[chain_id]:
-                raise Exception(f"No available backend for {chain_id}")
-            return self.backend_for[chain_id]
-        if not self.backend:
-            raise Exception(f"No available backend for {chain_id}")
-        return self.backend
-
-    ## Set Metadata
+    # Set Metadata
     def set_metadata_path(self, rid: SetRID):
         return f"{SET_STORAGE_PREFIX}{rid.chain_id}/{rid.token_id}_metadata.json"
 
@@ -48,7 +54,7 @@ class StorageClient:
     def has_set_metadata(self, rid: SetRID) -> bool:
         return self.get_backend(rid.chain_id).has_json(self.set_metadata_path(rid))
 
-    ## Set Preview
+    # Set Preview
     def set_preview_path(self, rid: SetRID):
         return f"{SET_STORAGE_PREFIX}{rid.chain_id}/{rid.token_id}.png"
 
@@ -58,7 +64,7 @@ class StorageClient:
     def load_set_preview(self, rid: SetRID) -> bytes:
         return self.get_backend(rid.chain_id).load_bytes(self.set_preview_path(rid))
 
-    ## Set Model
+    # Set Model
     def set_model_path(self, rid: SetRID, kind: str):
         return f"{SET_STORAGE_PREFIX}{rid.chain_id}/{rid.token_id}.{kind}"
 
@@ -67,7 +73,3 @@ class StorageClient:
 
     def load_set_model(self, rid: SetRID, kind: str) -> bytes:
         return self.get_backend(rid.chain_id).load_bytes(self.set_model_path(rid, kind))
-
-
-# Main export, just import this. Note that no backend is configured by default.
-storage_client = StorageClient()

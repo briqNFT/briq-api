@@ -11,7 +11,7 @@ if __name__ != '__main__':
 
 from briq_api.legacy_api import legacy_chain_id
 
-from briq_api.storage.client import storage_client
+from briq_api.storage.multi_backend_client import storage_client
 from briq_api.storage.backends.legacy_cloud_storage import LegacyCloudStorage
 
 def delete_glb():

@@ -9,7 +9,7 @@ from starlette.responses import StreamingResponse
 
 from briq_api.mesh.briq import BriqData
 from briq_api.set_identifier import SetRID
-from briq_api.storage.backends.cloud_storage import NotFoundException
+from briq_api.storage.file.backends.cloud_storage import NotFoundException
 from . import api
 from .routes import boxes
 

@@ -7,12 +7,12 @@ from google.cloud import storage
 # Imported by other files
 from google.cloud.exceptions import NotFound as NotFoundException
 
-from ..backend_interface import StorageBackend
+from ..file_client import FileStorageBackend
 
 logger = logging.getLogger(__name__)
 
 
-class CloudStorage(StorageBackend):
+class CloudStorage(FileStorageBackend):
     def __init__(self, bucket) -> None:
         self.storage_client = storage.Client()
         self.bucket = self.storage_client.bucket(bucket)

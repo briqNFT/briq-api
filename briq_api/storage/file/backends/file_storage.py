@@ -3,12 +3,12 @@ import json
 import logging
 import time
 from pathlib import Path
-from ..backend_interface import StorageBackend
+from ..file_client import FileStorageBackend
 
 logger = logging.getLogger(__name__)
 
 
-class FileStorage(StorageBackend):
+class FileStorage(FileStorageBackend):
     """
     This storage backend is intended for local testing.
     It just stores data on the local computer filesystem.

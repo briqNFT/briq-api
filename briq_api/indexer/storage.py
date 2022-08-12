@@ -2,7 +2,7 @@ import logging
 
 from pymongo import MongoClient
 
-from briq_api.storage.client import StorageClient
+from briq_api.storage.multi_backend_client import StorageClient
 
 from .config import INDEXER_ID, MONGO_URL, MONGO_PASSWORD, MONGO_USERNAME
 
@@ -20,5 +20,5 @@ class MongoStorage:
             logger.info("Could not connect to a mongo DB instance for indexing data")
 
 
-mongo_storage = StorageClient()
+mongo_storage = StorageClient[MongoStorage]()
 mongo_storage.connect(MongoStorage())

@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch
 from briq_api.set_identifier import SetRID
 from briq_api.storage.backends.file_storage import FileStorage
 
-from briq_api.storage.client import StorageClient
+from briq_api.storage.multi_backend_client import StorageClient
 
 def test_storage_client(tmp_path):
     client = StorageClient()
