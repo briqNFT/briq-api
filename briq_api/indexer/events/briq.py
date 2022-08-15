@@ -1,3 +1,4 @@
+from base64 import decode
 import logging
 from apibara import Info
 from apibara.model import EventFilter, BlockHeader, StarkNetEvent
@@ -13,6 +14,25 @@ contract_prefix = "briq"
 transfer_filters = [
     EventFilter.from_event_name(name="TransferSingle", address=contract_address),
 ]
+
+
+transfer_single_old_abi = {
+    "name": "TransferSingle",
+    "type": "event",
+    "keys": [],
+    "outputs": [
+        {"name": "operator_", "type": "felt"},
+        {"name": "from_", "type": "felt"},
+        {"name": "to_", "type": "felt"},
+        {"name": "id_", "type": "felt"},
+        {"name": "value_", "type": "felt"},
+    ],
+}
+
+old_transfer_single_decoder = DataTransformer(
+    abi=transfer_single_old_abi,
+    identifier_manager=identifier_manager_from_abi([transfer_single_old_abi]),
+)
 
 transfer_single_abi = {
     "name": "TransferSingle",
@@ -49,7 +69,10 @@ transfer_single_decoder = DataTransformer(
 
 
 def prepare_transfer_for_storage(event: StarkNetEvent, block: BlockHeader):
-    transfer_data = decode_event(transfer_single_decoder, event.data)
+    try:
+        transfer_data = decode_event(transfer_single_decoder, event.data)
+    except:
+        transfer_data = decode_event(old_transfer_single_decoder, event.data)
     return {
         "from": encode_int_as_bytes(transfer_data.from_),
         "to": encode_int_as_bytes(transfer_data.to_),

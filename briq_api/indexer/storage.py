@@ -22,7 +22,7 @@ class MongoBackend:
 
 
 class MongoStorage(StorageClient[MongoBackend]):
-    def get_available_boxes(self, chain_id: str, box_token_id: int):
+    def get_available_boxes(self, chain_id: str, box_token_id: int) -> int:
         try:
             data = self.get_backend(chain_id).db["box_tokens"].find({
                 "token_id": box_token_id.to_bytes(32, "big"),
@@ -30,8 +30,34 @@ class MongoStorage(StorageClient[MongoBackend]):
                 "valid_to": None,
             })
             return int.from_bytes(data[0]['quantity'], "big")
-        except:
-            return 0
+        except Exception as ex:
+            logger.debug(ex, exc_info=ex)
+            return -1
+
+    def get_user_boxes(self, chain_id: str, user_id: str) -> list[str]:
+        try:
+            data = self.get_backend(chain_id).db["box_tokens"].find({
+                "owner": int(user_id, 16).to_bytes(32, "big"),
+                "valid_to": None,
+            })
+            list = []
+            for box in data:
+                list += [hex(int.from_bytes(box['token_id'], "big"))] * int.from_bytes(box['quantity'], "big")
+            return list
+        except Exception as ex:
+            logger.debug(ex, exc_info=ex)
+            return -1
+
+    def get_user_briqs(self, chain_id: str, user_id: str) -> list:
+        try:
+            data = self.get_backend(chain_id).db["briq_tokens"].find({
+                "owner": int(user_id, 16).to_bytes(32, "big"),
+                "valid_to": None,
+            })
+            return list(data)
+        except Exception as ex:
+            logger.debug(ex, exc_info=ex)
+            return -1
 
 
 mongo_storage = MongoStorage()

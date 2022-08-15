@@ -11,13 +11,14 @@ from briq_api.mesh.briq import BriqData
 from briq_api.set_identifier import SetRID
 from briq_api.storage.file.backends.cloud_storage import NotFoundException
 from . import api
-from .routes import boxes
+from .routes import boxes, user
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 router.include_router(boxes.router, tags=["box"])
+router.include_router(user.router, tags=["user"])
 
 @router.head("/metadata/{chain_id}/{token_id}")
 @router.head("/metadata/{chain_id}/{token_id}.json")
@@ -147,6 +148,7 @@ async def get_user_bids(chain_id: str, user_id: str):
         raise HTTPException(status_code=500, detail="Could not get user bids data")
 
     return output
+
 
 @router.head("/bids/box/{chain_id}/{theme_name}/{box_name}")
 @router.get("/bids/box/{chain_id}/{theme_name}/{box_name}")
