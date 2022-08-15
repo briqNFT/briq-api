@@ -5,3 +5,19 @@ env: test
 storage_bucket: briq-bucket-prod-1
 static_ip: lb-sltech-company-ipv4-3
 sites: ["api.test.sltech.company"]
+
+
+indexer:
+  name: dev-briq-indexer
+  image_store: mongo:latest
+  image_apibara: apibara/apibara:0.3.2-alpha1
+  indexer_id: "testnet-test-0"
+  network_name: 'starknet-goerli'
+  start_block: '285000'
+  resources:
+    cpu_store: "50m"
+    memory_store: "128Mi"
+    cpu_apibara: "50m"
+    memory_apibara: "128Mi"
+    cpu_runner: "50m"
+    memory_runner: "128Mi"

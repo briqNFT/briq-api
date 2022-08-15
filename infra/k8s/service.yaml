@@ -26,3 +26,19 @@ spec:
     port: 5000
     type: HTTP
     requestPath: /health
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: #@ data.values.indexer.name
+spec:
+  selector:
+    app: #@ data.values.indexer.name
+  ports:
+    - port: 27017
+      targetPort: mongo
+      name: mongo
+    - port: 7171
+      targetPort: apibara-backend
+      name: apibara-backend

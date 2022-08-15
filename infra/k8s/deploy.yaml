@@ -23,6 +23,14 @@ spec:
         env:
         - name: CLOUD_STORAGE_BUCKET
           value: #@ data.values.storage_bucket
+        - name: INDEXER_ID
+          value: #@ data.values.indexer.indexer_id
+        - name: MONGO_URL
+          value: #@ data.values.indexer.name + ".default.svc.cluster.local:27017"
+        - name: MONGO_USERNAME
+          value: apibara
+        - name: MONGO_PASSWORD
+          value: apibara
         #@ if data.values.env == 'test':
         - name: USE_MOCK_CHAIN
           value: "1"
@@ -32,7 +40,7 @@ spec:
         resources:
           requests:
             cpu: #@ data.values.resources.cpu
-            memory: #@ data.values.resources.memory 
+            memory: #@ data.values.resources.memory
         #@ #command: ["gunicorn"]
         #@ #args: ["briq_api.proxy_fapi:app", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:5000"]
         livenessProbe:
@@ -42,3 +50,128 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 10
           failureThreshold: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: #@ data.values.indexer.name
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: #@ data.values.indexer.name
+  template:
+    metadata:
+      labels:
+        app: #@ data.values.indexer.name
+    spec:
+      containers:
+      #@ # This should match configuration.toml -> TODO do this automagically
+      - name: "mongo"
+        image: #@ data.values.indexer.image_store
+        ports:
+        - containerPort: 27017
+          name: "mongo"
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: apibara
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          value: apibara
+        resources:
+          requests:
+            cpu: #@ data.values.indexer.resources.cpu_store
+            memory: #@ data.values.indexer.resources.memory_store 
+        #@ # livenessProbe:
+        #@ #   httpGet:
+        #@ #     path: /health
+        #@ #     port: 5000
+        #@ #   initialDelaySeconds: 5
+        #@ #   periodSeconds: 10
+        #@ #   failureThreshold: 2
+      - name: "apibara-backend"
+        image: #@ data.values.indexer.image_apibara
+        ports:
+        - containerPort: 7171
+          name: "apibara-backend"
+        env:
+        - name: RUST_LOG
+          value: 'apibara=info'
+        resources:
+          requests:
+            cpu: #@ data.values.indexer.resources.cpu_apibara
+            memory: #@ data.values.indexer.resources.memory_apibara
+        args: ["start", "--config", "/etc/apibara/configuration.toml"]
+        #@ # livenessProbe:
+        #@ #   httpGet:
+        #@ #     path: /health
+        #@ #     port: 5000
+        #@ #   initialDelaySeconds: 5
+        #@ #   periodSeconds: 10
+        #@ #   failureThreshold: 2
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/apibara/
+      volumes:
+        - name: config-volume
+          configMap:
+            name: #@ data.values.indexer.name + "-conf"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: #@ data.values.indexer.name + "-runner"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: #@ data.values.indexer.name + "-runner"
+  template:
+    metadata:
+      labels:
+        app: #@ data.values.indexer.name + "-runner"
+    spec:
+      containers:
+      - name: "indexer-runner"
+        image: #@ "europe-west3-docker.pkg.dev/healthy-saga-329513/sltech-briq/" + data.values.image_name + ":" + data.values.image_tag
+        env:
+        - name: INDEXER_ID
+          value: #@ data.values.indexer.indexer_id
+        - name: MONGO_URL
+          value: #@ data.values.indexer.name + ".default.svc.cluster.local:27017"
+        - name: MONGO_USERNAME
+          value: apibara
+        - name: MONGO_PASSWORD
+          value: apibara
+        - name: APIBARA_URL
+          value: #@ data.values.indexer.name + ".default.svc.cluster.local:7171"
+        - name: NETWORK_NAME
+          value: #@ data.values.indexer.network_name
+        - name: START_BLOCK
+          value: #@ data.values.indexer.start_block
+        resources:
+          requests:
+            cpu: #@ data.values.indexer.resources.cpu_runner
+            memory: #@ data.values.indexer.resources.memory_runner 
+        command: ["python3"]
+        args: ["-m", "briq_api.indexer.runner"]
+        #@ # livenessProbe:
+        #@ #   httpGet:
+        #@ #     path: /health
+        #@ #     port: 5000
+        #@ #   initialDelaySeconds: 5
+        #@ #   periodSeconds: 10
+        #@ #   failureThreshold: 2
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: #@ data.values.indexer.name + "-conf"
+  labels:
+    app: #@ data.values.indexer.name
+data:
+  configuration.toml: |
+    [admin.storage]
+    connection_string = "mongodb://apibara:apibara@localhost:27017"
+    [network.starknet-goerli]
+    type = "starknet"
+    provider_url = "https://starknet-goerli.apibara.com/"
