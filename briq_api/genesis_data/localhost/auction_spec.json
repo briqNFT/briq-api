@@ -3,13 +3,13 @@
         "quantity": 10,
         "auction_start": 134,
         "auction_duration": 86400,
-        "initial_price": 3
+        "initial_price": 0
     },
     "starknet_city_ongoing/spaceman": {
         "quantity": 50,
         "auction_start": 134,
         "auction_duration": 86400,
-        "initial_price": 2
+        "initial_price": "2000000000000"
     },
     "starknet_city_ongoing/starkgate": {
         "quantity": 1,

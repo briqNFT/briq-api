@@ -24,15 +24,17 @@ class MongoBackend:
 class MongoStorage(StorageClient[MongoBackend]):
     def get_available_boxes(self, chain_id: str, box_token_id: int) -> int:
         try:
-            data = self.get_backend(chain_id).db["box_tokens"].find({
+            data = self.get_backend(chain_id).db["box_tokens"].find_one({
                 "token_id": box_token_id.to_bytes(32, "big"),
                 "owner": int(get_network_metadata(chain_id).auction_address, 16).to_bytes(32, "big"),
                 "valid_to": None,
             })
-            return int.from_bytes(data[0]['quantity'], "big")
+            if data:
+                return int.from_bytes(data['quantity'], "big")
+            return 0
         except Exception as ex:
-            logger.debug(ex, exc_info=ex)
-            return -1
+            logger.error(ex, exc_info=ex)
+            raise
 
     def get_user_boxes(self, chain_id: str, user_id: str) -> list[str]:
         try:
@@ -45,8 +47,8 @@ class MongoStorage(StorageClient[MongoBackend]):
                 list += [hex(int.from_bytes(box['token_id'], "big"))] * int.from_bytes(box['quantity'], "big")
             return list
         except Exception as ex:
-            logger.debug(ex, exc_info=ex)
-            return -1
+            logger.error(ex, exc_info=ex)
+            raise
 
     def get_user_briqs(self, chain_id: str, user_id: str) -> list:
         try:
@@ -56,8 +58,8 @@ class MongoStorage(StorageClient[MongoBackend]):
             })
             return list(data)
         except Exception as ex:
-            logger.debug(ex, exc_info=ex)
-            return -1
+            logger.error(ex, exc_info=ex)
+            raise
 
 
 mongo_storage = MongoStorage()

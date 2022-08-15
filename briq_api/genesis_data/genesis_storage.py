@@ -37,5 +37,6 @@ class GenesisStorage(StorageClient[GenesisBackend]):
             "total_quantity": data['quantity'],
             "auction_start": data['auction_start'],
             "auction_duration": data['auction_duration'],
-            "initial_price": data['initial_price'],
+            # Pass as string since this is in WEI
+            "initial_price": str(data['initial_price']),
         }

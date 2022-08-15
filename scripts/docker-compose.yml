@@ -10,7 +10,7 @@ services:
     ports:
     - 27017:27017
     volumes:
-    - ./_docker/apibara_mongodb:/data/db
+    - ../temp/apibara_mongodb:/data/db
 
   apibara:
     image: apibara/apibara:0.3.2-alpha1
