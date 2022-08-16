@@ -27,7 +27,7 @@ class MongoStorage(StorageClient[MongoBackend]):
             data = self.get_backend(chain_id).db["box_tokens"].find_one({
                 "token_id": box_token_id.to_bytes(32, "big"),
                 "owner": int(get_network_metadata(chain_id).auction_address, 16).to_bytes(32, "big"),
-                "valid_to": None,
+                "_chain.valid_to": None,
             })
             if data:
                 return int.from_bytes(data['quantity'], "big")
@@ -40,7 +40,7 @@ class MongoStorage(StorageClient[MongoBackend]):
         try:
             data = self.get_backend(chain_id).db["box_tokens"].find({
                 "owner": int(user_id, 16).to_bytes(32, "big"),
-                "valid_to": None,
+                "_chain.valid_to": None,
             })
             list = []
             for box in data:
@@ -54,7 +54,7 @@ class MongoStorage(StorageClient[MongoBackend]):
         try:
             data = self.get_backend(chain_id).db["briq_tokens"].find({
                 "owner": int(user_id, 16).to_bytes(32, "big"),
-                "valid_to": None,
+                "_chain.valid_to": None,
             })
             return list(data)
         except Exception as ex:

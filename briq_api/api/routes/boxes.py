@@ -11,6 +11,16 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+@router.head("/{chain_id}/{theme_id}/{box_id}/saledata")
+@router.get("/{chain_id}/{theme_id}/{box_id}/saledata")
+async def get_box_saledata(chain_id: str, theme_id: str, box_id: str):
+    try:
+        return boxes.get_box_saledata(rid=BoxRID(chain_id, theme_id, box_id))
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="Could not get sale data")
+
+
 
 @router.head("/box/data/{chain_id}/{theme_id}/{box_id}")
 @router.head("/box/data/{chain_id}/{theme_id}/{box_id}.json")
@@ -29,20 +39,7 @@ async def box_data(chain_id: str, theme_id: str, box_id: str):
         # TODO: bump cache for prod
         "Cache-Control": f"public, max-age={2 * 60}"
     })
-
-@router.head("/{chain_id}/{theme_id}/{box_id}/saledata")
-@router.get("/{chain_id}/{theme_id}/{box_id}/saledata")
-async def get_box_saledata(chain_id: str, theme_id: str, box_id: str):
-    try:
-        output = boxes.get_box_saledata(rid=BoxRID(chain_id, theme_id, box_id))
-    except Exception as e:
-        logger.debug(e, exc_info=e)
-        raise HTTPException(status_code=500, detail="Could not get sale data")
-
-    return JSONResponse(output, headers={
-        "Cache-Control": f"public, max-age={2}"
-    })
-
+        
 
 @router.head("/box/texture/{chain_id}/{theme_id}/{box_id}")
 @router.head("/box/texture/{chain_id}/{theme_id}/{box_id}.png")
@@ -122,7 +119,6 @@ async def list_boxes_of_theme(chain_id: str, theme_id: str):
     return JSONResponse(output, headers={
         "Cache-Control": f"public, max-age={60}"
     })
-
 
 
 @router.head("/{chain_id}/{theme_id}/data")

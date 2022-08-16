@@ -9,6 +9,7 @@ from briq_api.chain.contracts import NETWORKS
 from briq_api.set_identifier import SetRID
 from briq_api.stores import genesis_storage, file_storage
 from briq_api.indexer.storage import mongo_storage
+from briq_api.stores import genesis_storage
 
 from briq_api.mesh.briq import BriqData
 
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 def get_user_boxes(chain_id: str, user_id: str):
     boxes = mongo_storage.get_user_boxes(chain_id, user_id)
     return {
-        "box_token_ids": boxes
+        "box_token_ids": [genesis_storage.get_box_id(chain_id, box) for box in boxes]
     }
 
 

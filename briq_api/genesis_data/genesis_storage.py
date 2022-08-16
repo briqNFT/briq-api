@@ -28,6 +28,13 @@ class GenesisStorage(StorageClient[GenesisBackend]):
     def get_box_token_id(self, chain_id: str, box_id: str):
         return self.get_backend(chain_id).get_box_data()[box_id]
 
+    def get_box_id(self, chain_id: str, box_token_id: str):
+        box_data = self.get_backend(chain_id).get_box_data()
+        try:
+            return [box_name for box_name in box_data if box_data[box_name] == int(box_token_id, 16)][0]
+        except:
+            return None
+
     def get_auction_id(self, chain_id: str, box_id: str):
         return list(self.get_backend(chain_id).get_auction_data().keys()).index(box_id)
 

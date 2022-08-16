@@ -97,7 +97,9 @@ def get_user_bids(chain_id: str, user_id: str):
     bids = [
         {
             "box_token_id": hex(int.from_bytes(item['box_token_id'], "big")),
+            "box_id": genesis_storage.get_box_id(chain_id, hex(int.from_bytes(item['box_token_id'], "big"))),
             "bid_amount": str(int.from_bytes(item['bid_amount'], "big")),
+            "bid_id": hex(int.from_bytes(item['_tx_hash'], "big")),
             "tx_hash": hex(int.from_bytes(item['_tx_hash'], "big")),
             "block": item['_block'],
             "timestamp": item['_timestamp'],
@@ -114,6 +116,7 @@ def get_bids_for_box(chain_id: str, box_id: str):
         {
             "bidder": hex(int.from_bytes(item['bidder'], "big")),
             "bid_amount": str(int.from_bytes(item['bid_amount'], "big")),
+            "bid_id": hex(int.from_bytes(item['_tx_hash'], "big")),
             "tx_hash": hex(int.from_bytes(item['_tx_hash'], "big")),
             "block": item['_block'],
             "timestamp": item['_timestamp'],
