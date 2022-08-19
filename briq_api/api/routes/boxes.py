@@ -21,6 +21,16 @@ async def get_box_saledata(chain_id: str, theme_id: str, box_id: str):
         raise HTTPException(status_code=500, detail="Could not get sale data")
 
 
+@router.head("/box/get_transfer/{chain_id}/{theme_id}/{box_id}/{tx_hash}")
+@router.get("/box/get_transfer/{chain_id}/{theme_id}/{box_id}/{tx_hash}")
+async def get_box_transfer(chain_id: str, theme_id: str, box_id: str, tx_hash: str):
+    try:
+        return boxes.get_box_transfer(rid=BoxRID(chain_id, theme_id, box_id), tx_hash=tx_hash)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="Could not get transfer information")
+
+
 
 @router.head("/box/data/{chain_id}/{theme_id}/{box_id}")
 @router.head("/box/data/{chain_id}/{theme_id}/{box_id}.json")

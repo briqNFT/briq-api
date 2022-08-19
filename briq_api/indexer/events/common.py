@@ -1,4 +1,4 @@
-from starknet_py.contract import DataTransformer
+from starknet_py.contract import FunctionCallSerializer
 from typing import List, NamedTuple
 
 uint256_abi = {
@@ -12,7 +12,7 @@ uint256_abi = {
 }
 
 
-def decode_event(decoder: DataTransformer, data: List[bytes]) -> NamedTuple:
+def decode_event(decoder: FunctionCallSerializer, data: List[bytes]) -> NamedTuple:
     data = [int.from_bytes(b, "big") for b in data]
     return decoder.to_python(data)
 

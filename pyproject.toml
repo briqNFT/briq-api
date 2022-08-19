@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "briq-api"
+version = "0.1.0"
+description = "Backend server for the briq ecosystem."
+authors = ["briq <founders@sltech.company>"]
+license = "MIT"
+homepage = "https://briq.construction"
+repository = "https://github.com/briqNFT/briq-api"
+
+[tool.poetry.dependencies]
+python = "~3.9"
+pytest = "^6.1.0"
+pytest-asyncio = "^0.18"
+gunicorn = "^20.1"
+google-cloud-storage = "^2.3"
+fastapi = "^0.77"
+Pillow = "^9.0"
+pygltflib = "^1.15"
+apibara = "^0.4.1"
+numpy-vox-io = {git = "https://github.com/briqNFT/numpy-vox-io", rev = "master"}
+"starknet.py" = "^0.4a0"
+# uvicorn 0.17 requires websockets 10, but we have a conflict with some other dependency,
+# and that backtracks forever.
+uvicorn = {version = "0.15", extras = ["standard"]}
+
+[tool.poetry.dev-dependencies]
+flake8 = "^4.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

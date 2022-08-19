@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 import logging
 
-from briq_api.chain.contracts import NETWORKS
-
 from briq_api.storage.multi_backend_client import StorageClient
 from briq_api.stores import genesis_storage, file_storage
 from briq_api.indexer.storage import mongo_storage
@@ -78,6 +76,11 @@ def get_box_saledata(rid: BoxRID):
     import time
     auction_data['auction_start'] = time.time() - 60 if 'ongoing' in rid.theme_id else time.time() + 24*60*60*10
     return auction_data
+
+
+def get_box_transfer(rid: BoxRID, tx_hash: str):
+    box_token_id = genesis_storage.get_box_token_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
+    return mongo_storage.get_transfer(rid.chain_id, 'box', tx_hash, box_token_id)
 
 
 def list_themes(chain_id: str):

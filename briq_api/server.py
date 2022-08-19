@@ -3,7 +3,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 
-from briq_api.legacy_api import on_startup, app as legacy_api_router
 from .stores import setup_stores
 from .api.router import router as api_router
 from .mock_chain.router import router as mock_chain_router
@@ -24,8 +23,6 @@ app.add_middleware(
 # Include the API
 app.include_router(api_router, prefix="/v1")
 
-app.include_router(legacy_api_router)
-
 if os.getenv("USE_MOCK_CHAIN"):
     app.include_router(mock_chain_router, prefix='/mock_chain')
 
@@ -38,4 +35,3 @@ def health():
 @app.on_event("startup")
 def startup_event():
     setup_stores(os.getenv("LOCAL"), os.getenv("USE_MOCK_CHAIN"))
-    on_startup()

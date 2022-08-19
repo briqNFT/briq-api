@@ -36,15 +36,15 @@ class MongoStorage(StorageClient[MongoBackend]):
             logger.error(ex, exc_info=ex)
             raise
 
-    def get_user_boxes(self, chain_id: str, user_id: str) -> list[str]:
+    def get_user_nfts(self, chain_id: str, user_id: str, collection: str) -> list[str]:
         try:
-            data = self.get_backend(chain_id).db["box_tokens"].find({
+            data = self.get_backend(chain_id).db[collection + "_tokens"].find({
                 "owner": int(user_id, 16).to_bytes(32, "big"),
                 "_chain.valid_to": None,
             })
             list = []
-            for box in data:
-                list += [hex(int.from_bytes(box['token_id'], "big"))] * int.from_bytes(box['quantity'], "big")
+            for nft in data:
+                list += [hex(int.from_bytes(nft['token_id'], "big"))] * int.from_bytes(nft['quantity'], "big")
             return list
         except Exception as ex:
             logger.error(ex, exc_info=ex)
@@ -60,6 +60,24 @@ class MongoStorage(StorageClient[MongoBackend]):
         except Exception as ex:
             logger.error(ex, exc_info=ex)
             raise
+
+    def get_transfer(self, chain_id: str, collection: str, tx_hash: str, box_token_id: int):
+        try:
+            transfer = self.get_backend(chain_id).db[f'{collection}_transfers'].find_one({
+                "token_id": box_token_id.to_bytes(32, "big"),
+                "_tx_hash": int(tx_hash, 16).to_bytes(32, "big"),
+            })
+            if transfer is None:
+                return None
+            return {
+                "from": hex(int.from_bytes(transfer["from"], 'big')),
+                "to": hex(int.from_bytes(transfer["to"], 'big')),
+                "quantity": str(int.from_bytes(transfer["value"], 'big')),
+                "timestamp": str(transfer['_timestamp'])
+            }
+        except Exception as ex:
+            logger.error(ex, exc_info=ex)
+        return None
 
 
 mongo_storage = MongoStorage()

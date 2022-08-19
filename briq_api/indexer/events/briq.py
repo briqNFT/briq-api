@@ -2,7 +2,7 @@ from base64 import decode
 import logging
 from apibara import Info
 from apibara.model import EventFilter, BlockHeader, StarkNetEvent
-from starknet_py.contract import DataTransformer, identifier_manager_from_abi
+from starknet_py.contract import FunctionCallSerializer, identifier_manager_from_abi
 
 from ...chain.networks import TESTNET
 from .common import uint256_abi, decode_event, encode_int_as_bytes
@@ -29,7 +29,7 @@ transfer_single_old_abi = {
     ],
 }
 
-old_transfer_single_decoder = DataTransformer(
+old_transfer_single_decoder = FunctionCallSerializer(
     abi=transfer_single_old_abi,
     identifier_manager=identifier_manager_from_abi([transfer_single_old_abi]),
 )
@@ -62,7 +62,7 @@ transfer_batch_abi = {
     ],
 }
 
-transfer_single_decoder = DataTransformer(
+transfer_single_decoder = FunctionCallSerializer(
     abi=transfer_single_abi,
     identifier_manager=identifier_manager_from_abi([transfer_single_abi, uint256_abi]),
 )

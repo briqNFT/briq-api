@@ -1,15 +1,23 @@
 # Briq API
 
-Python backend for the briq DAPP.
+Python backend for the briq Dapp.
 
 ## Setup
 
-1. Create a python VirtualEnv
-2. `pip3 install -r requirements.txt`
-3. `pip3 install -e .`
+1. Install poetry (https://python-poetry.org/docs/#installation)
+2. `poetry update`
+
+You may need to prefix with ```CFLAGS=-I`brew --prefix gmp`/include LDFLAGS=-L`brew --prefix gmp`/lib``` if you're on an M1 mac because GMP is apparently no longer provided by macOS. This requires you to install gmp via homebrew first: `brew install gmp`.
 
 #### Running tests
-`pytest`
+`poetry run pytest`
+
+
+#### Running the server locally
+
+`scripts/run-server.sh` will start the server in debug configuration.
+You will also need to run the docker-compose for the mongoDB backend fo apibara: `cd scripts && docker-compose up`.
+Finally, the indexer service can be run using `scripts/indexer.sh`.
 
 ## API Documentation
 

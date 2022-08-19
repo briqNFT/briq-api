@@ -4,8 +4,6 @@ import base64
 
 from PIL import Image
 
-from briq_api.chain.contracts import NETWORKS
-
 from briq_api.set_identifier import SetRID
 from briq_api.stores import genesis_storage, file_storage
 from briq_api.indexer.storage import mongo_storage
@@ -16,10 +14,16 @@ from briq_api.mesh.briq import BriqData
 logger = logging.getLogger(__name__)
 
 
-def get_user_boxes(chain_id: str, user_id: str):
-    boxes = mongo_storage.get_user_boxes(chain_id, user_id)
+def get_user_items(chain_id: str, user_id: str):
+    boxes = mongo_storage.get_user_nfts(chain_id, user_id, 'box')
+    booklets = mongo_storage.get_user_nfts(chain_id, user_id, 'booklet')
+    sets = mongo_storage.get_user_nfts(chain_id, user_id, 'set')
     return {
-        "box_token_ids": [genesis_storage.get_box_id(chain_id, box) for box in boxes]
+        "box_token_ids": [genesis_storage.get_box_id(chain_id, box) for box in boxes],
+        # Booklets have the same id as the box
+        "booklets": [genesis_storage.get_box_id(chain_id, booklet) for booklet in booklets],
+
+        "sets": sets,
     }
 
 

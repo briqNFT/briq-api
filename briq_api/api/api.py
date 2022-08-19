@@ -4,8 +4,6 @@ import base64
 
 from PIL import Image
 
-from briq_api.chain.contracts import NETWORKS
-
 from briq_api.set_identifier import SetRID
 from briq_api.stores import genesis_storage, file_storage
 from briq_api.indexer.storage import mongo_storage

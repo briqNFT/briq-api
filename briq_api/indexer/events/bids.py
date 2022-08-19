@@ -2,7 +2,7 @@ import logging
 from pydoc import doc
 from apibara import Info
 from apibara.model import EventFilter, BlockHeader, StarkNetEvent
-from starknet_py.contract import DataTransformer, identifier_manager_from_abi
+from starknet_py.contract import FunctionCallSerializer, identifier_manager_from_abi
 
 from ...chain.networks import TESTNET
 from .common import uint256_abi, decode_event, encode_int_as_bytes
@@ -22,7 +22,7 @@ bid_abi = {
     ],
 }
 
-bid_decoder = DataTransformer(
+bid_decoder = FunctionCallSerializer(
     abi=bid_abi,
     identifier_manager=identifier_manager_from_abi([bid_abi, uint256_abi]),
 )

@@ -161,3 +161,4 @@ async def get_bids_for_box(chain_id: str, theme_name: str, box_name: str):
         raise HTTPException(status_code=500, detail="Could not get box bids data")
 
     return output
+
