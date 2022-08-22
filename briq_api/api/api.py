@@ -68,19 +68,12 @@ def store_preview_image(rid: SetRID, image_base64: bytes):
     file_storage.store_set_preview(rid, png_data)
 
 
-def get_set_owner(rid: SetRID):
-    return NETWORKS[rid.chain_id]["set_contract"].functions["ownerOf_"].call(int(rid.token_id, 16))
-
-
 async def store_set(rid: SetRID, setData: dict, image_base64: bytes):
-    # If we already have data stored, it may have been from an earlier failed attempt.
-    # Check that the NFT has no owner on-chain
+    # Fail silently if we already have some metadata, we'll let the indexer handle things.
+    # This can happen if a first mint fails for some reason but the 'hint' went through,
+    # or if a set happens to have the same token ID as an earlier one.
     if file_storage.has_set_metadata(rid):
-        owner = get_set_owner(rid)
-        if await owner != 0:
-            raise Exception("NFT already exists")
-
-    # Will overwrite, which is OK since we checked the owner.
+        return
     if len(image_base64) > 0:
         store_preview_image(rid, image_base64)
     file_storage.store_set_metadata(rid, setData)

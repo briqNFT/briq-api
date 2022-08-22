@@ -11,6 +11,7 @@ from .events.bids import process_bids, bid_filter
 from .events.box import process_transfers as process_box, transfer_filters as box_filters
 from .events.booklet import process_transfers as process_booklet, transfer_filters as booklet_filters
 from .events.briq import process_transfers as process_briq, transfer_filters as briq_filters
+from .events.set import process_transfers as process_set, transfer_filters as set_filters
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +27,12 @@ async def handle_events(info: Info, block_events: NewEvents):
     boxes = process_box(info, block_events.block, [event for event in block_events.events])
     booklets = process_booklet(info, block_events.block, [event for event in block_events.events])
     briqs = process_briq(info, block_events.block, [event for event in block_events.events])
+    sets = process_set(info, block_events.block, [event for event in block_events.events])
     await bids
     await boxes
     await booklets
     await briqs
+    await sets
 
 
 async def handle_block(info: Info, block: NewBlock):
@@ -75,7 +78,7 @@ async def main(args):
     # For now, this also helps the SDK map between human-readable
     # event names and StarkNet events.
     runner.create_if_not_exists(
-        filters=bid_filter + box_filters + booklet_filters + briq_filters,
+        filters=bid_filter + box_filters + booklet_filters + briq_filters + set_filters,
         index_from_block=START_BLOCK,
     )
 

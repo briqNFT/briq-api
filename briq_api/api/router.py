@@ -96,8 +96,6 @@ class StoreSetRequest(BaseModel):
     data: dict
     image_base64: bytes
     owner: str
-    message_hash: str
-    signature: tuple[int, int]
 
 
 @router.post("/store_set")

@@ -10,6 +10,7 @@ class NetworkMetadata:
     box_address: str = ''
     briq_address: str = ''
     booklet_address: str = ''
+    set_address: str = ''
     erc20_address: str = ''
 
 
@@ -29,6 +30,7 @@ TESTNET = NetworkMetadata(
     briq_address="0x009c80aaf74330a0b56dddefc4e6bab33d03415e67a0092cc048b0d6fb2cc3dd",
     booklet_address="0x048580b27b4cb0ac15069ba2bf9a8586cb072f65dbcd4659a220a747f57f89e6",
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+    set_address="0x032ded561a3c59d063bf16a1de833ac2826370ad1662baba548c08fa29eba850"
 )
 
 TESTNET_LEGACY = NetworkMetadata(id="starknet-testnet-legacy")
