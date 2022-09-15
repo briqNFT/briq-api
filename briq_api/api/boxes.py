@@ -38,13 +38,16 @@ class BoxStorage:
         return self.storage.get_backend(rid.chain_id).load_bytes(self.step_image_path(rid, step))
 
     def load_cover_item(self, rid: BoxRID):
-        return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/cover_item.png")
+        return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/cover.png")
+
+    def load_cover_booklet(self, rid: BoxRID):
+        return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/booklet_cover.png")
 
     def load_cover_box(self, rid: BoxRID):
-        return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/cover_box.png")
+        return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/box_cover.png")
 
     def load_box_texture(self, rid: BoxRID):
-        return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/box_texture.png")
+        return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/box_tex.png")
 
     # Themes
 
@@ -102,6 +105,10 @@ def get_box_step_image(rid: BoxRID, step: int):
 
 def get_box_cover_item(rid: BoxRID):
     return box_storage.load_cover_item(rid)
+
+
+def get_box_cover_booklet(rid: BoxRID):
+    return box_storage.load_cover_booklet(rid)
 
 
 def get_box_cover_box(rid: BoxRID):

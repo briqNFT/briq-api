@@ -86,6 +86,42 @@ async def box_cover_item(chain_id: str, theme_id: str, box_id: str):
     })
 
 
+@router.head("/box/cover_box/{chain_id}/{theme_id}/{box_id}")
+@router.head("/box/cover_box/{chain_id}/{theme_id}/{box_id}.png")
+@router.get("/box/cover_box/{chain_id}/{theme_id}/{box_id}")
+@router.get("/box/cover_box/{chain_id}/{theme_id}/{box_id}.png")
+async def box_cover_box(chain_id: str, theme_id: str, box_id: str):
+    rid = BoxRID(chain_id, theme_id, box_id)
+
+    try:
+        image = boxes.get_box_cover_box(rid)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="File not found")
+
+    return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
+        "Cache-Control": f"public, max-age={3600 * 24}"
+    })
+
+
+@router.head("/box/cover_booklet/{chain_id}/{theme_id}/{box_id}")
+@router.head("/box/cover_booklet/{chain_id}/{theme_id}/{box_id}.png")
+@router.get("/box/cover_booklet/{chain_id}/{theme_id}/{box_id}")
+@router.get("/box/cover_booklet/{chain_id}/{theme_id}/{box_id}.png")
+async def box_cover_booklet(chain_id: str, theme_id: str, box_id: str):
+    rid = BoxRID(chain_id, theme_id, box_id)
+
+    try:
+        image = boxes.get_box_cover_booklet(rid)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="File not found")
+
+    return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
+        "Cache-Control": f"public, max-age={3600 * 24}"
+    })
+
+
 @router.head("/box/step_image/{chain_id}/{theme_id}/{box_id}/{step}")
 @router.head("/box/step_image/{chain_id}/{theme_id}/{box_id}/{step}.png")
 @router.get("/box/step_image/{chain_id}/{theme_id}/{box_id}/{step}")
