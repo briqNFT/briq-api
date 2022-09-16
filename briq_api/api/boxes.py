@@ -96,7 +96,11 @@ def list_boxes_of_theme(chain_id: str, theme_id: str):
 
 
 def get_theme_data(chain_id: str, theme_id: str):
-    return box_storage.get_theme_data(chain_id, theme_id)
+    # temp hack
+    import time
+    data = box_storage.get_theme_data(chain_id, theme_id)
+    data['sale_start'] = time.time() - 60 if 'ongoing' in theme_id else time.time() + 24*60*60*10
+    return data
 
 
 def get_box_step_image(rid: BoxRID, step: int):
