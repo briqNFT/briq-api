@@ -1,4 +1,3 @@
-from base64 import decode
 import logging
 from apibara import Info
 from apibara.model import EventFilter, BlockHeader, StarkNetEvent
@@ -78,7 +77,7 @@ def prepare_transfer_for_storage(event: StarkNetEvent, block: BlockHeader):
         "to": encode_int_as_bytes(transfer_data.to_),
         "token_id": encode_int_as_bytes(transfer_data.id_),
         "value": encode_int_as_bytes(transfer_data.value_),
-        "_tx_hash": event.transaction_hash,
+        "_tx_hash": event.transaction_hash or f'{event.name}-{event.log_index}',
         "_timestamp": block.timestamp,
         "_block": block.number,
     }

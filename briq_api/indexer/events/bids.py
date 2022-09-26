@@ -1,5 +1,4 @@
 import logging
-from pydoc import doc
 from apibara import Info
 from apibara.model import EventFilter, BlockHeader, StarkNetEvent
 from starknet_py.contract import FunctionCallSerializer, identifier_manager_from_abi
@@ -30,13 +29,13 @@ bid_decoder = FunctionCallSerializer(
 bid_filter = [EventFilter.from_event_name(name="Bid", address=auction_address)]
 
 
-def prepare_bid_for_storage(bid: StarkNetEvent, block: BlockHeader):
-    bid_data = decode_event(bid_decoder, bid.data)
+def prepare_bid_for_storage(event: StarkNetEvent, block: BlockHeader):
+    bid_data = decode_event(bid_decoder, event.data)
     return {
         "bidder": encode_int_as_bytes(bid_data.bidder),
         "box_token_id": encode_int_as_bytes(bid_data.box_token_id),
         "bid_amount": encode_int_as_bytes(bid_data.bid_amount),
-        "_tx_hash": bid.transaction_hash,
+        "_tx_hash": event.transaction_hash or f'{event.name}-{event.log_index}',
         "_timestamp": block.timestamp,
         "_block": block.number,
     }

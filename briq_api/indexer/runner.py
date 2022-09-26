@@ -3,8 +3,8 @@ import logging
 import sys
 from argparse import ArgumentParser
 
-from apibara import Client, IndexerRunner, Info, NewBlock, NewEvents
-from apibara.indexer.runner import IndexerRunnerConfiguration
+from apibara import IndexerRunner, Info, NewBlock, NewEvents
+from apibara.indexer import IndexerRunnerConfiguration
 
 from .config import INDEXER_ID, APIBARA_URL, MONGO_URL, MONGO_USERNAME, MONGO_PASSWORD, NETWORK_NAME, START_BLOCK
 from .events.bids import process_bids, bid_filter
@@ -53,19 +53,13 @@ async def main(args):
     parser.add_argument("--reset", action="store_true", default=False)
     args = parser.parse_args()
 
-    if args.reset:
-        async with Client.connect() as client:
-            existing = await client.indexer_client().get_indexer(INDEXER_ID)
-            if existing:
-                await client.indexer_client().delete_indexer(INDEXER_ID)
-                logging.warn("Indexer deleted. Starting from beginning.")
-
     runner = IndexerRunner(
         config=IndexerRunnerConfiguration(
             apibara_url=APIBARA_URL,
             storage_url=f"mongodb://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_URL}"
         ),
-        network_name=NETWORK_NAME,
+        reset_state=args.reset,
+        #network_name=NETWORK_NAME,
         indexer_id=INDEXER_ID,
         new_events_handler=handle_events,
     )
