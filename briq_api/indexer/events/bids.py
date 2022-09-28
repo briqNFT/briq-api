@@ -35,7 +35,7 @@ def prepare_bid_for_storage(event: StarkNetEvent, block: BlockHeader):
         "bidder": encode_int_as_bytes(bid_data.bidder),
         "box_token_id": encode_int_as_bytes(bid_data.box_token_id),
         "bid_amount": encode_int_as_bytes(bid_data.bid_amount),
-        "_tx_hash": event.transaction_hash or f'{event.name}-{event.log_index}',
+        "_tx_hash": event.transaction_hash,
         "_timestamp": block.timestamp,
         "_block": block.number,
     }

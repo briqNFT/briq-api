@@ -31,7 +31,6 @@ async def get_box_transfer(chain_id: str, theme_id: str, box_id: str, tx_hash: s
         raise HTTPException(status_code=500, detail="Could not get transfer information")
 
 
-
 @router.head("/box/data/{chain_id}/{theme_id}/{box_id}")
 @router.head("/box/data/{chain_id}/{theme_id}/{box_id}.json")
 @router.get("/box/data/{chain_id}/{theme_id}/{box_id}")
@@ -49,7 +48,7 @@ async def box_data(chain_id: str, theme_id: str, box_id: str):
         # TODO: bump cache for prod
         "Cache-Control": f"public, max-age={2 * 60}"
     })
-        
+
 
 @router.head("/box/texture/{chain_id}/{theme_id}/{box_id}")
 @router.head("/box/texture/{chain_id}/{theme_id}/{box_id}.png")
