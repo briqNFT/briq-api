@@ -10,9 +10,9 @@ sites: ["api.test.sltech.company"]
 indexer:
   name: dev-briq-indexer
   image_store: mongo:latest
-  indexer_id: "testnet-test-1"
+  indexer_id: "testnet-test-k8s-1"
   network_name: 'starknet-goerli'
-  start_block: '285000'
+  start_block: '352600'
   resources:
     cpu_store: "50m"
     memory_store: "128Mi"
