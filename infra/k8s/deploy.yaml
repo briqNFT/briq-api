@@ -88,33 +88,6 @@ spec:
         #@ #   initialDelaySeconds: 5
         #@ #   periodSeconds: 10
         #@ #   failureThreshold: 2
-      - name: "apibara-backend"
-        image: #@ data.values.indexer.image_apibara
-        ports:
-        - containerPort: 7171
-          name: "apibara-backend"
-        env:
-        - name: RUST_LOG
-          value: 'apibara=info'
-        resources:
-          requests:
-            cpu: #@ data.values.indexer.resources.cpu_apibara
-            memory: #@ data.values.indexer.resources.memory_apibara
-        args: ["start", "--config", "/etc/apibara/configuration.toml"]
-        #@ # livenessProbe:
-        #@ #   httpGet:
-        #@ #     path: /health
-        #@ #     port: 5000
-        #@ #   initialDelaySeconds: 5
-        #@ #   periodSeconds: 10
-        #@ #   failureThreshold: 2
-        volumeMounts:
-        - name: config-volume
-          mountPath: /etc/apibara/
-      volumes:
-        - name: config-volume
-          configMap:
-            name: #@ data.values.indexer.name + "-conf"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -142,8 +115,6 @@ spec:
           value: apibara
         - name: MONGO_PASSWORD
           value: apibara
-        - name: APIBARA_URL
-          value: #@ data.values.indexer.name + ".default.svc.cluster.local:7171"
         - name: NETWORK_NAME
           value: #@ data.values.indexer.network_name
         - name: START_BLOCK
@@ -161,17 +132,3 @@ spec:
         #@ #   initialDelaySeconds: 5
         #@ #   periodSeconds: 10
         #@ #   failureThreshold: 2
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: #@ data.values.indexer.name + "-conf"
-  labels:
-    app: #@ data.values.indexer.name
-data:
-  configuration.toml: |
-    [admin.storage]
-    connection_string = "mongodb://apibara:apibara@localhost:27017"
-    [network.starknet-goerli]
-    type = "starknet"
-    provider_url = "https://starknet-goerli.apibara.com/"
