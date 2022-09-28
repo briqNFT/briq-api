@@ -12,6 +12,7 @@ class NetworkMetadata:
     booklet_address: str = ''
     set_address: str = ''
     erc20_address: str = ''
+    attributes_registry_address: str = ''
 
 
 DEVNET = NetworkMetadata(
@@ -25,12 +26,13 @@ DEVNET = NetworkMetadata(
 
 TESTNET = NetworkMetadata(
     id="starknet-testnet",
-    auction_address="0x04a97166c6718f85162f05270274ccede8e20e6aaa47a389f478d9df71ee6a95",
-    box_address="0x07f4c8f5d2e70955bf9b4275abb48781049839dc0a45a3f7d0761c61d61811cc",
-    briq_address="0x009c80aaf74330a0b56dddefc4e6bab33d03415e67a0092cc048b0d6fb2cc3dd",
-    booklet_address="0x048580b27b4cb0ac15069ba2bf9a8586cb072f65dbcd4659a220a747f57f89e6",
+    auction_address="0x0344c97a38c9b5f632e0f1de386402ff0e3ebcf6878a65f588aa4375f9750c00",
+    box_address="0x041b4b40491788813ba1c830c8e0e7e97b10a604d9dce25259f50352e7ad8b09",
+    briq_address="0x0206a3d41d18e634f1492621dc42144c7dce52530bc90150fe8bcddef7011b4d",
+    booklet_address="0x010c5fc9e7ebafe1bb260aa28f23ab93295b59ca5e1e7875c35338968c5a4233",
+    attributes_registry_address="0x0389f0a5146eef8d67ee90998eb7b0d51744074a5b7526a9a6c477185c5f93b6",
+    set_address="0x074fe9c7050d647cb80b5a993c6f532c0150734a69ebe1973c75916a6d808e54",
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-    set_address="0x032ded561a3c59d063bf16a1de833ac2826370ad1662baba548c08fa29eba850"
 )
 
 TESTNET_LEGACY = NetworkMetadata(id="starknet-testnet-legacy")
