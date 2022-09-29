@@ -59,7 +59,6 @@ async def main(args):
             storage_url=f"mongodb://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_URL}"
         ),
         reset_state=args.reset,
-        #network_name=NETWORK_NAME,
         indexer_id=INDEXER_ID,
         new_events_handler=handle_events,
     )
@@ -75,6 +74,8 @@ async def main(args):
         filters=bid_filter + box_filters + booklet_filters + briq_filters + set_filters,
         index_from_block=START_BLOCK,
     )
+
+    logger.info("Starting indexer from block %(block)s", {'block': START_BLOCK})
 
     await runner.run()
 

@@ -119,6 +119,8 @@ spec:
           value: #@ data.values.indexer.network_name
         - name: START_BLOCK
           value: #@ data.values.indexer.start_block
+        - name: LOGLEVEL
+          value: "DEBUG"
         resources:
           requests:
             cpu: #@ data.values.indexer.resources.cpu_runner
