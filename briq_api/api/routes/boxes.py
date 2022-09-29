@@ -50,6 +50,25 @@ async def box_data(chain_id: str, theme_id: str, box_id: str):
     })
 
 
+@router.head("/booklet/data/{chain_id}/{theme_id}/{booklet_id}")
+@router.head("/booklet/data/{chain_id}/{theme_id}/{booklet_id}.json")
+@router.get("/booklet/data/{chain_id}/{theme_id}/{booklet_id}")
+@router.get("/booklet/data/{chain_id}/{theme_id}/{booklet_id}.json")
+async def booklet_data(chain_id: str, theme_id: str, booklet_id: str):
+    rid = BoxRID(chain_id, theme_id, booklet_id)
+
+    try:
+        output = boxes.get_booklet_metadata(rid)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="File not found")
+
+    return JSONResponse(output, headers={
+        # TODO: bump cache for prod
+        "Cache-Control": f"public, max-age={2 * 60}"
+    })
+
+
 @router.head("/box/texture/{chain_id}/{theme_id}/{box_id}")
 @router.head("/box/texture/{chain_id}/{theme_id}/{box_id}.png")
 @router.get("/box/texture/{chain_id}/{theme_id}/{box_id}")

@@ -71,6 +71,12 @@ def get_box_metadata(rid: BoxRID):
     return metadata
 
 
+def get_booklet_metadata(rid: BoxRID):
+    metadata = box_storage.load_metadata(rid)
+    metadata['token_id'] = genesis_storage.get_booklet_token_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
+    metadata['auction_id'] = genesis_storage.get_auction_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
+    return metadata
+
 def get_box_saledata(rid: BoxRID):
     auction_data = genesis_storage.get_auction_static_data(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
     box_token_id = genesis_storage.get_box_token_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
