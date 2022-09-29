@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 from apibara import IndexerRunner, Info, NewBlock, NewEvents
 from apibara.indexer import IndexerRunnerConfiguration
 
-from .config import INDEXER_ID, APIBARA_URL, MONGO_URL, MONGO_USERNAME, MONGO_PASSWORD, NETWORK_NAME, START_BLOCK
+from .config import INDEXER_ID, APIBARA_URL, MONGO_URL, MONGO_USERNAME, MONGO_PASSWORD, START_BLOCK
 from .events.bids import process_bids, bid_filter
 from .events.box import process_transfers as process_box, transfer_filters as box_filters
 from .events.booklet import process_transfers as process_booklet, transfer_filters as booklet_filters
