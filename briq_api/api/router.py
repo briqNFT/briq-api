@@ -108,8 +108,6 @@ async def store_set(set: StoreSetRequest):
 
     # Ensure compliance of the metadata with ERC 721
     set.data["image"] = f"https://api.briq.construction/{router.prefix}/preview/{set.chain_id}/{set.token_id}.png"
-    if 'recommendedSettings' in set.data:
-        set.data['background_color'] = set.data['recommendedSettings']['backgroundColor'][1:]
     # Default to showing the GLB version of the mesh.
     set.data["animation_url"] = f"https://api.briq.construction/{router.prefix}/model/{set.chain_id}/{set.token_id}.glb"
 

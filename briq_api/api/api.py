@@ -15,13 +15,9 @@ logger = logging.getLogger(__name__)
 
 def get_metadata(rid: SetRID):
     data = file_storage.load_set_metadata(rid)
-    if 'version' not in data:
-        data['description'] = data['description'] if 'description' in data else 'A set made of briqs'
-        data['image'] = data['image'].replace('://briq.construction', '://api.briq.construction') if 'image' in data else ''
-        data['external_url'] = data['external_url'] if 'external_url' in data else '',
-        data['animation_url'] = data['animation_url'] if 'animation_url' in data else '',
-        data['background_color'] = data['background_color'] if 'background_color' in data else '',
-
+    booklets = mongo_storage.get_user_nfts(rid.chain_id, rid.token_id, 'booklet')
+    if len(booklets):
+        data['booklet_id'] = genesis_storage.get_booklet_id(rid.chain_id, booklets[0])
     return data
 
 
