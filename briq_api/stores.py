@@ -18,7 +18,7 @@ def setup_stores(local: bool, use_mock_chain: bool):
     if not local:
         logger.info("Connecting normally.")
         file_storage.connect_for_chain(chain_id=TESTNET.id, backend=CloudStorage('briq-bucket-test-1'))
-        file_storage.connect_for_chain(TESTNET_LEGACY.id, LegacyCloudStorage())
+        file_storage.connect_for_chain(TESTNET_LEGACY.id, LegacyCloudStorage('briq-bucket-prod-1'))
         # For now connect genesis storage to local files regardless
         genesis_storage.connect(FileStorage("briq_api/genesis_data/localhost/"))
     else:

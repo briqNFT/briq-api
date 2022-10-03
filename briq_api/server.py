@@ -7,6 +7,8 @@ from .stores import setup_stores
 from .api.router import router as api_router
 from .mock_chain.router import router as mock_chain_router
 
+from .api.legacy_api import app as legacy_router
+
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
@@ -22,6 +24,9 @@ app.add_middleware(
 
 # Include the API
 app.include_router(api_router, prefix="/v1")
+
+# Include the legacy api for alpha testnet support.
+app.include_router(legacy_router)
 
 if os.getenv("USE_MOCK_CHAIN"):
     app.include_router(mock_chain_router, prefix='/mock_chain')

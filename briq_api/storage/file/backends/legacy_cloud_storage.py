@@ -19,9 +19,9 @@ legacy_chain_id = TESTNET_LEGACY.id
 
 
 class LegacyCloudStorage(FileStorageBackend):
-    def __init__(self, path="") -> None:
+    def __init__(self, bucket=BUCKET, path="") -> None:
         self.storage_client = storage.Client()
-        self.bucket = self.storage_client.bucket(BUCKET)
+        self.bucket = self.storage_client.bucket(bucket)
         self.path = path
 
     def store_json(self, path, data):
