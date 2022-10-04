@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 def get_metadata(rid: SetRID):
     data = file_storage.load_set_metadata(rid)
     booklets = mongo_storage.get_user_nfts(rid.chain_id, rid.token_id, 'booklet')
-    if len(booklets):
-        data['booklet_id'] = genesis_storage.get_booklet_id(rid.chain_id, booklets[0])
+    if len(booklets.nfts):
+        data['booklet_id'] = genesis_storage.get_booklet_id(rid.chain_id, booklets.nfts[0])
     return data
 
 
@@ -52,14 +52,14 @@ def store_preview_image(rid: SetRID, image_base64: bytes):
     HEADER = b'data:image/png;base64,'
     if image_base64[0:len(HEADER)] != HEADER:
         raise Exception("Only base-64 encoded PNGs are accepted.")
-    if len(image_base64) > 1000 * 1000:
-        raise Exception("Image is too heavy, max size is 1MB")
+    if len(image_base64) > 5000 * 1000:
+        raise Exception("Image is too heavy, max size is 5MB")
 
     png_data = base64.decodebytes(image_base64[len(HEADER):])
     image = Image.open(io.BytesIO(png_data))
 
-    if image.width > 1000 or image.height > 1000 or image.width < 10 or image.height < 10:
-        raise Exception("Image is too large, acceptable size range from 10x10 to 1000x1000")
+    if image.width > 2000 or image.height > 2000 or image.width < 10 or image.height < 10:
+        raise Exception("Image is too large, acceptable size range from 10x10 to 2000x2000")
 
     file_storage.store_set_preview(rid, png_data)
 

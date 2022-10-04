@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import logging
 
 from pymongo import MongoClient
@@ -8,6 +9,12 @@ from briq_api.storage.multi_backend_client import StorageClient
 from .config import INDEXER_ID, MONGO_URL, MONGO_PASSWORD, MONGO_USERNAME
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class UserNFTs:
+    last_block: int
+    nfts: list[str]
 
 
 class MongoBackend:
@@ -36,16 +43,18 @@ class MongoStorage(StorageClient[MongoBackend]):
             logger.error(ex, exc_info=ex)
             raise
 
-    def get_user_nfts(self, chain_id: str, user_id: str, collection: str) -> list[str]:
+    def get_user_nfts(self, chain_id: str, user_id: str, collection: str) -> UserNFTs:
         try:
             data = self.get_backend(chain_id).db[collection + "_tokens"].find({
                 "owner": int(user_id, 16).to_bytes(32, "big"),
                 "_chain.valid_to": None,
             })
-            list = []
+            block_nb = 0
+            nft_list = []
             for nft in data:
-                list += [hex(int.from_bytes(nft['token_id'], "big"))] * int.from_bytes(nft['quantity'], "big")
-            return list
+                nft_list += [hex(int.from_bytes(nft['token_id'], "big"))] * int.from_bytes(nft['quantity'], "big")
+                block_nb = max(block_nb, nft['updated_block'])
+            return UserNFTs(block_nb, nft_list)
         except Exception as ex:
             logger.error(ex, exc_info=ex)
             raise

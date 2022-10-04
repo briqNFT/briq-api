@@ -19,10 +19,10 @@ def get_user_items(chain_id: str, user_id: str):
     booklets = mongo_storage.get_user_nfts(chain_id, user_id, 'booklet')
     sets = mongo_storage.get_user_nfts(chain_id, user_id, 'set')
     return {
-        "box_token_ids": [genesis_storage.get_box_id(chain_id, box) for box in boxes],
-        "booklets": [genesis_storage.get_booklet_id(chain_id, booklet) for booklet in booklets],
-
-        "sets": sets,
+        "box_token_ids": [genesis_storage.get_box_id(chain_id, box) for box in boxes.nfts],
+        "booklets": [genesis_storage.get_booklet_id(chain_id, booklet) for booklet in booklets.nfts],
+        "sets": sets.nfts,
+        "last_block": max(boxes.last_block, booklets.last_block, sets.last_block),
     }
 
 
