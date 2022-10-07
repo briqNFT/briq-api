@@ -1,5 +1,6 @@
 import io
 import logging
+import time
 
 from starlette.responses import JSONResponse, StreamingResponse
 from fastapi import APIRouter, HTTPException
@@ -196,4 +197,36 @@ async def get_theme_data(chain_id: str, theme_id: str):
 
     return JSONResponse(output, headers={
         "Cache-Control": f"public, max-age={60}"
+    })
+
+
+@router.head("/{chain_id}/{theme_id}/cover.png")
+@router.get("/{chain_id}/{theme_id}/cover.png")
+async def get_theme_cover(chain_id: str, theme_id: str):
+    try:
+        data = boxes.get_theme_data(chain_id, theme_id)
+        if data['sale_start'] > time.time():
+            output = boxes.box_storage.theme_cover_prelaunch(chain_id, theme_id)
+        else:
+            output = boxes.box_storage.theme_cover_postlaunch(chain_id, theme_id)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="Could not get theme cover")
+
+    return StreamingResponse(io.BytesIO(output), media_type="image/png", headers={
+        "Cache-Control": f"public, max-age={60 * 60 * 24 * 7}"
+    })
+
+
+@router.head("/{chain_id}/{theme_id}/logo.png")
+@router.get("/{chain_id}/{theme_id}/logo.png")
+async def get_theme_logo(chain_id: str, theme_id: str):
+    try:
+        output = boxes.box_storage.theme_logo(chain_id, theme_id)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="Could not get theme cover")
+
+    return StreamingResponse(io.BytesIO(output), media_type="image/png", headers={
+        "Cache-Control": f"public, max-age={60 * 60 * 24 * 7}"
     })

@@ -28,9 +28,10 @@ def get_user_items(chain_id: str, user_id: str):
 
 def get_user_briqs(chain_id: str, user_id: str):
     briqs = mongo_storage.get_user_briqs(chain_id, user_id)
-    ret = {}
+    ret = {'last_block': 0}
     for briq in briqs:
         # TODO: acknowledge NFTS here
+        ret['last_block'] = max(ret['last_block'], briq['updated_block'])
         material = hex(int.from_bytes(briq['token_id'], "big"))
         quantity = int.from_bytes(briq['quantity'], "big")
         ret[material] = {

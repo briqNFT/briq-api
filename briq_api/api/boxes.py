@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+from itertools import chain
 import logging
+from briq_api.storage.file.backends.file_storage import FileStorage
 
 from briq_api.storage.multi_backend_client import StorageClient
 from briq_api.stores import genesis_storage, file_storage
@@ -17,10 +19,12 @@ class BoxRID:
 
 class BoxStorage:
     storage: StorageClient
+    cache: FileStorage
     PREFIX = "genesis_themes"
 
     def __init__(self, storage: StorageClient) -> None:
         self.storage = storage
+        self.cache = {}
 
     def box_path(self, rid: BoxRID):
         return f"{BoxStorage.PREFIX}/{rid.theme_id}/{rid.box_id}"
@@ -60,6 +64,30 @@ class BoxStorage:
     def get_theme_data(self, chain_id: str, theme_id: str):
         return self.storage.get_backend(chain_id).load_json(f"{BoxStorage.PREFIX}/{theme_id}/data.json")
 
+    def theme_cover_prelaunch(self, chain_id: str, theme_id: str):
+        try:
+            return self.cache[f'{chain_id}_{theme_id}_cover_prelaunch']
+        except Exception:
+            data = self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/cover_prelaunch.png")
+            self.cache[f'{chain_id}_{theme_id}_cover_prelaunch'] = data
+            return data
+
+    def theme_cover_postlaunch(self, chain_id: str, theme_id: str):
+        try:
+            return self.cache[f'{chain_id}_{theme_id}_cover_postlaunch']
+        except Exception:
+            data = self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/cover_postlaunch.png")
+            self.cache[f'{chain_id}_{theme_id}_cover_postlaunch'] = data
+            return data
+
+    def theme_logo(self, chain_id: str, theme_id: str):
+        try:
+            return self.cache[f'{chain_id}_{theme_id}_logo']
+        except Exception:
+            data = self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/logo.png")
+            self.cache[f'{chain_id}_{theme_id}_logo'] = data
+            return data
+
 
 box_storage = BoxStorage(file_storage)
 
@@ -77,13 +105,20 @@ def get_booklet_metadata(rid: BoxRID):
     metadata['auction_id'] = genesis_storage.get_auction_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
     return metadata
 
+
 def get_box_saledata(rid: BoxRID):
     auction_data = genesis_storage.get_auction_static_data(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
     box_token_id = genesis_storage.get_box_token_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
     auction_data['quantity_left'] = mongo_storage.get_available_boxes(rid.chain_id, box_token_id)
     # temp hack
     import time
-    auction_data['auction_start'] = time.time() - 60 if 'ongoing' in rid.theme_id else time.time() + 24*60*60*10
+    if 'ongoing' in rid.theme_id:
+        if 'base' in rid.box_id:
+            auction_data['auction_start'] = time.time() + 60
+        else:
+            auction_data['auction_start'] = time.time() - 60
+    else:
+        auction_data['auction_start'] = time.time() + 24 * 60 * 60 * 10
     return auction_data
 
 
