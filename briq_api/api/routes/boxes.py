@@ -230,3 +230,17 @@ async def get_theme_logo(chain_id: str, theme_id: str):
     return StreamingResponse(io.BytesIO(output), media_type="image/png", headers={
         "Cache-Control": f"public, max-age={60 * 60 * 24 * 7}"
     })
+
+
+@router.head("/{chain_id}/{theme_id}/splash.jpg")
+@router.get("/{chain_id}/{theme_id}/splash.jpg")
+async def get_theme_splash(chain_id: str, theme_id: str):
+    try:
+        output = boxes.box_storage.theme_splash(chain_id, theme_id)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="Could not get theme splash")
+
+    return StreamingResponse(io.BytesIO(output), media_type="image/jpeg", headers={
+        "Cache-Control": f"public, max-age={60 * 60 * 24 * 7}"
+    })

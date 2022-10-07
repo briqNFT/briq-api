@@ -88,6 +88,14 @@ class BoxStorage:
             self.cache[f'{chain_id}_{theme_id}_logo'] = data
             return data
 
+    def theme_splash(self, chain_id: str, theme_id: str):
+        try:
+            return self.cache[f'{chain_id}_{theme_id}_splash']
+        except Exception:
+            data = self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/splash.jpg")
+            self.cache[f'{chain_id}_{theme_id}_splash'] = data
+            return data
+
 
 box_storage = BoxStorage(file_storage)
 
