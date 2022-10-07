@@ -68,7 +68,7 @@ class BoxStorage:
         try:
             return self.cache[f'{chain_id}_{theme_id}_cover_prelaunch']
         except Exception:
-            data = self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/cover_prelaunch.png")
+            data = self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/cover_prelaunch.jpg")
             self.cache[f'{chain_id}_{theme_id}_cover_prelaunch'] = data
             return data
 
@@ -76,7 +76,7 @@ class BoxStorage:
         try:
             return self.cache[f'{chain_id}_{theme_id}_cover_postlaunch']
         except Exception:
-            data = self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/cover_postlaunch.png")
+            data = self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/cover_postlaunch.jpg")
             self.cache[f'{chain_id}_{theme_id}_cover_postlaunch'] = data
             return data
 

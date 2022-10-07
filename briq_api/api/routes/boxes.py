@@ -200,8 +200,8 @@ async def get_theme_data(chain_id: str, theme_id: str):
     })
 
 
-@router.head("/{chain_id}/{theme_id}/cover.png")
-@router.get("/{chain_id}/{theme_id}/cover.png")
+@router.head("/{chain_id}/{theme_id}/cover.jpg")
+@router.get("/{chain_id}/{theme_id}/cover.jpg")
 async def get_theme_cover(chain_id: str, theme_id: str):
     try:
         data = boxes.get_theme_data(chain_id, theme_id)
@@ -213,7 +213,7 @@ async def get_theme_cover(chain_id: str, theme_id: str):
         logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get theme cover")
 
-    return StreamingResponse(io.BytesIO(output), media_type="image/png", headers={
+    return StreamingResponse(io.BytesIO(output), media_type="image/jpeg", headers={
         "Cache-Control": f"public, max-age={60 * 60 * 24 * 7}"
     })
 
