@@ -70,6 +70,23 @@ async def booklet_data(chain_id: str, theme_id: str, booklet_id: str):
     })
 
 
+@router.head("/booklet/texture/{chain_id}/{theme_id}/{box_id}")
+@router.head("/booklet/texture/{chain_id}/{theme_id}/{box_id}.png")
+@router.get("/booklet/texture/{chain_id}/{theme_id}/{box_id}")
+@router.get("/booklet/texture/{chain_id}/{theme_id}/{box_id}.png")
+async def booklet_texture(chain_id: str, theme_id: str, box_id: str):
+    rid = BoxRID(chain_id, theme_id, box_id)
+
+    try:
+        image = boxes.get_booklet_texture(rid)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="File not found")
+
+    return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
+        "Cache-Control": f"public, max-age={3600 * 24}"
+    })
+
 @router.head("/box/texture/{chain_id}/{theme_id}/{box_id}")
 @router.head("/box/texture/{chain_id}/{theme_id}/{box_id}.png")
 @router.get("/box/texture/{chain_id}/{theme_id}/{box_id}")
