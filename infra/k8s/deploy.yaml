@@ -21,6 +21,8 @@ spec:
         ports:
         - containerPort: 5000
         env:
+        - name: ENV
+          value: #@ data.values.env
         - name: CLOUD_STORAGE_BUCKET
           value: #@ data.values.storage_bucket
         - name: INDEXER_ID
@@ -107,6 +109,8 @@ spec:
       - name: "indexer-runner"
         image: #@ "europe-west3-docker.pkg.dev/healthy-saga-329513/sltech-briq/" + data.values.image_name + ":" + data.values.image_tag
         env:
+        - name: ENV
+          value: #@ data.values.env
         - name: INDEXER_ID
           value: #@ data.values.indexer.indexer_id
         - name: MONGO_URL

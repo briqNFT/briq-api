@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from itertools import chain
 import logging
 from briq_api.storage.file.backends.file_storage import FileStorage
+import time
 
 from briq_api.storage.multi_backend_client import StorageClient
 from briq_api.stores import genesis_storage, file_storage
@@ -143,15 +144,15 @@ def list_themes(chain_id: str):
 
 
 def list_boxes_of_theme(chain_id: str, theme_id: str):
-    # TODO -> change this?
+    data = get_theme_data(chain_id, theme_id)
+    if data['sale_start'] is None or data['sale_start'] > time.time():
+        return []
     return [f"{theme_id}/{box}" for box in box_storage.list_boxes_of_theme(chain_id, theme_id)]
 
 
 def get_theme_data(chain_id: str, theme_id: str):
-    # temp hack
-    import time
     data = box_storage.get_theme_data(chain_id, theme_id)
-    data['sale_start'] = time.time() - 60 if 'ongoing' in theme_id else time.time() + 24*60*60*10
+    data['sale_start'] = time.time() - 60 if 'ongoing' in theme_id else None
     return data
 
 

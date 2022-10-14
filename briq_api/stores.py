@@ -1,5 +1,7 @@
 import logging
 
+from briq_api.config import ENV
+
 from .chain.networks import TESTNET, TESTNET_LEGACY
 
 from briq_api.genesis_data.genesis_storage import GenesisStorage
@@ -17,7 +19,9 @@ genesis_storage = GenesisStorage()
 def setup_stores(local: bool, use_mock_chain: bool):
     if not local:
         logger.info("Connecting normally.")
-        file_storage.connect_for_chain(chain_id=TESTNET.id, backend=CloudStorage('briq-bucket-test-1'))
+        # For now, starknet-testnet is connected to the test bucket only in test env.
+        if ENV != 'prod':
+            file_storage.connect_for_chain(chain_id=TESTNET.id, backend=CloudStorage('briq-bucket-test-1'))
         file_storage.connect_for_chain(TESTNET_LEGACY.id, LegacyCloudStorage('briq-bucket-prod-1'))
         # For now connect genesis storage to local files regardless
         genesis_storage.connect(FileStorage("briq_api/genesis_data/localhost/"))

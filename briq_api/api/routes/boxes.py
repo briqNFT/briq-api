@@ -222,7 +222,7 @@ async def get_theme_data(chain_id: str, theme_id: str):
 async def get_theme_cover(chain_id: str, theme_id: str):
     try:
         data = boxes.get_theme_data(chain_id, theme_id)
-        if data['sale_start'] > time.time():
+        if data['sale_start'] is None or data['sale_start'] > time.time():
             output = boxes.box_storage.theme_cover_prelaunch(chain_id, theme_id)
         else:
             output = boxes.box_storage.theme_cover_postlaunch(chain_id, theme_id)
