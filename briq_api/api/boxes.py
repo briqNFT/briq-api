@@ -62,7 +62,7 @@ class BoxStorage:
         return self.storage.get_backend(chain_id).list_paths(f"{BoxStorage.PREFIX}/")
 
     def list_boxes_of_theme(self, chain_id: str, theme_id: str):
-        return [x for x in self.storage.get_backend(chain_id).list_paths(f"{BoxStorage.PREFIX}/{theme_id}/") if not x.endswith('data.json')]
+        return [x for x in self.storage.get_backend(chain_id).list_paths(f"{BoxStorage.PREFIX}/{theme_id}/") if not ('.' in x)]
 
     def get_theme_data(self, chain_id: str, theme_id: str):
         return self.storage.get_backend(chain_id).load_json(f"{BoxStorage.PREFIX}/{theme_id}/data.json")
