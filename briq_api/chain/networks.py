@@ -35,6 +35,10 @@ TESTNET = NetworkMetadata(
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
 )
 
+MAINNET = NetworkMetadata(
+    id="starknet-mainnet",
+)
+
 TESTNET_LEGACY = NetworkMetadata(id="starknet-testnet-legacy")
 
 
@@ -42,4 +46,5 @@ def get_network_metadata(network: str):
     return {
         'localhost': DEVNET,
         'starknet-testnet': TESTNET,
+        'starknet-mainnet': MAINNET,
     }[network]
