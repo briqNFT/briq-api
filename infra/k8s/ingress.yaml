@@ -1,4 +1,5 @@
 #@ load("@ytt:data", "data")
+#@ if data.values.env == 'prod':
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -39,3 +40,4 @@ metadata:
   name: #@ data.values.name + "-managed-cert"
 spec:
   domains: #@ data.values.sites
+#@ end
