@@ -39,7 +39,7 @@ class CloudStorage(FileStorageBackend):
         results = self.storage_client.list_blobs(self.bucket, prefix=path, delimiter="/", timeout=5)
         for x in results.prefixes:
             pass
-        return [x.name[len(path):] for x in results] + [x[len(path):-1] for x in results.prefixes]
+        return [result for result in [x.name[len(path):] for x in results] + [x[len(path):-1] for x in results.prefixes] if len(result) > 0]
 
     def store_bytes(self, path: str, data: bytes):
         logger.debug("Storing data to %s", path)
