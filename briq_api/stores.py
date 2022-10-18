@@ -8,6 +8,7 @@ from briq_api.genesis_data.genesis_storage import GenesisStorage
 from briq_api.storage.file.backends.cloud_storage import CloudStorage
 from briq_api.storage.file.backends.file_storage import FileStorage
 from briq_api.storage.file.backends.legacy_cloud_storage import LegacyCloudStorage
+from briq_api.indexer.storage import mongo_storage, MongoBackend
 from .storage.file.file_client import FileClient
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,12 @@ def setup_stores(local: bool, use_mock_chain: bool):
             file_storage.connect_for_chain(TESTNET.id, backend=CloudStorage('briq-bucket-test-1'))
         file_storage.connect_for_chain(TESTNET_LEGACY.id, backend=LegacyCloudStorage('briq-bucket-prod-1'))
         file_storage.connect_for_chain(MAINNET.id, backend=CloudStorage('briq-bucket-prod-1'))
+
+        if ENV == 'prod':
+            mongo_storage.connect_for_chain(MAINNET.id, MongoBackend())
+        else:
+            mongo_storage.connect_for_chain(TESTNET.id, MongoBackend())
+
         # For now connect genesis storage to local files regardless
         genesis_storage.connect(FileStorage("briq_api/genesis_data/localhost/"))
     else:
@@ -33,6 +40,7 @@ def setup_stores(local: bool, use_mock_chain: bool):
         file_storage.connect(FileStorage())
         # TODO: change this
         genesis_storage.connect(FileStorage("briq_api/genesis_data/localhost/"))
+        mongo_storage.connect_for_chain(TESTNET.id, MongoBackend())
 
     if use_mock_chain:
         logger.info("Connecting for mock chain.")

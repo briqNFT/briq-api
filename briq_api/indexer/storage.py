@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import logging
 
 from pymongo import MongoClient
-from ..chain.networks import get_network_metadata
+from ..chain.networks import TESTNET, get_network_metadata
 
 from briq_api.storage.multi_backend_client import StorageClient
 
@@ -90,4 +90,3 @@ class MongoStorage(StorageClient[MongoBackend]):
 
 
 mongo_storage = MongoStorage()
-mongo_storage.connect(MongoBackend())
