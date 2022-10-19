@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "briq-api"
-version = "0.1.0"
+version = "1.0"
 description = "Backend server for the briq ecosystem."
 authors = ["briq <founders@sltech.company>"]
 license = "MIT"
