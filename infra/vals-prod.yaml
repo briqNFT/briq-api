@@ -7,11 +7,11 @@ static_ip: lb-sltech-company-ipv4-1
 sites: ["api.briq.construction", "api.sltech.company"]
 
 indexer:
-  name: dev-briq-indexer
+  name: briq-indexer
   image_store: mongo:latest
   indexer_id: "kub-test-1"
   network_name: 'starknet-goerli'
-  start_block: '375000'
+  start_block: '352600'
   resources:
     cpu_store: "50m"
     memory_store: "128Mi"
