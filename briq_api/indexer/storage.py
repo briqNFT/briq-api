@@ -4,6 +4,7 @@ import logging
 from pymongo import MongoClient
 from ..chain.networks import TESTNET, get_network_metadata
 
+from briq_api.config import ENV
 from briq_api.storage.multi_backend_client import StorageClient
 
 from .config import INDEXER_ID, MONGO_URL, MONGO_PASSWORD, MONGO_USERNAME
@@ -30,6 +31,8 @@ class MongoBackend:
 
 class MongoStorage(StorageClient[MongoBackend]):
     def get_available_boxes(self, chain_id: str, box_token_id: int) -> int:
+        if ENV == 'prod':
+            return 0
         try:
             data = self.get_backend(chain_id).db["box_tokens"].find_one({
                 "token_id": box_token_id.to_bytes(32, "big"),
@@ -44,6 +47,8 @@ class MongoStorage(StorageClient[MongoBackend]):
             raise
 
     def get_user_nfts(self, chain_id: str, user_id: str, collection: str) -> UserNFTs:
+        if ENV == 'prod':
+            return UserNFTs(7000, [])
         try:
             data = self.get_backend(chain_id).db[collection + "_tokens"].find({
                 "owner": int(user_id, 16).to_bytes(32, "big"),
@@ -60,6 +65,8 @@ class MongoStorage(StorageClient[MongoBackend]):
             raise
 
     def get_user_briqs(self, chain_id: str, user_id: str) -> list:
+        if ENV == 'prod':
+            return []
         try:
             data = self.get_backend(chain_id).db["briq_tokens"].find({
                 "owner": int(user_id, 16).to_bytes(32, "big"),
