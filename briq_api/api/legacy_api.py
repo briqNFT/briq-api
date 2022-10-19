@@ -38,8 +38,8 @@ async def store_get(token_id: str):
         "name": data['name'] if 'name' in data else '',
         "description": data['description'] if 'description' in data else 'A set made of briqs',
         "image": data['image'].replace('://briq.construction', '://api.briq.construction') if 'image' in data else '',
-        "external_url": data['external_url'] if 'external_url' in data else '',
-        "animation_url": data['animation_url'] if 'animation_url' in data else '',
+        "external_url": (data['external_url'] if 'external_url' in data else '').replace('://briq', '://old.briq'),
+        "animation_url": (data['animation_url'] if 'animation_url' in data else '').replace('://briq', '://old.briq'),
         "background_color": data['background_color'] if 'background_color' in data else '',
     }
     out = io.StringIO()
