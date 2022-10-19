@@ -27,7 +27,7 @@ def setup_stores(local: bool, use_mock_chain: bool):
         file_storage.connect_for_chain(MAINNET.id, backend=CloudStorage('briq-bucket-prod-1'))
 
         if ENV == 'prod':
-            mongo_storage.connect_for_chain(MAINNET.id, MongoBackend())
+            mongo_storage.connect_for_chain(TESTNET.id, MongoBackend())
         else:
             mongo_storage.connect_for_chain(TESTNET.id, MongoBackend())
 
