@@ -64,6 +64,23 @@ class MongoStorage(StorageClient[MongoBackend]):
             logger.error(ex, exc_info=ex)
             raise
 
+    def get_mint_date(self, chain_id: str, collection: str, token_id: int):
+        if ENV == 'prod':
+            return -1
+        try:
+            data = self.get_backend(chain_id).db[collection + "_transfers"].find({
+                "from": (0).to_bytes(32, "big"),
+                "token_id": token_id.to_bytes(32, "big"),
+                "_chain.valid_to": None,
+            })
+            try:
+                return data[0]['_timestamp'].timestamp()
+            except:
+                return -1
+        except Exception as ex:
+            logger.error(ex, exc_info=ex)
+            raise
+
     def get_user_briqs(self, chain_id: str, user_id: str) -> list:
         if ENV == 'prod':
             return []

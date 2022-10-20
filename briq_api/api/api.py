@@ -19,6 +19,7 @@ def get_metadata(rid: SetRID):
     booklets = mongo_storage.get_user_nfts(rid.chain_id, rid.token_id, 'booklet')
     if len(booklets.nfts):
         data['booklet_id'] = genesis_storage.get_booklet_id(rid.chain_id, booklets.nfts[0])
+    data['created_at'] = mongo_storage.get_mint_date(rid.chain_id, 'set', int(rid.token_id, 16))
     return data
 
 
