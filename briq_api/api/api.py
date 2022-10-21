@@ -8,7 +8,7 @@ from briq_api.config import ENV
 from briq_api.set_identifier import SetRID
 from briq_api.stores import genesis_storage, file_storage
 from briq_api.indexer.storage import mongo_storage
-
+from briq_api.api.boxes import BoxRID, get_booklet_metadata
 from briq_api.mesh.briq import BriqData
 
 logger = logging.getLogger(__name__)
@@ -16,10 +16,29 @@ logger = logging.getLogger(__name__)
 
 def get_metadata(rid: SetRID):
     data = file_storage.load_set_metadata(rid)
+    data['created_at'] = mongo_storage.get_mint_date(rid.chain_id, 'set', int(rid.token_id, 16))
+    data['attributes'] = [{
+        "trait_type": "Number of briqs",
+        "value": len(data['briqs'])
+    }, {
+        "display_type": "date",
+        "trait_type": "Creation Date",
+        "value": data['created_at'],
+    }]
+    data['properties'] = {
+        "nb_briqs": {
+            "name": "Number of briqs",
+            "value": len(data['briqs'])
+        }
+    }
     booklets = mongo_storage.get_user_nfts(rid.chain_id, rid.token_id, 'booklet')
     if len(booklets.nfts):
         data['booklet_id'] = genesis_storage.get_booklet_id(rid.chain_id, booklets.nfts[0])
-    data['created_at'] = mongo_storage.get_mint_date(rid.chain_id, 'set', int(rid.token_id, 16))
+        booklet_meta = get_booklet_metadata(BoxRID(rid.chain_id, data['booklet_id'].split("/")[0], data['booklet_id'].split("/")[1]))
+        data['attributes'] += booklet_meta['attributes']
+        for prop in booklet_meta['properties']:
+            if not (prop in data['properties']):
+                data['properties'][prop] = booklet_meta['properties'][prop]
     return data
 
 

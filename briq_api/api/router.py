@@ -30,7 +30,8 @@ async def metadata(chain_id: str, token_id: str):
 
     try:
         output = api.get_metadata(rid)
-    except Exception:
+    except Exception as e:
+        logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     # Stream the data because files can get fairly hefty.
@@ -51,7 +52,8 @@ async def preview(chain_id: str, token_id: str):
 
     try:
         preview = api.get_preview(rid)
-    except Exception:
+    except Exception as e:
+        logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(preview), media_type="image/png", headers={
