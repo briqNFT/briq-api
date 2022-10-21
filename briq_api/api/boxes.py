@@ -30,11 +30,11 @@ class BoxStorage:
     def box_path(self, rid: BoxRID):
         return f"{BoxStorage.PREFIX}/{rid.theme_id}/{rid.box_id}"
 
-    def metadata_path(self, rid: BoxRID):
-        return f"{self.box_path(rid)}/shape.json"
+    def load_metadata_box(self, rid: BoxRID):
+        return self.storage.get_backend(rid.chain_id).load_json(f"{self.box_path(rid)}/metadata_box.json")
 
-    def load_metadata(self, rid: BoxRID):
-        return self.storage.get_backend(rid.chain_id).load_json(self.metadata_path(rid))
+    def load_metadata_booklet(self, rid: BoxRID):
+        return self.storage.get_backend(rid.chain_id).load_json(f"{self.box_path(rid)}/metadata_booklet.json")
 
     def step_image_path(self, rid: BoxRID, step: int):
         return f"{self.box_path(rid)}/step_{step}.png"
@@ -105,15 +105,17 @@ box_storage = BoxStorage(file_storage)
 
 
 def get_box_metadata(rid: BoxRID):
-    metadata = box_storage.load_metadata(rid)
+    metadata = box_storage.load_metadata_box(rid)
     metadata['token_id'] = genesis_storage.get_box_token_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
     metadata['auction_id'] = genesis_storage.get_auction_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
     return metadata
 
 
 def get_booklet_metadata(rid: BoxRID):
-    metadata = box_storage.load_metadata(rid)
+    metadata = box_storage.load_metadata_booklet(rid)
     metadata['token_id'] = genesis_storage.get_booklet_token_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
+    # Parse the number because javascript can't
+    metadata['serial_number'] = (int(metadata['token_id']) - (int(metadata['token_id']) & (2**192 - 1))) / 2**192
     metadata['auction_id'] = genesis_storage.get_auction_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
     return metadata
 
