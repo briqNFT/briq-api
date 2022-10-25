@@ -16,5 +16,11 @@
         "auction_start": 134,
         "auction_duration": 86400,
         "initial_price": 0
+    },
+    "starknet_city_ongoing/speeder": {
+        "quantity": 20,
+        "auction_start": 134,
+        "auction_duration": 86400,
+        "initial_price": 0
     }
 }

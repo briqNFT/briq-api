@@ -136,3 +136,45 @@ def get_bids_for_box(chain_id: str, box_id: str):
         for item in data
     ]
     return bids
+
+
+def get_item_activity(item_type: str, chain_id: str, item: str):
+    if item_type == 'box':
+        token_id = int(genesis_storage.get_box_token_id(chain_id, item))
+        data = mongo_storage.get_backend(chain_id).db["box_transfers"].find({"token_id": token_id.to_bytes(32, "big")})
+        return [
+            {
+                "from": hex(int.from_bytes(item['from'], "big")),
+                "to": hex(int.from_bytes(item['to'], "big")),
+                "tx_hash": hex(int.from_bytes(item['_tx_hash'], "big")),
+                "block": item['_block'],
+                "timestamp": item['_timestamp'],
+            }
+            for item in data
+        ]
+    if item_type == 'booklet':
+        token_id = int(genesis_storage.get_booklet_token_id(chain_id, item))
+        data = mongo_storage.get_backend(chain_id).db["booklet_transfers"].find({"token_id": token_id.to_bytes(32, "big")})
+        return [
+            {
+                "from": hex(int.from_bytes(item['from'], "big")),
+                "to": hex(int.from_bytes(item['to'], "big")),
+                "tx_hash": hex(int.from_bytes(item['_tx_hash'], "big")),
+                "block": item['_block'],
+                "timestamp": item['_timestamp'],
+            }
+            for item in data
+        ]
+    if item_type == 'set':
+        token_id = int(item, 16)
+        data = mongo_storage.get_backend(chain_id).db["set_transfers"].find({"token_id": token_id.to_bytes(32, "big")})
+        return [
+            {
+                "from": hex(int.from_bytes(item['from'], "big")),
+                "to": hex(int.from_bytes(item['to'], "big")),
+                "tx_hash": hex(int.from_bytes(item['_tx_hash'], "big")),
+                "block": item['_block'],
+                "timestamp": item['_timestamp'],
+            }
+            for item in data
+        ]

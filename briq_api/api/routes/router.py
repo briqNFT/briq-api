@@ -161,3 +161,27 @@ async def get_bids_for_box(chain_id: str, theme_name: str, box_name: str):
 
     return output
 
+
+@router.head("/activity/set/{chain_id}/{set_id}")
+@router.get("/activity/set/{chain_id}/{set_id}")
+async def get_set_activity(chain_id: str, set_id: str):
+    return await get_item_activity("set", chain_id, set_id)
+
+
+@router.head("/activity/{item_kind}/{chain_id}/{theme}/{item}")
+@router.get("/activity/{item_kind}/{chain_id}/{theme}/{item}")
+async def get_other_activity(item_kind: str, chain_id: str, theme: str, item: str):
+    return await get_item_activity(item_kind, chain_id, f"{theme}/{item}")
+
+
+async def get_item_activity(item_type: str, chain_id: str, item: str):
+    if item_type != 'box' and item_type != 'booklet' and item_type != 'set':
+        raise HTTPException(status_code=400, detail="Item type is invalid")
+
+    try:
+        output = api.get_item_activity(item_type, chain_id, item)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="Could not get item activity")
+
+    return output
