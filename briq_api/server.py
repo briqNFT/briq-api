@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from .stores import setup_stores
-from .api.router import router as api_router
+from .api.routes.router import router as api_router
 from .mock_chain.router import router as mock_chain_router
 
 from .api.legacy_api import app as legacy_router
