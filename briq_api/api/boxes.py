@@ -39,6 +39,9 @@ class BoxStorage:
     def step_image_path(self, rid: BoxRID, step: int):
         return f"{self.box_path(rid)}/step_{step}.png"
 
+    def load_box_file(self, rid: BoxRID, file: str):
+        return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/{file}")
+
     def load_step_image(self, rid: BoxRID, step: int):
         return self.storage.get_backend(rid.chain_id).load_bytes(self.step_image_path(rid, step))
 
@@ -180,3 +183,10 @@ def get_box_texture(rid: BoxRID):
 
 def get_booklet_texture(rid: BoxRID):
     return box_storage.load_booklet_texture(rid)
+
+
+def get_booklet_step_glb(rid: BoxRID, step: int):
+    return [
+        box_storage.load_box_file(rid, f'step_{step}.glb'),
+        box_storage.load_box_file(rid, f'step_level_{step}.glb')
+    ]

@@ -176,6 +176,42 @@ async def box_step_image(chain_id: str, theme_id: str, box_id: str, step: int):
     })
 
 
+@router.head("/box/step_glb/{chain_id}/{theme_id}/{box_id}/{step}")
+@router.head("/box/step_glb/{chain_id}/{theme_id}/{box_id}/{step}.glb")
+@router.get("/box/step_glb/{chain_id}/{theme_id}/{box_id}/{step}")
+@router.get("/box/step_glb/{chain_id}/{theme_id}/{box_id}/{step}.glb")
+async def box_step_glb(chain_id: str, theme_id: str, box_id: str, step: int):
+    rid = BoxRID(chain_id, theme_id, box_id)
+
+    try:
+        image = boxes.get_booklet_step_glb(rid, step)[0]
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="File not found")
+
+    return StreamingResponse(io.BytesIO(image), media_type="model/gltf-binary", headers={
+        "Cache-Control": f"public, max-age={3600 * 24}"
+    })
+
+
+@router.head("/box/step_glb_level/{chain_id}/{theme_id}/{box_id}/{step}")
+@router.head("/box/step_glb_level/{chain_id}/{theme_id}/{box_id}/{step}.glb")
+@router.get("/box/step_glb_level/{chain_id}/{theme_id}/{box_id}/{step}")
+@router.get("/box/step_glb_level/{chain_id}/{theme_id}/{box_id}/{step}.glb")
+async def box_step_glb(chain_id: str, theme_id: str, box_id: str, step: int):
+    rid = BoxRID(chain_id, theme_id, box_id)
+
+    try:
+        image = boxes.get_booklet_step_glb(rid, step)[1]
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="File not found")
+
+    return StreamingResponse(io.BytesIO(image), media_type="model/gltf-binary", headers={
+        "Cache-Control": f"public, max-age={3600 * 24}"
+    })
+
+
 @router.head("/box_themes/list/{chain_id}")
 @router.get("/box_themes/list/{chain_id}")
 async def box_themes_list(chain_id: str):
