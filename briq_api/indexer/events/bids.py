@@ -59,12 +59,15 @@ async def process_bids(info: Info, block: BlockHeader, bids: list[StarkNetEvent]
         if bid['box_token_id'] not in highest_bid or highest_bid[bid['box_token_id']][1] < int.from_bytes(bid['bid_amount'], "big"):
             highest_bid[bid['box_token_id']] = (bid['bidder'], int.from_bytes(bid['bid_amount'], "big"))
 
+    skips = []
     for box_token_id in highest_bid:
         existing_bid = await info.storage.find_one("highest_bids", {"box_token_id": box_token_id})
         if existing_bid and int.from_bytes(existing_bid['bid'], "big") >= highest_bid[box_token_id][1]:
-            del highest_bid[box_token_id]
+            skips.append(box_token_id)
 
     for box_token_id, data in highest_bid.items():
+        if box_token_id in skips:
+            continue
         await info.storage.find_one_and_replace(
             "highest_bids",
             {"box_token_id": box_token_id},
