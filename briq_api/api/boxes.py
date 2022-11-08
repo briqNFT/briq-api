@@ -48,11 +48,20 @@ class BoxStorage:
     def load_cover_item(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/cover.png")
 
+    def load_cover_item_jpg(self, rid: BoxRID):
+        return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/cover.jpg")
+
     def load_cover_booklet(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/booklet_cover.png")
 
+    def load_cover_booklet_jpg(self, rid: BoxRID):
+        return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/booklet_cover.jpg")
+
     def load_cover_box(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/box_cover.png")
+
+    def load_cover_box_jpg(self, rid: BoxRID):
+        return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/box_cover.jpg")
 
     def load_box_texture(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/box_tex.png")
@@ -169,12 +178,24 @@ def get_box_cover_item(rid: BoxRID):
     return box_storage.load_cover_item(rid)
 
 
+def get_box_cover_item_jpg(rid: BoxRID):
+    return box_storage.load_cover_item_jpg(rid)
+
+
 def get_box_cover_booklet(rid: BoxRID):
     return box_storage.load_cover_booklet(rid)
 
 
+def get_box_cover_booklet_jpg(rid: BoxRID):
+    return box_storage.load_cover_booklet_jpg(rid)
+
+
 def get_box_cover_box(rid: BoxRID):
     return box_storage.load_cover_box(rid)
+
+
+def get_box_cover_box_jpg(rid: BoxRID):
+    return box_storage.load_cover_box_jpg(rid)
 
 
 def get_box_texture(rid: BoxRID):

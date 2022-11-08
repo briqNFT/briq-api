@@ -104,9 +104,7 @@ async def box_texture(chain_id: str, theme_id: str, box_id: str):
         "Cache-Control": f"public, max-age={3600 * 24}"
     })
 
-@router.head("/box/cover_item/{chain_id}/{theme_id}/{box_id}")
 @router.head("/box/cover_item/{chain_id}/{theme_id}/{box_id}.png")
-@router.get("/box/cover_item/{chain_id}/{theme_id}/{box_id}")
 @router.get("/box/cover_item/{chain_id}/{theme_id}/{box_id}.png")
 async def box_cover_item(chain_id: str, theme_id: str, box_id: str):
     rid = BoxRID(chain_id, theme_id, box_id)
@@ -122,9 +120,23 @@ async def box_cover_item(chain_id: str, theme_id: str, box_id: str):
     })
 
 
-@router.head("/box/cover_box/{chain_id}/{theme_id}/{box_id}")
+@router.head("/box/cover_item/{chain_id}/{theme_id}/{box_id}.jpg")
+@router.get("/box/cover_item/{chain_id}/{theme_id}/{box_id}.jpg")
+async def box_cover_item_jpg(chain_id: str, theme_id: str, box_id: str):
+    rid = BoxRID(chain_id, theme_id, box_id)
+
+    try:
+        image = boxes.get_box_cover_item_jpg(rid)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="File not found")
+
+    return StreamingResponse(io.BytesIO(image), media_type="image/jpeg", headers={
+        "Cache-Control": f"public, max-age={3600 * 24}"
+    })
+
+
 @router.head("/box/cover_box/{chain_id}/{theme_id}/{box_id}.png")
-@router.get("/box/cover_box/{chain_id}/{theme_id}/{box_id}")
 @router.get("/box/cover_box/{chain_id}/{theme_id}/{box_id}.png")
 async def box_cover_box(chain_id: str, theme_id: str, box_id: str):
     rid = BoxRID(chain_id, theme_id, box_id)
@@ -140,9 +152,23 @@ async def box_cover_box(chain_id: str, theme_id: str, box_id: str):
     })
 
 
-@router.head("/box/cover_booklet/{chain_id}/{theme_id}/{box_id}")
+@router.head("/box/cover_box/{chain_id}/{theme_id}/{box_id}.jpg")
+@router.get("/box/cover_box/{chain_id}/{theme_id}/{box_id}.jpg")
+async def box_cover_box_jpg(chain_id: str, theme_id: str, box_id: str):
+    rid = BoxRID(chain_id, theme_id, box_id)
+
+    try:
+        image = boxes.get_box_cover_box_jpg(rid)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="File not found")
+
+    return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
+        "Cache-Control": f"public, max-age={3600 * 24}"
+    })
+
+
 @router.head("/box/cover_booklet/{chain_id}/{theme_id}/{box_id}.png")
-@router.get("/box/cover_booklet/{chain_id}/{theme_id}/{box_id}")
 @router.get("/box/cover_booklet/{chain_id}/{theme_id}/{box_id}.png")
 async def box_cover_booklet(chain_id: str, theme_id: str, box_id: str):
     rid = BoxRID(chain_id, theme_id, box_id)
@@ -157,6 +183,21 @@ async def box_cover_booklet(chain_id: str, theme_id: str, box_id: str):
         "Cache-Control": f"public, max-age={3600 * 24}"
     })
 
+
+@router.head("/box/cover_booklet/{chain_id}/{theme_id}/{box_id}.jpg")
+@router.get("/box/cover_booklet/{chain_id}/{theme_id}/{box_id}.jpg")
+async def box_cover_booklet_jpg(chain_id: str, theme_id: str, box_id: str):
+    rid = BoxRID(chain_id, theme_id, box_id)
+
+    try:
+        image = boxes.get_box_cover_booklet_jpg(rid)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="File not found")
+
+    return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
+        "Cache-Control": f"public, max-age={3600 * 24}"
+    })
 
 @router.head("/box/step_image/{chain_id}/{theme_id}/{box_id}/{step}")
 @router.head("/box/step_image/{chain_id}/{theme_id}/{box_id}/{step}.png")
