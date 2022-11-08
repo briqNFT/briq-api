@@ -1,26 +1,23 @@
 {
-    "starknet_city_ongoing/base_module_1": {
-        "quantity": 10,
-        "auction_start": 134,
-        "auction_duration": 86400,
-        "initial_price": 0
-    },
-    "starknet_city_ongoing/spaceman": {
-        "quantity": 50,
-        "auction_start": 134,
-        "auction_duration": 86400,
-        "initial_price": "2000000000000"
-    },
-    "starknet_city_ongoing/starkgate": {
-        "quantity": 1,
-        "auction_start": 134,
-        "auction_duration": 86400,
-        "initial_price": 0
-    },
-    "starknet_city_ongoing/speeder": {
-        "quantity": 20,
-        "auction_start": 134,
-        "auction_duration": 86400,
-        "initial_price": 0
-    }
+    "starknet_city_ongoing/akimbo_fighter": { "quantity": 20, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/antigravity_motorbike": { "quantity": 15, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/briq_rocket": { "quantity": 20, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/cairo_pyramid": { "quantity": 1, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/crawler_robot": { "quantity": 15, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/flying_saucer": { "quantity": 15, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/hathor_3_rocket": { "quantity": 15, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/helper_robot": { "quantity": 200, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/horus_rocket": { "quantity": 1, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/landing_module": { "quantity": 15, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/launchpad": { "quantity": 15, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/lunar_buggy": { "quantity": 15, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/lunar_capsule": { "quantity": 15, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/lunar_truck": { "quantity": 20, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/radio_kit": { "quantity": 15, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/space_doggo": { "quantity": 200, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/space_mecha": { "quantity": 15, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/spaceman": { "quantity": 200, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/speeder": { "quantity": 15, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/starkgate": { "quantity": 20, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/transmission_equipment": { "quantity": 15, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 }
 }
