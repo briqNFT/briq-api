@@ -15,9 +15,9 @@ indexer:
   name: briq-indexer
   image_store: mongo:latest
   image_apibara: apibara/apibara:0.3.2-alpha1
-  indexer_id: "testnet-test-0"
+  indexer_id: "testnet-test-3"
   network_name: 'starknet-goerli'
-  start_block: '285000'
+  start_block: '3000'
   resources:
     cpu_store: "50m"
     memory_store: "128Mi"
