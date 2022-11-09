@@ -22,7 +22,6 @@ class BriqData:
         writer.filename = filename
         return writer
 
-    def to_gltf(self):
+    def to_gltf(self, separate_any_color: bool = False):
         from .gltf import to_gltf
-        return to_gltf(self.briqs)
-
+        return to_gltf(self.briqs, separate_any_color)

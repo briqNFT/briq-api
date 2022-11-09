@@ -81,17 +81,23 @@ def parse_material(mat, col, byMaterial, primitives):
             out.append(triangle)
     outTriangles = out
 
-    primitives.append(Primitive(outPoints, outTriangles, Material(f"{mat}_{col}", mat, col)))
+    primitives.append(Primitive(outPoints, outTriangles, Material(f"{mat}_{col}", mat.split('_')[0], col.split('_')[0])))
 
-def to_primitives(briqs: Sequence):
+
+def to_primitives(briqs: Sequence, separate_any_color: bool = False):
     byMaterial = {}
 
     for briq in briqs:
-        if briq['data']['material'] not in byMaterial:
-            byMaterial[briq['data']['material']] = {briq['data']['color']: []}
-        if briq['data']['color'] not in byMaterial[briq['data']['material']]:
-            byMaterial[briq['data']['material']][briq['data']['color']] = []
-        byMaterial[briq['data']['material']][briq['data']['color']].append(briq['pos'])
+        material = briq['data']['material']
+        color = briq['data']['color']
+        if separate_any_color and 'any_color' in briq['data']:
+            material = material + '_any'
+            color = color + '_any'
+        if material not in byMaterial:
+            byMaterial[material] = {color: []}
+        if color not in byMaterial[material]:
+            byMaterial[material][color] = []
+        byMaterial[material][color].append(briq['pos'])
 
     primitives = []
     for mat in byMaterial:
@@ -99,6 +105,7 @@ def to_primitives(briqs: Sequence):
             parse_material(mat, col, byMaterial, primitives)
 
     return primitives
+
 
 def srgb2lin(s):
     """GLTF uses linear-space vertex colors, which won't give the result we want."""
@@ -108,8 +115,9 @@ def srgb2lin(s):
         lin = pow(((s + 0.055) / 1.055), 2.4)
     return lin
 
-def to_gltf(briqs: Sequence):
-    prims = to_primitives(briqs)
+
+def to_gltf(briqs: Sequence, separate_any_color: bool = False):
+    prims = to_primitives(briqs, separate_any_color)
 
     primitives = []
     accessors = []
