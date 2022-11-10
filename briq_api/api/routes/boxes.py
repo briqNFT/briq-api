@@ -163,7 +163,7 @@ async def box_cover_box_jpg(chain_id: str, theme_id: str, box_id: str):
         logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
-    return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
+    return StreamingResponse(io.BytesIO(image), media_type="image/jpeg", headers={
         "Cache-Control": f"public, max-age={3600 * 24}"
     })
 
@@ -195,7 +195,7 @@ async def box_cover_booklet_jpg(chain_id: str, theme_id: str, box_id: str):
         logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
-    return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
+    return StreamingResponse(io.BytesIO(image), media_type="image/jpeg", headers={
         "Cache-Control": f"public, max-age={3600 * 24}"
     })
 
