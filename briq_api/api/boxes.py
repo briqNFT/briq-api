@@ -18,6 +18,20 @@ class BoxRID:
     box_id: str
 
 
+def memory_cache(cache_path):
+    def wrapper2(f):
+        def wrapper(self, *args, **kwargs):
+            c_p = cache_path(*args)
+            try:
+                return self.cache[c_p]
+            except Exception:
+                data = f(self, *args, **kwargs)
+                self.cache[c_p] = data
+                return data
+        return wrapper
+    return wrapper2
+
+
 class BoxStorage:
     storage: StorageClient
     cache: FileStorage
@@ -30,42 +44,53 @@ class BoxStorage:
     def box_path(self, rid: BoxRID):
         return f"{BoxStorage.PREFIX}/{rid.theme_id}/{rid.box_id}"
 
+    @memory_cache(lambda args: f'{args.chain_id}_{args.theme_id}_{args.box_id}_metadata_box')
     def load_metadata_box(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_json(f"{self.box_path(rid)}/metadata_box.json")
 
+    @memory_cache(lambda args: f'{args.chain_id}_{args.theme_id}_{args.box_id}_metadata_booklet')
     def load_metadata_booklet(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_json(f"{self.box_path(rid)}/metadata_booklet.json")
 
     def step_image_path(self, rid: BoxRID, step: int):
         return f"{self.box_path(rid)}/step_{step}.png"
 
+    @memory_cache(lambda rid, file: f'{rid.chain_id}_{rid.theme_id}_{rid.box_id}_file_{file}')
     def load_box_file(self, rid: BoxRID, file: str):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/{file}")
 
     def load_step_image(self, rid: BoxRID, step: int):
         return self.storage.get_backend(rid.chain_id).load_bytes(self.step_image_path(rid, step))
 
+    @memory_cache(lambda rid: f'{rid.chain_id}_{rid.theme_id}_{rid.box_id}_cover.png')
     def load_cover_item(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/cover.png")
 
+    @memory_cache(lambda rid: f'{rid.chain_id}_{rid.theme_id}_{rid.box_id}_cover.jpg')
     def load_cover_item_jpg(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/cover.jpg")
 
+    @memory_cache(lambda rid: f'{rid.chain_id}_{rid.theme_id}_{rid.box_id}booklet_cover.png')
     def load_cover_booklet(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/booklet_cover.png")
 
+    @memory_cache(lambda rid: f'{rid.chain_id}_{rid.theme_id}_{rid.box_id}booklet_cover.jpg')
     def load_cover_booklet_jpg(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/booklet_cover.jpg")
 
+    @memory_cache(lambda rid: f'{rid.chain_id}_{rid.theme_id}_{rid.box_id}box_cover.png')
     def load_cover_box(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/box_cover.png")
 
+    @memory_cache(lambda rid: f'{rid.chain_id}_{rid.theme_id}_{rid.box_id}box_cover.jpg')
     def load_cover_box_jpg(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/box_cover.jpg")
 
+    @memory_cache(lambda rid: f'{rid.chain_id}_{rid.theme_id}_{rid.box_id}box_tex.png')
     def load_box_texture(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/box_tex.png")
 
+    @memory_cache(lambda rid: f'{rid.chain_id}_{rid.theme_id}_{rid.box_id}booklet_cover_tex.png')
     def load_booklet_texture(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/booklet_cover_tex.png")
 
