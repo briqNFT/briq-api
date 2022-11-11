@@ -21,7 +21,7 @@ async def add_process_time_header(request, call_next):
     start_time = time.time()
     response = await call_next(request)
     t = time.time() - start_time
-    logger.info('Request for "%(url)s" processing in %(time_s)s seconds', { 'url': request.url, 'time_s': t })
+    logger.info('Request for "%(url)s" processing in %(time_s)s seconds', {'url': str(request.url), 'time_s': t})
     return response
 
 # This is a public API, so allow any CORS origin.
