@@ -109,37 +109,30 @@ class BoxStorage:
     def get_theme_data(self, chain_id: str, theme_id: str):
         return self.storage.get_backend(chain_id).load_json(f"{BoxStorage.PREFIX}/{theme_id}/data.json")
 
-    def theme_cover_prelaunch(self, chain_id: str, theme_id: str):
-        try:
-            return self.cache[f'{chain_id}_{theme_id}_cover_prelaunch']
-        except Exception:
-            data = self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/cover_prelaunch.jpg")
-            self.cache[f'{chain_id}_{theme_id}_cover_prelaunch'] = data
-            return data
+    @memory_cache(lambda chain_id, theme_id, quality: f'{chain_id}_{theme_id}_{quality}_cover_prelaunch')
+    def theme_cover_prelaunch(self, chain_id: str, theme_id: str, quality: str):
+        if quality != 'high' and quality != 'low':
+            raise Exception('Quality should be high or low')
+        return self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/cover_prelaunch_{quality}.jpg")
 
-    def theme_cover_postlaunch(self, chain_id: str, theme_id: str):
-        try:
-            return self.cache[f'{chain_id}_{theme_id}_cover_postlaunch']
-        except Exception:
-            data = self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/cover_postlaunch.jpg")
-            self.cache[f'{chain_id}_{theme_id}_cover_postlaunch'] = data
-            return data
+    @memory_cache(lambda chain_id, theme_id, quality: f'{chain_id}_{theme_id}_{quality}_cover_postlaunch')
+    def theme_cover_postlaunch(self, chain_id: str, theme_id: str, quality: str):
+        if quality != 'high' and quality != 'low':
+            raise Exception('Quality should be high or low')
+        return self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/cover_postlaunch_{quality}.jpg")
 
-    def theme_logo(self, chain_id: str, theme_id: str):
-        try:
-            return self.cache[f'{chain_id}_{theme_id}_logo']
-        except Exception:
-            data = self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/logo.png")
-            self.cache[f'{chain_id}_{theme_id}_logo'] = data
-            return data
+    @memory_cache(lambda chain_id, theme_id, quality: f'{chain_id}_{theme_id}_{quality}_logo')
+    def theme_logo(self, chain_id: str, theme_id: str, quality: str):
+        if quality != 'high' and quality != 'low':
+            raise Exception('Quality should be high or low')
+        # TODO -> for now it's always high quality, too small a file to matter.
+        return self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/logo.png")
 
-    def theme_splash(self, chain_id: str, theme_id: str):
-        try:
-            return self.cache[f'{chain_id}_{theme_id}_splash']
-        except Exception:
-            data = self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/splash.jpg")
-            self.cache[f'{chain_id}_{theme_id}_splash'] = data
-            return data
+    @memory_cache(lambda chain_id, theme_id, quality: f'{chain_id}_{theme_id}_{quality}_splash.pdf')
+    def theme_splash(self, chain_id: str, theme_id: str, quality: str):
+        if quality != 'high' and quality != 'low':
+            raise Exception('Quality should be high or low')
+        return self.storage.get_backend(chain_id).load_bytes(f"{BoxStorage.PREFIX}/{theme_id}/splash_{quality}.jpg")
 
 
 box_storage = BoxStorage(file_storage)

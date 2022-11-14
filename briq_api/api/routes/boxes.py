@@ -309,15 +309,15 @@ async def get_theme_data(chain_id: str, theme_id: str):
     })
 
 
-@router.head("/{chain_id}/{theme_id}/cover.jpg")
-@router.get("/{chain_id}/{theme_id}/cover.jpg")
-async def get_theme_cover(chain_id: str, theme_id: str):
+@router.head("/{chain_id}/{theme_id}/{quality}/cover.jpg")
+@router.get("/{chain_id}/{theme_id}/{quality}/cover.jpg")
+async def get_theme_cover(chain_id: str, theme_id: str, quality: str):
     try:
         data = boxes.get_theme_data(chain_id, theme_id)
         if data['sale_start'] is None or data['sale_start'] > time.time():
-            output = boxes.box_storage.theme_cover_prelaunch(chain_id, theme_id)
+            output = boxes.box_storage.theme_cover_prelaunch(chain_id, theme_id, quality)
         else:
-            output = boxes.box_storage.theme_cover_postlaunch(chain_id, theme_id)
+            output = boxes.box_storage.theme_cover_postlaunch(chain_id, theme_id, quality)
     except Exception as e:
         logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get theme cover")
@@ -327,11 +327,12 @@ async def get_theme_cover(chain_id: str, theme_id: str):
     })
 
 
-@router.head("/{chain_id}/{theme_id}/logo.png")
-@router.get("/{chain_id}/{theme_id}/logo.png")
-async def get_theme_logo(chain_id: str, theme_id: str):
+@router.head("/{chain_id}/{theme_id}/{quality}/logo.png")
+@router.get("/{chain_id}/{theme_id}/{quality}/logo.png")
+async def get_theme_logo(chain_id: str, theme_id: str, quality: str):
     try:
-        output = boxes.box_storage.theme_logo(chain_id, theme_id)
+        # Only in high quality, too cheap
+        output = boxes.box_storage.theme_logo(chain_id, theme_id, 'high')
     except Exception as e:
         logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get theme cover")
@@ -341,11 +342,11 @@ async def get_theme_logo(chain_id: str, theme_id: str):
     })
 
 
-@router.head("/{chain_id}/{theme_id}/splash.jpg")
-@router.get("/{chain_id}/{theme_id}/splash.jpg")
-async def get_theme_splash(chain_id: str, theme_id: str):
+@router.head("/{chain_id}/{theme_id}/{quality}/splash.jpg")
+@router.get("/{chain_id}/{theme_id}/{quality}/splash.jpg")
+async def get_theme_splash(chain_id: str, theme_id: str, quality: str):
     try:
-        output = boxes.box_storage.theme_splash(chain_id, theme_id)
+        output = boxes.box_storage.theme_splash(chain_id, theme_id, quality)
     except Exception as e:
         logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get theme splash")
