@@ -1,6 +1,6 @@
 #@data/values-schema
 ---
-name: briq-protocol
+name: briq-api
 env: test
 storage_bucket: briq-bucket-test-1
 static_ip: lb-sltech-company-ipv4-1
@@ -8,8 +8,13 @@ sites: [""]
 resources:
   cpu: "50m"
   memory: "128Mi"
-image_name: briq-protocol
+image_name: briq-api
 image_tag: ""
+
+#@schema/type any=True
+defaultLabels:
+  appname: briq
+  env: test
 
 indexer:
   name: briq-indexer

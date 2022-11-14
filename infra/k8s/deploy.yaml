@@ -1,18 +1,21 @@
+#@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: #@ data.values.name
+  labels: #@ data.values.defaultLabels
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: #@ data.values.name
+      deployname: #@ data.values.name
   template:
     metadata:
       labels:
-        app: #@ data.values.name
+        _: #@ template.replace(data.values.defaultLabels)
+        deployname: #@ data.values.name
     spec:
       serviceAccountName: cloud-storage-access
       containers:
@@ -57,15 +60,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: #@ data.values.indexer.name
+  labels: #@ data.values.defaultLabels
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: #@ data.values.indexer.name
+      deployname: #@ data.values.indexer.name
   template:
     metadata:
       labels:
-        app: #@ data.values.indexer.name
+        _: #@ template.replace(data.values.defaultLabels)
+        deployname: #@ data.values.indexer.name
     spec:
       containers:
       #@ # This should match configuration.toml -> TODO do this automagically
@@ -95,15 +100,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: #@ data.values.indexer.name + "-runner"
+  labels: #@ data.values.defaultLabels
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: #@ data.values.indexer.name + "-runner"
+      deployname: #@ data.values.indexer.name + "-runner"
   template:
     metadata:
       labels:
-        app: #@ data.values.indexer.name + "-runner"
+        _: #@ template.replace(data.values.defaultLabels)
+        deployname: #@ data.values.indexer.name + "-runner"
     spec:
       containers:
       - name: "indexer-runner"

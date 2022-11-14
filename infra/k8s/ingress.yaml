@@ -5,6 +5,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: #@ data.values.name
+  labels: #@ data.values.defaultLabels
   annotations:
     kubernetes.io/ingress.global-static-ip-name: #@ data.values.static_ip
     networking.gke.io/v1beta1.FrontendConfig: #@ data.values.name
@@ -29,6 +30,7 @@ apiVersion: networking.gke.io/v1beta1
 kind: FrontendConfig
 metadata:
   name: #@ data.values.name
+  labels: #@ data.values.defaultLabels
 spec:
   redirectToHttps:
     enabled: true
@@ -38,6 +40,7 @@ apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
 metadata:
   name: #@ data.values.name + "-managed-cert"
+  labels: #@ data.values.defaultLabels
 spec:
   domains: #@ data.values.sites
 #@ end
