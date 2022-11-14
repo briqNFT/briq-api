@@ -94,6 +94,10 @@ class BoxStorage:
     def load_booklet_texture(self, rid: BoxRID):
         return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/booklet_cover_tex.png")
 
+    @memory_cache(lambda rid: f'{rid.chain_id}_{rid.theme_id}_{rid.box_id}_booklet.pdf')
+    def load_booklet_pdf(self, rid: BoxRID):
+        return self.storage.get_backend(rid.chain_id).load_bytes(f"{self.box_path(rid)}/booklet.pdf")
+
     # Themes
 
     def list_themes(self, chain_id: str):
@@ -193,6 +197,10 @@ def get_theme_data(chain_id: str, theme_id: str):
     data = box_storage.get_theme_data(chain_id, theme_id)
     data['sale_start'] = time.time() - 60 if 'ongoing' in theme_id else None
     return data
+
+
+def get_booklet_pdf(rid: BoxRID):
+    return box_storage.load_booklet_pdf(rid)
 
 
 def get_box_step_image(rid: BoxRID, step: int):

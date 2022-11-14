@@ -70,6 +70,21 @@ async def booklet_data(chain_id: str, theme_id: str, booklet_id: str):
     })
 
 
+@router.head("/booklet/pdf/{chain_id}/{theme_id}/{box_id}.pdf")
+@router.get("/booklet/pdf/{chain_id}/{theme_id}/{box_id}.pdf")
+async def booklet_pdf(chain_id: str, theme_id: str, box_id: str):
+    rid = BoxRID(chain_id, theme_id, box_id)
+    try:
+        pdf = boxes.get_booklet_pdf(rid)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="File not found")
+
+    return StreamingResponse(io.BytesIO(pdf), media_type="application/pdf", headers={
+        "Cache-Control": f"public, max-age={3600 * 24}"
+    })
+
+
 @router.head("/booklet/texture/{chain_id}/{theme_id}/{box_id}")
 @router.head("/booklet/texture/{chain_id}/{theme_id}/{box_id}.png")
 @router.get("/booklet/texture/{chain_id}/{theme_id}/{box_id}")
