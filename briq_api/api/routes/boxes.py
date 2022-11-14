@@ -12,26 +12,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.head("/{chain_id}/{theme_id}/{box_id}/saledata")
-@router.get("/{chain_id}/{theme_id}/{box_id}/saledata")
-async def get_box_saledata(chain_id: str, theme_id: str, box_id: str):
-    try:
-        return boxes.get_box_saledata(rid=BoxRID(chain_id, theme_id, box_id))
-    except Exception as e:
-        logger.debug(e, exc_info=e)
-        raise HTTPException(status_code=500, detail="Could not get sale data")
-
-
-@router.head("/box/get_transfer/{chain_id}/{theme_id}/{box_id}/{tx_hash}")
-@router.get("/box/get_transfer/{chain_id}/{theme_id}/{box_id}/{tx_hash}")
-async def get_box_transfer(chain_id: str, theme_id: str, box_id: str, tx_hash: str):
-    try:
-        return boxes.get_box_transfer(rid=BoxRID(chain_id, theme_id, box_id), tx_hash=tx_hash)
-    except Exception as e:
-        logger.debug(e, exc_info=e)
-        raise HTTPException(status_code=500, detail="Could not get transfer information")
-
-
 @router.head("/box/data/{chain_id}/{theme_id}/{box_id}")
 @router.head("/box/data/{chain_id}/{theme_id}/{box_id}.json")
 @router.get("/box/data/{chain_id}/{theme_id}/{box_id}")
@@ -268,47 +248,6 @@ async def box_step_glb(chain_id: str, theme_id: str, box_id: str, step: int):
     })
 
 
-@router.head("/box_themes/list/{chain_id}")
-@router.get("/box_themes/list/{chain_id}")
-async def box_themes_list(chain_id: str):
-    try:
-        output = boxes.list_themes(chain_id)
-    except Exception as e:
-        logger.debug(e, exc_info=e)
-        raise HTTPException(status_code=500, detail="Could not list themes")
-
-    return JSONResponse(output, headers={
-        "Cache-Control": f"public, max-age={60}"
-    })
-
-
-@router.head("/{chain_id}/{theme_id}/boxes")
-@router.get("/{chain_id}/{theme_id}/boxes")
-async def list_boxes_of_theme(chain_id: str, theme_id: str):
-    try:
-        output = boxes.list_boxes_of_theme(chain_id, theme_id)
-    except Exception:
-        raise HTTPException(status_code=500, detail="Could not list boxes for theme " + theme_id)
-
-    return JSONResponse(output, headers={
-        "Cache-Control": f"public, max-age={60}"
-    })
-
-
-@router.head("/{chain_id}/{theme_id}/data")
-@router.get("/{chain_id}/{theme_id}/data")
-async def get_theme_data(chain_id: str, theme_id: str):
-    try:
-        output = boxes.get_theme_data(chain_id, theme_id)
-    except Exception as e:
-        logger.debug(e, exc_info=e)
-        raise HTTPException(status_code=500, detail="Could not get theme data")
-
-    return JSONResponse(output, headers={
-        "Cache-Control": f"public, max-age={60}"
-    })
-
-
 @router.head("/{chain_id}/{theme_id}/{quality}/cover.jpg")
 @router.get("/{chain_id}/{theme_id}/{quality}/cover.jpg")
 async def get_theme_cover(chain_id: str, theme_id: str, quality: str):
@@ -354,3 +293,82 @@ async def get_theme_splash(chain_id: str, theme_id: str, quality: str):
     return StreamingResponse(io.BytesIO(output), media_type="image/jpeg", headers={
         "Cache-Control": f"public, max-age={60 * 60 * 24 * 7}"
     })
+
+@router.head("/box_themes/list/{chain_id}")
+@router.get("/box_themes/list/{chain_id}")
+async def box_themes_list(chain_id: str):
+    try:
+        output = boxes.list_themes(chain_id)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="Could not list themes")
+
+    return JSONResponse(output, headers={
+        "Cache-Control": f"public, max-age={60}"
+    })
+
+
+
+@router.head("/{chain_id}/{theme_id}/data")
+@router.get("/{chain_id}/{theme_id}/data")
+async def get_theme_data(chain_id: str, theme_id: str):
+    try:
+        output = boxes.get_theme_data(chain_id, theme_id)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="Could not get theme data")
+
+    return JSONResponse(output, headers={
+        "Cache-Control": f"public, max-age={60}"
+    })
+
+
+@router.head("/{chain_id}/{theme_id}/boxes")
+@router.get("/{chain_id}/{theme_id}/boxes")
+async def list_boxes_of_theme(chain_id: str, theme_id: str):
+    try:
+        data = boxes.get_theme_data(chain_id, theme_id)
+        if data['sale_start'] is None or data['sale_start'] > time.time():
+            output = []
+        else:
+            output = boxes.list_boxes_of_theme(chain_id, theme_id)
+
+        time_left = time.time() - data['sale_start'] if data['sale_start'] else 0
+        if time_left > 3600:
+            return JSONResponse(output, headers={
+                "Cache-Control": f"public, max-age={3555}"
+            })
+        if time_left > 60:
+            return JSONResponse(output, headers={
+                "Cache-Control": f"public, max-age={max(0, 3550 - time_left) }"
+            })
+        return JSONResponse(output)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="Could not list boxes for theme " + theme_id)
+
+
+@router.head("/{chain_id}/{theme_id}/{box_id}/saledata")
+@router.get("/{chain_id}/{theme_id}/{box_id}/saledata")
+async def get_box_saledata(chain_id: str, theme_id: str, box_id: str):
+    try:
+        theme_data = boxes.get_theme_data(chain_id, theme_id)
+        saledata = boxes.get_box_saledata(rid=BoxRID(chain_id, theme_id, box_id))
+        if theme_data['sale_start'] is None or theme_data['sale_start'] > time.time():
+            saledata.pop('total_quantity', None)
+            saledata.pop('initial_price', None)
+            saledata.pop('quantity_left', None)
+        return saledata
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="Could not get sale data")
+
+
+@router.head("/box/get_transfer/{chain_id}/{theme_id}/{box_id}/{tx_hash}")
+@router.get("/box/get_transfer/{chain_id}/{theme_id}/{box_id}/{tx_hash}")
+async def get_box_transfer(chain_id: str, theme_id: str, box_id: str, tx_hash: str):
+    try:
+        return boxes.get_box_transfer(rid=BoxRID(chain_id, theme_id, box_id), tx_hash=tx_hash)
+    except Exception as e:
+        logger.debug(e, exc_info=e)
+        raise HTTPException(status_code=500, detail="Could not get transfer information")

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from itertools import chain
 import logging
+from briq_api.config import ENV
 from briq_api.storage.file.backends.file_storage import FileStorage
 import time
 
@@ -154,22 +155,6 @@ def get_booklet_metadata(rid: BoxRID):
     return metadata
 
 
-def get_box_saledata(rid: BoxRID):
-    auction_data = genesis_storage.get_auction_static_data(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
-    box_token_id = genesis_storage.get_box_token_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
-    auction_data['quantity_left'] = mongo_storage.get_available_boxes(rid.chain_id, box_token_id)
-    # temp hack
-    import time
-    if 'ongoing' in rid.theme_id:
-        if 'base' in rid.box_id:
-            auction_data['auction_start'] = time.time() + 60
-        else:
-            auction_data['auction_start'] = time.time() - 60
-    else:
-        auction_data['auction_start'] = time.time() + 24 * 60 * 60 * 10
-    return auction_data
-
-
 def get_box_transfer(rid: BoxRID, tx_hash: str):
     box_token_id = genesis_storage.get_box_token_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
     return mongo_storage.get_transfer(rid.chain_id, 'box', tx_hash, box_token_id)
@@ -180,16 +165,38 @@ def list_themes(chain_id: str):
 
 
 def list_boxes_of_theme(chain_id: str, theme_id: str):
-    data = get_theme_data(chain_id, theme_id)
-    if data['sale_start'] is None or data['sale_start'] > time.time():
-        return []
     return [f"{theme_id}/{box}" for box in box_storage.list_boxes_of_theme(chain_id, theme_id)]
 
 
 def get_theme_data(chain_id: str, theme_id: str):
     data = box_storage.get_theme_data(chain_id, theme_id)
-    data['sale_start'] = time.time() - 60 if 'ongoing' in theme_id else None
+    if ENV != 'prod':
+        if 'ongoing' in theme_id:
+            pass#data['sale_start'] = time.time() - 60
+        else:
+            data['sale_start'] = None
+    else:
+        # TODO change this
+        data['sale_start'] = None
     return data
+
+
+def get_box_saledata(rid: BoxRID):
+    auction_data = genesis_storage.get_auction_static_data(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
+    box_token_id = genesis_storage.get_box_token_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
+    auction_data['quantity_left'] = mongo_storage.get_available_boxes(rid.chain_id, box_token_id)
+    # Hack for dev
+    if ENV != 'prod':
+        import time
+        if 'ongoing' in rid.theme_id:
+            if 'horus' in rid.box_id:
+                auction_data['auction_start'] = time.time() + 60
+            else:
+                auction_data['auction_start'] = time.time() - 60
+        else:
+            auction_data['auction_start'] = time.time() + 24 * 60 * 60 * 10
+    return auction_data
+
 
 
 def get_booklet_pdf(rid: BoxRID):
