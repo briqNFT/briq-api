@@ -49,6 +49,7 @@ class GenesisStorage(StorageClient[GenesisBackend]):
         data = self.get_backend(chain_id).get_auction_data()[box_id]
         return {
             "total_quantity": data['quantity'],
+            "wave": data['wave'] if 'wave' in data else None,
             "auction_start": data['auction_start'],
             "auction_duration": data['auction_duration'],
             # Pass as string since this is in WEI
