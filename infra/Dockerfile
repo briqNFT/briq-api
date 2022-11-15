@@ -16,7 +16,7 @@ COPY briq_api/ briq_api
 COPY jobs/ jobs
 COPY gunicorn.conf.py gunicorn.conf.py
 
-RUN pip install -e .
+RUN pip install --no-deps -e .
 
 # For temporary testing, copy the temp folder for sets.
 COPY temp/genesis_themes/ temp/genesis_themes

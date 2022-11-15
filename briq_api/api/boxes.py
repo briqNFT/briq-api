@@ -175,9 +175,6 @@ def get_theme_data(chain_id: str, theme_id: str):
             pass#data['sale_start'] = time.time() - 60
         else:
             data['sale_start'] = None
-    else:
-        # TODO change this
-        data['sale_start'] = None
     return data
 
 

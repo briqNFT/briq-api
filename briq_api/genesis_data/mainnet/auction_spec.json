@@ -1,0 +1,4 @@
+{
+    "starknet_planet_test/helper_robot": { "quantity": 15, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_planet_test/radio_kit": { "quantity": 15, "extra_briqs": 100, "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 }
+}

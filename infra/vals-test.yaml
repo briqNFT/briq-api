@@ -1,7 +1,7 @@
 #@data/values
 ---
 name: dev-briq-api
-env: test
+env: prod
 storage_bucket: briq-bucket-prod-1
 static_ip: lb-sltech-company-ipv4-3
 sites: ["api.test.sltech.company"]
@@ -13,9 +13,9 @@ defaultLabels:
 indexer:
   name: dev-briq-indexer
   image_store: mongo:latest
-  indexer_id: "kub-test-1"
-  network_name: 'starknet-goerli'
-  start_block: '3000'
+  indexer_id: "kub-mainnet-0"
+  network_name: 'starknet-mainnet'
+  start_block: '9000'
   resources:
     cpu_store: "50m"
     memory_store: "128Mi"

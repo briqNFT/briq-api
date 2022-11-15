@@ -36,9 +36,7 @@ spec:
           value: apibara
         - name: MONGO_PASSWORD
           value: apibara
-        #@ if data.values.env == 'test':
-        - name: USE_MOCK_CHAIN
-          value: "1"
+        #@ if data.values.env != 'prod':
         - name: LOGLEVEL
           value: "DEBUG"
         #@ end

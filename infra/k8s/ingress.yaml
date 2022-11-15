@@ -1,5 +1,6 @@
 #@ load("@ytt:data", "data")
-#@ if data.values.env == 'prod':
+#@ #if data.values.env == 'prod':
+#@ if False:
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

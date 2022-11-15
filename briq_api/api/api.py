@@ -97,8 +97,6 @@ async def store_set(rid: SetRID, setData: dict, image_base64: bytes):
 
 
 def get_user_bids(chain_id: str, user_id: str):
-    if ENV == 'prod':
-        return []
     try:
         encoded_user_id = int(user_id)
     except:
@@ -120,8 +118,6 @@ def get_user_bids(chain_id: str, user_id: str):
 
 
 def get_bids_for_box(chain_id: str, box_id: str):
-    if ENV == 'prod':
-        return []
     box_token_id = genesis_storage.get_box_token_id(chain_id, box_id)
     data = mongo_storage.get_backend(chain_id).db["bids"].find({"box_token_id": box_token_id.to_bytes(32, "big"), "valid_to": None})
     bids = [
