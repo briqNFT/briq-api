@@ -1,7 +1,7 @@
 {
-    "starknet_city_ongoing/akimbo_fighter": { "quantity": 20, "extra_briqs": 100, "wave": "1", "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
-    "starknet_city_ongoing/antigravity_motorbike": { "quantity": 15, "extra_briqs": 100, "wave": "1", "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
-    "starknet_city_ongoing/briq_rocket": { "quantity": 20, "extra_briqs": 100, "wave": "1", "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
+    "starknet_city_ongoing/akimbo_fighter": { "quantity": 20, "extra_briqs": 100, "wave": "1", "auction_start": 126, "auction_duration": 86400, "initial_price": 250000000000000000 },
+    "starknet_city_ongoing/antigravity_motorbike": { "quantity": 15, "extra_briqs": 100, "wave": "1", "auction_start": 126, "auction_duration": 86400, "initial_price": 100000000000000000 },
+    "starknet_city_ongoing/briq_rocket": { "quantity": 20, "extra_briqs": 100, "wave": "1", "auction_start": 126, "auction_duration": 86400, "initial_price": 500000000000000000 },
     "starknet_city_ongoing/cairo_pyramid": { "quantity": 1, "extra_briqs": 100, "wave": "2", "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
     "starknet_city_ongoing/crawler_robot": { "quantity": 15, "extra_briqs": 100, "wave": "2", "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
     "starknet_city_ongoing/flying_saucer": { "quantity": 15, "extra_briqs": 100, "wave": "2", "auction_start": 126, "auction_duration": 86400, "initial_price": 1000000000000000000 },
