@@ -338,10 +338,11 @@ async def list_boxes_of_theme(chain_id: str, theme_id: str):
             return JSONResponse(output, headers={
                 "Cache-Control": f"public, max-age={3555}"
             })
-        if time_left > 60:
+        if time_left > 60 * 5:
             return JSONResponse(output, headers={
                 "Cache-Control": f"public, max-age={max(0, 3550 - time_left) }"
             })
+        # Turn off the caching client-side - we might want to update quickly on our end.
         return JSONResponse(output)
     except Exception as e:
         logger.debug(e, exc_info=e)
