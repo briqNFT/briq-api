@@ -1,23 +1,4 @@
 {
-    "starknet_planet_test/spaceman": 1,
-    "starknet_planet_test/space_doggo": 2,
-    "starknet_planet_test/helper_robot": 3,
-    "starknet_planet_test/akimbo_fighter": 4,
-    "starknet_planet_test/antigravity_motorbike": 5,
-    "starknet_planet_test/briq_rocket": 6,
-    "starknet_planet_test/crawler_robot": 7,
-    "starknet_planet_test/flying_saucer": 8,
-    "starknet_planet_test/hathor_3_rocket": 9,
-    "starknet_planet_test/landing_module": 10,
-    "starknet_planet_test/launchpad": 11,
-    "starknet_planet_test/lunar_buggy": 12,
-    "starknet_planet_test/lunar_capsule": 13,
-    "starknet_planet_test/lunar_truck": 14,
-    "starknet_planet_test/radio_kit": 15,
-    "starknet_planet_test/space_mecha": 16,
-    "starknet_planet_test/speeder": 17,
-    "starknet_planet_test/starkgate": 18,
-    "starknet_planet_test/transmission_equipment": 19,
-    "starknet_planet_test/horus_rocket": 20,
-    "starknet_planet_test/cairo_pyramid": 21
+    "starknet_planet_test/helper_robot": 1,
+    "starknet_planet_test/radio_kit": 2
 }

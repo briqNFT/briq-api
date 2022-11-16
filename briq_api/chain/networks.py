@@ -37,6 +37,13 @@ TESTNET = NetworkMetadata(
 
 MAINNET = NetworkMetadata(
     id="starknet-mainnet",
+    auction_address="0x069af7b4be9a993bcf07a83ce501d93514da0b02f90b0b3b62441a168df1ec57",
+    box_address="0x05f1760600412b3e6a26322ebdb0d269a3c54a0e01face2251d97a23af695c8d",
+    briq_address="0x05a7b65fa39929e3816d75640415aaa2ffed2020da83515ad9eeb9a2a07de195",
+    booklet_address="0x03652aa641585bac21f641bdd445399e45e6a334dcf77eb16bd7e158563cf6d5",
+    attributes_registry_address="0x06e4cdd13e3a824a033216ab50b5d112fff216cd1126c0fde41290229229c9c9",
+    set_address="0x06498184048f5a971cdd8868910d5ae9c1cbe7dee9d8887e43e5236ae79a21b4",
+    erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
 )
 
 TESTNET_LEGACY = NetworkMetadata(id="starknet-testnet-legacy")

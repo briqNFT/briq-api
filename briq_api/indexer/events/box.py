@@ -3,12 +3,12 @@ from apibara import Info
 from apibara.model import EventFilter, BlockHeader, StarkNetEvent
 from starknet_py.contract import FunctionCallSerializer, identifier_manager_from_abi
 
-from ...chain.networks import TESTNET
 from .common import uint256_abi, decode_event, encode_int_as_bytes
+from ..config import NETWORK
 
 logger = logging.getLogger(__name__)
 
-contract_address = TESTNET.box_address
+contract_address = NETWORK.box_address
 contract_prefix = "box"
 transfer_filters = [
     EventFilter.from_event_name(name="TransferSingle", address=contract_address),

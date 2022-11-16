@@ -3,12 +3,12 @@ from apibara import Info
 from apibara.model import EventFilter, BlockHeader, StarkNetEvent
 from starknet_py.contract import FunctionCallSerializer, identifier_manager_from_abi
 
-from ...chain.networks import TESTNET
 from .common import uint256_abi, decode_event, encode_int_as_bytes
+from ..config import NETWORK
 
 logger = logging.getLogger(__name__)
 
-auction_address = TESTNET.auction_address
+auction_address = NETWORK.auction_address
 
 bid_abi = {
     "name": "Bid",
