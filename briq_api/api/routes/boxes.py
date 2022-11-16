@@ -348,17 +348,18 @@ async def list_boxes_of_theme(chain_id: str, theme_id: str):
         raise HTTPException(status_code=500, detail="Could not list boxes for theme " + theme_id)
 
 
-@router.head("/{chain_id}/{theme_id}/{box_id}/saledata")
-@router.get("/{chain_id}/{theme_id}/{box_id}/saledata")
-async def get_box_saledata(chain_id: str, theme_id: str, box_id: str):
+@router.head("/{chain_id}/{theme_id}/saledata")
+@router.get("/{chain_id}/{theme_id}/saledata")
+async def get_box_saledata(chain_id: str, theme_id: str):
     try:
         theme_data = boxes.get_theme_data(chain_id, theme_id)
-        saledata = boxes.get_box_saledata(rid=BoxRID(chain_id, theme_id, box_id))
+        box_list = boxes.list_boxes_of_theme(chain_id, theme_id)
         if theme_data['sale_start'] is None or theme_data['sale_start'] > time.time():
-            saledata.pop('total_quantity', None)
-            saledata.pop('initial_price', None)
-            saledata.pop('quantity_left', None)
-        return saledata
+            return {}
+        ret = {}
+        for box in box_list:
+            ret[box] = boxes.get_box_saledata(rid=BoxRID(chain_id, theme_id, box.split('/')[1]))
+        return ret
     except Exception as e:
         logger.debug(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get sale data")
