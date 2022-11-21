@@ -21,12 +21,10 @@ indexer:
   image_store: mongo:latest
   image_apibara: apibara/apibara:0.3.2-alpha1
   indexer_id: "testnet-test-3"
-  network_name: 'starknet-goerli'
+  network_name: 'starknet-testnet'
   start_block: '3000'
   resources:
     cpu_store: "50m"
     memory_store: "128Mi"
-    cpu_apibara: "50m"
-    memory_apibara: "128Mi"
     cpu_runner: "50m"
     memory_runner: "128Mi"

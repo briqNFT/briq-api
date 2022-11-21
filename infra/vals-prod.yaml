@@ -9,17 +9,18 @@ sites: ["api.briq.construction", "api.sltech.company"]
 defaultLabels:
   appname: briq
   env: prod
+resources:
+  cpu: "1000m"
+  memory: "1024Mi"
 
 indexer:
   name: briq-indexer
   image_store: mongo:latest
-  indexer_id: "kub-test-1"
-  network_name: 'starknet-goerli'
-  start_block: '352600'
+  indexer_id: "kub-mainnet-1"
+  network_name: 'starknet-mainnet'
+  start_block: '10400'
   resources:
-    cpu_store: "50m"
-    memory_store: "128Mi"
-    cpu_apibara: "50m"
-    memory_apibara: "128Mi"
+    cpu_store: "1000m"
+    memory_store: "2048Mi"
     cpu_runner: "50m"
     memory_runner: "128Mi"
