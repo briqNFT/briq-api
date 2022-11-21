@@ -8,7 +8,7 @@ from apibara.indexer import IndexerRunnerConfiguration
 
 from .config import INDEXER_ID, APIBARA_URL, MONGO_URL, MONGO_USERNAME, MONGO_PASSWORD, START_BLOCK
 from .events.bids import process_bids, bid_filter
-from .events.box import process_transfers as process_box, transfer_filters as box_filters
+from .events.box import process_transfers as process_box, process_pending_box, transfer_filters as box_filters
 from .events.booklet import process_transfers as process_booklet, transfer_filters as booklet_filters
 from .events.briq import process_transfers as process_briq, transfer_filters as briq_filters
 from .events.set import process_transfers as process_set, transfer_filters as set_filters
@@ -33,6 +33,10 @@ async def handle_events(info: Info, block_events: NewEvents):
     await booklets
     await briqs
     await sets
+
+
+async def handle_pending_events(info: Info, block_events: NewEvents):
+    await process_pending_box(info, block_events.block, [event for event in block_events.events])
 
 
 async def handle_block(info: Info, block: NewBlock):
@@ -62,6 +66,8 @@ async def main(args):
         indexer_id=INDEXER_ID,
         new_events_handler=handle_events,
     )
+
+    # runner.add_pending_events_handler(handle_pending_events, interval_seconds=5)
 
     runner.add_block_handler(handle_block)
 

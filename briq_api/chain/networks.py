@@ -24,6 +24,17 @@ DEVNET = NetworkMetadata(
     erc20_address="0x62230ea046a9a5fbc261ac77d03c8d41e5d442db2284587570ab46455fd2488",
 )
 
+TESTNET_NORMAL = NetworkMetadata(
+    id="starknet-testnet",
+    auction_address="0x0435c3be3e2a583c6d9c85f5d751b11acb8230f997b3c7b7ab11bbd97beda220",
+    box_address="0x0324642cf2a18e0873d80ea91e1426b3a776806ba31fc0a694014567ac1018cd",
+    briq_address="0x02165e8c1dd9bd5dd6583da76d08b3c306fda013a6c621bee403c280ead9aaa7",
+    booklet_address="0x053c894cd8ba4d953540dc7056c811289ad631bc1dcea07bc323f6f9c9f1f31f",
+    attributes_registry_address="0x078cf4ac0d91c0e418bdd8ccd08122583daac33a2ba3dfecca66e8953402e2eb",
+    set_address="0x04172804038f94b8ebeec4cb74992e9a6d436ecafd3b018767c7d107550cda90",
+    erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+)
+
 TESTNET = NetworkMetadata(
     id="starknet-testnet",
     auction_address="0x006fbea980d2acb5c63ad97637f6d7f3fa18887e3ad987abbd9eb594a58c0291",
@@ -37,12 +48,12 @@ TESTNET = NetworkMetadata(
 
 MAINNET = NetworkMetadata(
     id="starknet-mainnet",
-    auction_address="0x069af7b4be9a993bcf07a83ce501d93514da0b02f90b0b3b62441a168df1ec57",
-    box_address="0x05f1760600412b3e6a26322ebdb0d269a3c54a0e01face2251d97a23af695c8d",
-    briq_address="0x05a7b65fa39929e3816d75640415aaa2ffed2020da83515ad9eeb9a2a07de195",
-    booklet_address="0x03652aa641585bac21f641bdd445399e45e6a334dcf77eb16bd7e158563cf6d5",
-    attributes_registry_address="0x06e4cdd13e3a824a033216ab50b5d112fff216cd1126c0fde41290229229c9c9",
-    set_address="0x06498184048f5a971cdd8868910d5ae9c1cbe7dee9d8887e43e5236ae79a21b4",
+    auction_address="0x01712e3e3f133b26d65a3c5aaae78e7405dfca0a3cfe725dd57c4941d9474620",
+    box_address="0x01e1f972637ad02e0eed03b69304344c4253804e528e1a5dd5c26bb2f23a8139",
+    briq_address="0x00247444a11a98ee7896f9dec18020808249e8aad21662f2fa00402933dce402",
+    booklet_address="0x05faa82e2aec811d3a3b14c1f32e9bbb6c9b4fd0cd6b29a823c98c7360019aa4",
+    attributes_registry_address="0x008d4f5b0830bd49a88730133a538ccaca3048ccf2b557114b1076feeff13c11",
+    set_address="0x01435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672",
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
 )
 

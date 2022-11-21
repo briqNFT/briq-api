@@ -122,3 +122,38 @@ async def process_transfers(info: Info, block: BlockHeader, transfers: list[Star
             )
 
     logger.info("Updated %(prefix)s token owners", {"prefix": contract_prefix})
+
+
+async def process_pending_box(info: Info, block: BlockHeader, transfers: list[StarkNetEvent]):
+    block_time = block.timestamp
+
+    # Store each in Mongo
+    documents = [prepare_transfer_for_storage(tr, block) for tr in transfers if tr.name == 'TransferSingle' and int.from_bytes(tr.address, 'big') == int(contract_address, 16)]
+    if (not len(documents)):
+        return
+
+    total_bought = {}
+    for transfer in documents:
+        if int.from_bytes(transfer['from'], "big") == int(NETWORK.auction_address, 16):
+            if transfer['token_id'] not in total_bought:
+                total_bought[transfer['token_id']] = 0
+            total_bought[transfer['token_id']] += 1
+
+    for token_id in total_bought:
+        await info.storage.find_one_and_replace(
+            f"{contract_prefix}_pending_bought",
+            {
+                "token_id": token_id,
+            },
+            {
+                "token_id": token_id,
+                "quantity": f'{total_bought}',
+                "updated_at": block_time,
+                "updated_block": block.number,
+            },
+            upsert=True,
+        )
+
+    logger.info("Updated %(prefix)s pending boxes bought", {
+        "prefix": contract_prefix,
+    })
