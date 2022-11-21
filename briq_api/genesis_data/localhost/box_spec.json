@@ -20,5 +20,31 @@
     "starknet_city_ongoing/transmission_equipment": 19,
     "starknet_city_ongoing/horus_rocket": 20,
     "starknet_city_ongoing/cairo_pyramid": 21,
-    "starknet_city_ongoing/space_kennel": 22
+    "starknet_city_ongoing/space_kennel": 22,
+
+    "starknet_planet/spaceman": 1,
+    "starknet_planet/speeder": 2,
+    "starknet_planet/lunar_truck": 3,
+    "starknet_planet/space_doggo": 4,
+    "starknet_planet/hathor_3_rocket": 5,
+    "starknet_planet/flying_saucer": 6,
+    "starknet_planet/helper_robot": 7,
+    "starknet_planet/landing_module": 8,
+    "starknet_planet/akimbo_fighter": 9,
+    
+    "starknet_planet/antigravity_motorbike": 10,
+    "starknet_planet/crawler_robot": 11,
+    "starknet_planet/lunar_capsule": 12,
+    "starknet_planet/space_kennel": 13,
+    "starknet_planet/launchpad": 14,
+    "starknet_planet/transmission_equipment": 15,
+    "starknet_planet/radio_kit": 16,
+    "starknet_planet/lunar_buggy": 17,
+    "starknet_planet/space_mecha": 18,
+
+    "starknet_planet/briq_rocket": 19,
+
+    "starknet_planet/cairo_pyramid": 20,
+    "starknet_planet/horus_rocket": 21,
+    "starknet_planet/starkgate": 22
 }

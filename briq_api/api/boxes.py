@@ -172,11 +172,6 @@ def list_boxes_of_theme(chain_id: str, theme_id: str):
 
 def get_theme_data(chain_id: str, theme_id: str):
     data = box_storage.get_theme_data(chain_id, theme_id)
-    if ENV != 'prod':
-        if 'ongoing' in theme_id:
-            pass#data['sale_start'] = time.time() - 60
-        else:
-            data['sale_start'] = None
     return data
 
 
@@ -192,10 +187,7 @@ def get_box_saledata(rid: BoxRID):
                 auction_data['auction_start'] = time.time() + 60
             else:
                 auction_data['auction_start'] = time.time() - 60
-        else:
-            auction_data['auction_start'] = time.time() + 24 * 60 * 60 * 10
     return auction_data
-
 
 
 def get_booklet_pdf(rid: BoxRID):

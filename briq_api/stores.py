@@ -20,14 +20,19 @@ genesis_storage = GenesisStorage()
 def setup_stores(local: bool, use_mock_chain: bool):
     if not local:
         logger.info("Connecting normally.")
+
+        file_storage.connect_for_chain(TESTNET_LEGACY.id, backend=LegacyCloudStorage('briq-bucket-prod-1'))
+
         # For now, starknet-testnet is connected to the test bucket only in test env.
         if ENV != 'prod':
             file_storage.connect_for_chain(TESTNET.id, backend=CloudStorage('briq-bucket-test-1'))
-        file_storage.connect_for_chain(TESTNET_LEGACY.id, backend=LegacyCloudStorage('briq-bucket-prod-1'))
-        file_storage.connect_for_chain(MAINNET.id, backend=CloudStorage('briq-bucket-prod-1'))
+            file_storage.connect_for_chain(MAINNET.id, backend=CloudStorage('briq-bucket-test-1'))
+        else:
+            file_storage.connect_for_chain(MAINNET.id, backend=CloudStorage('briq-bucket-prod-1'))
 
         if ENV != 'prod':
             mongo_storage.connect_for_chain(TESTNET.id, MongoBackend())
+            mongo_storage.connect_for_chain(MAINNET.id, MongoBackend())
         else:
             mongo_storage.connect_for_chain(MAINNET.id, MongoBackend())
 
