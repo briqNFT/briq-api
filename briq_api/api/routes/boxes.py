@@ -332,16 +332,6 @@ async def list_boxes_of_theme(chain_id: str, theme_id: str):
             output = []
         else:
             output = boxes.list_boxes_of_theme(chain_id, theme_id)
-
-        time_left = time.time() - data['sale_start'] if data['sale_start'] else 0
-        if time_left > 3600:
-            return JSONResponse(output, headers={
-                "Cache-Control": f"public, max-age={3555}"
-            })
-        if time_left > 60 * 5:
-            return JSONResponse(output, headers={
-                "Cache-Control": f"public, max-age={max(0, 3550 - time_left) }"
-            })
         # Turn off the caching client-side - we might want to update quickly on our end.
         return JSONResponse(output)
     except Exception as e:
