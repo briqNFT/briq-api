@@ -110,12 +110,12 @@ async def store_set(set: StoreSetRequest):
     gltf_conv = to_process.run_sync(briq_data.to_gltf)
 
     # Ensure compliance of the metadata with ERC 721
-    set.data["image"] = f"https://api.briq.construction/{router.prefix}/preview/{set.chain_id}/{set.token_id}.png"
+    set.data["image"] = f"https://api.briq.construction/v1/preview/{set.chain_id}/{set.token_id}.png"
     # Default to showing the GLB version of the mesh.
-    set.data["animation_url"] = f"https://api.briq.construction/{router.prefix}/model/{set.chain_id}/{set.token_id}.glb"
+    set.data["animation_url"] = f"https://api.briq.construction/v1/model/{set.chain_id}/{set.token_id}.glb"
 
     # Point to the builder.
-    set.data["external_url"] = f"https://briq.construction/share?token_id={set.token_id}&chain_id={set.chain_id}&version=3"
+    set.data["external_url"] = f"https://briq.construction/set/{set.chain_id}/{set.token_id}"
 
     rid = SetRID(chain_id=set.chain_id, token_id=set.token_id)
 

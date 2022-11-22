@@ -5,6 +5,8 @@ import base64
 from PIL import Image
 from briq_api.config import ENV
 
+from datetime import datetime
+
 from briq_api.set_identifier import SetRID
 from briq_api.stores import genesis_storage, file_storage
 from briq_api.indexer.storage import mongo_storage
@@ -23,7 +25,7 @@ def get_metadata(rid: SetRID):
     }, {
         "display_type": "date",
         "trait_type": "Creation Date",
-        "value": data['created_at'],
+        "value": datetime.fromtimestamp(data['created_at']).strftime('%Y-%m-%d'),
     }]
     data['properties'] = {
         "nb_briqs": {
