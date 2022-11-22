@@ -262,7 +262,7 @@ async def get_theme_cover(chain_id: str, theme_id: str, quality: str):
         raise HTTPException(status_code=500, detail="Could not get theme cover")
 
     return StreamingResponse(io.BytesIO(output), media_type="image/jpeg", headers={
-        "Cache-Control": f"public, max-age={60 * 60 * 24 * 7}"
+        "Cache-Control": f"public, max-age={60 * 5}"
     })
 
 

@@ -22,11 +22,13 @@ def get_metadata(rid: SetRID):
     data['attributes'] = [{
         "trait_type": "Number of briqs",
         "value": len(data['briqs'])
-    }, {
-        "display_type": "date",
-        "trait_type": "Creation Date",
-        "value": datetime.fromtimestamp(data['created_at']).strftime('%Y-%m-%d'),
     }]
+    if data['created_at'] != -1:
+        data['attributes'].append({
+            "display_type": "date",
+            "trait_type": "Creation Date",
+            "value": datetime.fromtimestamp(data['created_at']).strftime('%Y-%m-%d'),
+        })
     data['properties'] = {
         "nb_briqs": {
             "name": "Number of briqs",
