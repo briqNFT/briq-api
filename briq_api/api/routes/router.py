@@ -103,12 +103,6 @@ class StoreSetRequest(BaseModel):
 
 @router.post("/store_set")
 async def store_set(set: StoreSetRequest):
-    # Attempt converting to GLTF but don't store it before it's first accessed.
-    # Further, don't try .vox because that can fail somewhat spuriously.
-    # (this is done to detect potential errors early)
-    briq_data = BriqData().load(set.data)
-    gltf_conv = to_process.run_sync(briq_data.to_gltf)
-
     # Ensure compliance of the metadata with ERC 721
     set.data["image"] = f"https://api.briq.construction/v1/preview/{set.chain_id}/{set.token_id}.png"
     # Default to showing the GLB version of the mesh.
@@ -118,12 +112,6 @@ async def store_set(set: StoreSetRequest):
     set.data["external_url"] = f"https://briq.construction/set/{set.chain_id}/{set.token_id}"
 
     rid = SetRID(chain_id=set.chain_id, token_id=set.token_id)
-
-    try:
-        await gltf_conv
-    except Exception as err:
-        logger.warning("Error when converting the set data to 3D models. Set data: %(setdata)s", {"setdata": set.data}, exc_info=err)
-        raise HTTPException(status_code=500, detail="Error when converting the set data to 3D models. Details: \n" + str(err))
 
     try:
         await api.store_set(rid, set.data, set.image_base64)
