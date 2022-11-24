@@ -128,32 +128,62 @@ async def process_pending_box(info: Info, block: BlockHeader, transfers: list[St
     block_time = block.timestamp
 
     # Store each in Mongo
-    documents = [prepare_transfer_for_storage(tr, block) for tr in transfers if tr.name == 'TransferSingle' and int.from_bytes(tr.address, 'big') == int(contract_address, 16)]
+    documents = []
+    for tr in transfers:
+        if tr.name == 'TransferSingle' and int.from_bytes(tr.address, 'big') == int(contract_address, 16):
+            doc = prepare_transfer_for_storage(tr, block)
+            if int.from_bytes(doc['from'], "big") == int(NETWORK.auction_address, 16) or int.from_bytes(doc['to'], "big") == int(NETWORK.auction_address, 16):
+                documents.append(doc)
+
     if (not len(documents)):
         return
 
-    total_bought = {}
+    # TODO -> this can be optimised a bit
     for transfer in documents:
-        if int.from_bytes(transfer['from'], "big") == int(NETWORK.auction_address, 16):
-            if transfer['token_id'] not in total_bought:
-                total_bought[transfer['token_id']] = 0
-            total_bought[transfer['token_id']] += 1
+        # Update from
+        if int.from_bytes(transfer['from'], "big") != 0:
+            og_ownership = await info.storage.find_one(f"{contract_prefix}_pending_tokens", {
+                "token_id": transfer['token_id'],
+                "owner": transfer['from'],
+            })
+            og_amount = int.from_bytes(og_ownership['quantity'], "big") if og_ownership else 0
+            await info.storage.find_one_and_replace(
+                f"{contract_prefix}_pending_tokens",
+                {
+                    "token_id": transfer['token_id'],
+                    "owner": transfer['from'],
+                },
+                {
+                    "token_id": transfer['token_id'],
+                    "owner": transfer['from'],
+                    "quantity": encode_int_as_bytes(og_amount - int.from_bytes(transfer['value'], 'big')),
+                    "updated_at": block_time,
+                    "updated_block": block.number,
+                },
+                upsert=True,
+            )
 
-    for token_id in total_bought:
-        await info.storage.find_one_and_replace(
-            f"{contract_prefix}_pending_bought",
-            {
-                "token_id": token_id,
-            },
-            {
-                "token_id": token_id,
-                "quantity": f'{total_bought}',
-                "updated_at": block_time,
-                "updated_block": block.number,
-            },
-            upsert=True,
-        )
+        # Update to
+        if int.from_bytes(transfer['to'], "big") != 0:
+            to_ownership = await info.storage.find_one(f"{contract_prefix}_pending_tokens", {
+                "token_id": transfer['token_id'],
+                "owner": transfer['to'],
+            })
+            to_amount = int.from_bytes(to_ownership['quantity'], "big") if to_ownership else 0
+            await info.storage.find_one_and_replace(
+                f"{contract_prefix}_pending_tokens",
+                {
+                    "token_id": transfer['token_id'],
+                    "owner": transfer['to'],
+                },
+                {
+                    "token_id": transfer['token_id'],
+                    "owner": transfer['to'],
+                    "quantity": encode_int_as_bytes(to_amount + int.from_bytes(transfer['value'], 'big')),
+                    "updated_at": block_time,
+                    "updated_block": block.number,
+                },
+                upsert=True,
+            )
 
-    logger.info("Updated %(prefix)s pending boxes bought", {
-        "prefix": contract_prefix,
-    })
+    logger.info("Updated %(prefix)s token owners", {"prefix": contract_prefix})

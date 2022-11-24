@@ -179,6 +179,9 @@ def get_box_saledata(rid: BoxRID):
     auction_data = genesis_storage.get_auction_static_data(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
     box_token_id = genesis_storage.get_box_token_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
     auction_data['quantity_left'] = mongo_storage.get_available_boxes(rid.chain_id, box_token_id)
+    pending = mongo_storage.get_bought_boxes(rid.chain_id, box_token_id)
+    if pending:
+        auction_data['quantity_left_pending'] = pending
     # Hack for dev
     if ENV != 'prod':
         import time

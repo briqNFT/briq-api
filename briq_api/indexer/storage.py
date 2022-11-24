@@ -44,6 +44,20 @@ class MongoStorage(StorageClient[MongoBackend]):
             logger.error(ex, exc_info=ex)
             raise
 
+    def get_bought_boxes(self, chain_id: str, box_token_id: int) -> int:
+        try:
+            data = self.get_backend(chain_id).db["box_pending_tokens"].find_one({
+                "token_id": box_token_id.to_bytes(32, "big"),
+                "owner": int(get_network_metadata(chain_id).auction_address, 16).to_bytes(32, "big"),
+                "_chain.valid_to": None,
+            })
+            if data:
+                return int.from_bytes(data['quantity'], "big")
+            return 0
+        except Exception as ex:
+            logger.error(ex, exc_info=ex)
+            raise
+
     def get_user_nfts(self, chain_id: str, user_id: str, collection: str) -> UserNFTs:
         try:
             data = self.get_backend(chain_id).db[collection + "_tokens"].find({

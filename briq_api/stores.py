@@ -47,7 +47,7 @@ def setup_stores(local: bool, use_mock_chain: bool):
         file_storage.connect(FileStorage())
         # TODO: change this
         genesis_storage.connect(FileStorage("briq_api/genesis_data/localhost/"))
-        mongo_storage.connect_for_chain(TESTNET.id, MongoBackend())
+        mongo_storage.connect(MongoBackend())
 
     if use_mock_chain:
         logger.info("Connecting for mock chain.")
