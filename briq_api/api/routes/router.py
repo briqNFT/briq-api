@@ -31,7 +31,7 @@ async def metadata(chain_id: str, token_id: str):
     try:
         output = api.get_metadata(rid)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     # Stream the data because files can get fairly hefty.
@@ -53,7 +53,7 @@ async def preview(chain_id: str, token_id: str):
     try:
         preview = api.get_preview(rid)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(preview), media_type="image/png", headers={
@@ -131,7 +131,7 @@ async def get_user_bids(chain_id: str, user_id: str):
     try:
         output = api.get_user_bids(chain_id, user_id)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get user bids data")
 
     return output
@@ -144,7 +144,7 @@ async def get_bids_for_box(chain_id: str, theme_name: str, box_name: str):
         box_id = f"{theme_name}/{box_name}"
         output = api.get_bids_for_box(chain_id, box_id)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get box bids data")
 
     return output
@@ -169,7 +169,7 @@ async def get_item_activity(item_type: str, chain_id: str, item: str):
     try:
         output = api.get_item_activity(item_type, chain_id, item)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get item activity")
 
     return output

@@ -22,7 +22,7 @@ async def box_data(chain_id: str, theme_id: str, box_id: str):
     try:
         output = boxes.get_box_metadata(rid)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return JSONResponse(output, headers={
@@ -41,7 +41,7 @@ async def booklet_data(chain_id: str, theme_id: str, booklet_id: str):
     try:
         output = boxes.get_booklet_metadata(rid)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return JSONResponse(output, headers={
@@ -57,7 +57,7 @@ async def booklet_pdf(chain_id: str, theme_id: str, box_id: str):
     try:
         pdf = boxes.get_booklet_pdf(rid)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(pdf), media_type="application/pdf", headers={
@@ -75,7 +75,7 @@ async def booklet_texture(chain_id: str, theme_id: str, box_id: str):
     try:
         image = boxes.get_booklet_texture(rid)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
@@ -92,7 +92,7 @@ async def box_texture(chain_id: str, theme_id: str, box_id: str):
     try:
         image = boxes.get_box_texture(rid)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
@@ -107,7 +107,7 @@ async def box_cover_item(chain_id: str, theme_id: str, box_id: str):
     try:
         image = boxes.get_box_cover_item(rid)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
@@ -123,7 +123,7 @@ async def box_cover_item_jpg(chain_id: str, theme_id: str, box_id: str):
     try:
         image = boxes.get_box_cover_item_jpg(rid)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(image), media_type="image/jpeg", headers={
@@ -139,7 +139,7 @@ async def box_cover_box(chain_id: str, theme_id: str, box_id: str):
     try:
         image = boxes.get_box_cover_box(rid)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
@@ -155,7 +155,7 @@ async def box_cover_box_jpg(chain_id: str, theme_id: str, box_id: str):
     try:
         image = boxes.get_box_cover_box_jpg(rid)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(image), media_type="image/jpeg", headers={
@@ -171,7 +171,7 @@ async def box_cover_booklet(chain_id: str, theme_id: str, box_id: str):
     try:
         image = boxes.get_box_cover_booklet(rid)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
@@ -187,7 +187,7 @@ async def box_cover_booklet_jpg(chain_id: str, theme_id: str, box_id: str):
     try:
         image = boxes.get_box_cover_booklet_jpg(rid)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(image), media_type="image/jpeg", headers={
@@ -204,7 +204,7 @@ async def box_step_image(chain_id: str, theme_id: str, box_id: str, step: int):
     try:
         image = boxes.get_box_step_image(rid, step)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
@@ -222,7 +222,7 @@ async def box_step_glb(chain_id: str, theme_id: str, box_id: str, step: int):
     try:
         image = boxes.get_booklet_step_glb(rid, step)[0]
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(image), media_type="model/gltf-binary", headers={
@@ -240,7 +240,7 @@ async def box_step_glb(chain_id: str, theme_id: str, box_id: str, step: int):
     try:
         image = boxes.get_booklet_step_glb(rid, step)[1]
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return StreamingResponse(io.BytesIO(image), media_type="model/gltf-binary", headers={
@@ -258,7 +258,7 @@ async def get_theme_cover(chain_id: str, theme_id: str, quality: str):
         else:
             output = boxes.box_storage.theme_cover_postlaunch(chain_id, theme_id, quality)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get theme cover")
 
     return StreamingResponse(io.BytesIO(output), media_type="image/jpeg", headers={
@@ -273,7 +273,7 @@ async def get_theme_logo(chain_id: str, theme_id: str, quality: str):
         # Only in high quality, too cheap
         output = boxes.box_storage.theme_logo(chain_id, theme_id, 'high')
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get theme cover")
 
     return StreamingResponse(io.BytesIO(output), media_type="image/png", headers={
@@ -287,7 +287,7 @@ async def get_theme_splash(chain_id: str, theme_id: str, quality: str):
     try:
         output = boxes.box_storage.theme_splash(chain_id, theme_id, quality)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get theme splash")
 
     return StreamingResponse(io.BytesIO(output), media_type="image/jpeg", headers={
@@ -300,7 +300,7 @@ async def box_themes_list(chain_id: str):
     try:
         output = boxes.list_themes(chain_id)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not list themes")
 
     return JSONResponse(output, headers={
@@ -315,7 +315,7 @@ async def get_theme_data(chain_id: str, theme_id: str):
     try:
         output = boxes.get_theme_data(chain_id, theme_id)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get theme data")
 
     return JSONResponse(output, headers={
@@ -335,7 +335,7 @@ async def list_boxes_of_theme(chain_id: str, theme_id: str):
         # Turn off the caching client-side - we might want to update quickly on our end.
         return JSONResponse(output)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not list boxes for theme " + theme_id)
 
 
@@ -352,7 +352,7 @@ async def get_box_saledata(chain_id: str, theme_id: str):
             ret[box] = boxes.get_box_saledata(rid=BoxRID(chain_id, theme_id, box.split('/')[1]))
         return ret
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get sale data")
 
 
@@ -362,5 +362,5 @@ async def get_box_transfer(chain_id: str, theme_id: str, box_id: str, tx_hash: s
     try:
         return boxes.get_box_transfer(rid=BoxRID(chain_id, theme_id, box_id), tx_hash=tx_hash)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get transfer information")

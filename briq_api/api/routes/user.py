@@ -20,7 +20,7 @@ async def get_user_items(chain_id: str, user_id: str):
             "Cache-Control": f"public, max-age={3}"
         })
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Error while loading data")
 
 
@@ -30,5 +30,5 @@ async def get_user_briqs(chain_id: str, user_id: str):
     try:
         return user_api.get_user_briqs(chain_id, user_id)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Error while loading data")

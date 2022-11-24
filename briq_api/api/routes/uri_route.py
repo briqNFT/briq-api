@@ -21,7 +21,7 @@ async def uri_box(chain_id: str, token_id: str):
     try:
         output = uri_api.box_uri(chain_id, token_id)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return JSONResponse(output, headers={
@@ -42,7 +42,7 @@ async def uri_booklet(chain_id: str, token_id: str):
     try:
         output = uri_api.booklet_uri(chain_id, token_id)
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return JSONResponse(output, headers={
@@ -65,7 +65,7 @@ async def uri_set(chain_id: str, token_id: str):
         output['animation_url'] = output['animation_url'].replace('//model', '/v1/model')
         output['external_url'] = f'https://briq.construction/set/starknet-mainnet/{output["id"]}'
     except Exception as e:
-        logger.debug(e, exc_info=e)
+        logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")
 
     return JSONResponse(output, headers={
