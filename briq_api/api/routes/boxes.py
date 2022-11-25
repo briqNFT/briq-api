@@ -213,6 +213,7 @@ async def box_themes_list(chain_id: str):
 @router.get("/{chain_id}/{theme_id}/data")
 async def get_theme_data(chain_id: str, theme_id: str):
     output = boxes.get_theme_data(chain_id, theme_id)
+    # Low cache for fast turnaround time but some minor CDN benefit
     return JSONResponse(output, headers={
         "Cache-Control": f"public, max-age={60}"
     })
@@ -226,8 +227,8 @@ async def list_boxes_of_theme(chain_id: str, theme_id: str):
         output = []
     else:
         output = boxes.list_boxes_of_theme(chain_id, theme_id)
-    # Turn off the caching client-side - we might want to update quickly on our end.
-    return JSONResponse(output)
+    # Turn off the caching client-side - this must update when the waves become active
+    return output
 
 
 @router.head("/{chain_id}/{theme_id}/saledata")
@@ -240,6 +241,7 @@ async def get_box_saledata(chain_id: str, theme_id: str):
     ret = {}
     for box in box_list:
         ret[box] = boxes.get_box_saledata(rid=BoxRID(chain_id, theme_id, box.split('/')[1]))
+    # Turn off the caching client-side - this updates in real time
     return ret
 
 
@@ -253,9 +255,8 @@ async def get_all_boxes_data(chain_id: str, theme_id: str):
     ret = {}
     for box in box_list:
         ret[box] = boxes.get_box_metadata(rid=BoxRID(chain_id, theme_id, box.split('/')[1]))
-    return JSONResponse(ret, headers={
-        "Cache-Control": f"public, max-age={24*3600}"
-    })
+    # Turn off the caching client-side - this must update when the waves become active
+    return ret
 
 
 @router.head("/box/get_transfer/{chain_id}/{theme_id}/{box_id}/{tx_hash}")
