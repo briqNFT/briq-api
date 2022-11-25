@@ -11,6 +11,8 @@ from .mock_chain.router import router as mock_chain_router
 
 from .api.legacy_api import app as legacy_router
 
+from .config import ENV
+
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
@@ -21,7 +23,8 @@ async def add_process_time_header(request, call_next):
     start_time = time.time()
     response = await call_next(request)
     t = time.time() - start_time
-    logger.info('Request for "%(url)s" processing in %(time_s)s seconds', {'url': str(request.url), 'time_s': t})
+    if ENV == 'prod':
+        logger.info('Request for "%(url)s" processing in %(time_s)s seconds', {'url': str(request.url), 'time_s': t})
     return response
 
 # This is a public API, so allow any CORS origin.

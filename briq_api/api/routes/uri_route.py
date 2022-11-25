@@ -5,9 +5,12 @@ from fastapi import APIRouter, HTTPException
 
 from .. import uri_api
 
+from .common import ExceptionWrapperRoute
+
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(route_class=ExceptionWrapperRoute(logger))
+
 
 @router.head("/uri/box/{chain_id}/{token_id}")
 @router.head("/uri/box/{chain_id}/{token_id}.json")

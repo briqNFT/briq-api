@@ -12,10 +12,13 @@ from briq_api.set_identifier import SetRID
 from briq_api.storage.file.backends.cloud_storage import NotFoundException
 from .. import api
 from . import boxes, user, uri_route
+from briq_api.config import ENV
+
+from .common import ExceptionWrapperRoute
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(route_class=ExceptionWrapperRoute(logger=logger))
 
 router.include_router(boxes.router, tags=["box"])
 router.include_router(user.router, tags=["user"])
@@ -30,6 +33,9 @@ async def metadata(chain_id: str, token_id: str):
 
     try:
         output = api.get_metadata(rid)
+    except FileNotFoundError:
+        logger.warning("File not found: %(file_name)s", {"file_name": token_id})
+        raise HTTPException(status_code=500, detail="File not found")
     except Exception as e:
         logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")

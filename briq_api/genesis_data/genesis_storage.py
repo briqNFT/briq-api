@@ -22,8 +22,9 @@ class GenesisBackend():
 
 class GenesisStorage(StorageClient[GenesisBackend]):
     def connect(self, backend):
-        if backend:
-            backend = GenesisBackend(backend)
+        if backend is None:
+            raise Exception("GenesisStorage must have a valid backend")
+        backend = GenesisBackend(backend)
         return super().connect(backend)
 
     def get_box_token_id(self, chain_id: str, box_id: str):

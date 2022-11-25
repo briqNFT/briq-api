@@ -31,74 +31,54 @@ class MongoBackend:
 
 class MongoStorage(StorageClient[MongoBackend]):
     def get_available_boxes(self, chain_id: str, box_token_id: int) -> int:
-        try:
-            data = self.get_backend(chain_id).db["box_tokens"].find_one({
-                "token_id": box_token_id.to_bytes(32, "big"),
-                "owner": int(get_network_metadata(chain_id).auction_address, 16).to_bytes(32, "big"),
-                "_chain.valid_to": None,
-            })
-            if data:
-                return int.from_bytes(data['quantity'], "big")
-            return 0
-        except Exception as ex:
-            logger.error(ex, exc_info=ex)
-            raise
+        data = self.get_backend(chain_id).db["box_tokens"].find_one({
+            "token_id": box_token_id.to_bytes(32, "big"),
+            "owner": int(get_network_metadata(chain_id).auction_address, 16).to_bytes(32, "big"),
+            "_chain.valid_to": None,
+        })
+        if data:
+            return int.from_bytes(data['quantity'], "big")
+        return 0
 
     def get_bought_boxes(self, chain_id: str, box_token_id: int) -> int:
-        try:
-            data = self.get_backend(chain_id).db["box_pending_tokens"].find_one({
-                "token_id": box_token_id.to_bytes(32, "big"),
-                "owner": int(get_network_metadata(chain_id).auction_address, 16).to_bytes(32, "big"),
-                "_chain.valid_to": None,
-            })
-            if data:
-                return int.from_bytes(data['quantity'], "big")
-            return 0
-        except Exception as ex:
-            logger.error(ex, exc_info=ex)
-            raise
+        data = self.get_backend(chain_id).db["box_pending_tokens"].find_one({
+            "token_id": box_token_id.to_bytes(32, "big"),
+            "owner": int(get_network_metadata(chain_id).auction_address, 16).to_bytes(32, "big"),
+            "_chain.valid_to": None,
+        })
+        if data:
+            return int.from_bytes(data['quantity'], "big")
+        return 0
 
     def get_user_nfts(self, chain_id: str, user_id: str, collection: str) -> UserNFTs:
-        try:
-            data = self.get_backend(chain_id).db[collection + "_tokens"].find({
-                "owner": int(user_id, 16).to_bytes(32, "big"),
-                "_chain.valid_to": None,
-            })
-            block_nb = 0
-            nft_list = []
-            for nft in data:
-                nft_list += [hex(int.from_bytes(nft['token_id'], "big"))] * int.from_bytes(nft['quantity'], "big")
-                block_nb = max(block_nb, nft['updated_block'])
-            return UserNFTs(block_nb, nft_list)
-        except Exception as ex:
-            logger.error(ex, exc_info=ex)
-            raise
+        data = self.get_backend(chain_id).db[collection + "_tokens"].find({
+            "owner": int(user_id, 16).to_bytes(32, "big"),
+            "_chain.valid_to": None,
+        })
+        block_nb = 0
+        nft_list = []
+        for nft in data:
+            nft_list += [hex(int.from_bytes(nft['token_id'], "big"))] * int.from_bytes(nft['quantity'], "big")
+            block_nb = max(block_nb, nft['updated_block'])
+        return UserNFTs(block_nb, nft_list)
 
     def get_mint_date(self, chain_id: str, collection: str, token_id: int):
+        data = self.get_backend(chain_id).db[collection + "_transfers"].find({
+            "from": (0).to_bytes(32, "big"),
+            "token_id": token_id.to_bytes(32, "big"),
+            "_chain.valid_to": None,
+        })
         try:
-            data = self.get_backend(chain_id).db[collection + "_transfers"].find({
-                "from": (0).to_bytes(32, "big"),
-                "token_id": token_id.to_bytes(32, "big"),
-                "_chain.valid_to": None,
-            })
-            try:
-                return data[0]['_timestamp'].timestamp()
-            except:
-                return -1
-        except Exception as ex:
-            logger.error(ex, exc_info=ex)
-            raise
+            return data[0]['_timestamp'].timestamp()
+        except:
+            return -1
 
     def get_user_briqs(self, chain_id: str, user_id: str) -> list:
-        try:
-            data = self.get_backend(chain_id).db["briq_tokens"].find({
-                "owner": int(user_id, 16).to_bytes(32, "big"),
-                "_chain.valid_to": None,
-            })
-            return list(data)
-        except Exception as ex:
-            logger.error(ex, exc_info=ex)
-            raise
+        data = self.get_backend(chain_id).db["briq_tokens"].find({
+            "owner": int(user_id, 16).to_bytes(32, "big"),
+            "_chain.valid_to": None,
+        })
+        return list(data)
 
     def get_transfer(self, chain_id: str, collection: str, tx_hash: str, box_token_id: int):
         try:
@@ -114,8 +94,8 @@ class MongoStorage(StorageClient[MongoBackend]):
                 "quantity": str(int.from_bytes(transfer["value"], 'big')),
                 "timestamp": str(transfer['_timestamp'])
             }
-        except Exception as ex:
-            logger.error(ex, exc_info=ex)
+        except Exception:
+            pass
         return None
 
 
