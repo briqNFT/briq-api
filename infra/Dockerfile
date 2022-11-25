@@ -12,9 +12,6 @@ COPY pyproject.toml ./
 RUN pip install --no-cache-dir poetry
 RUN poetry export --output requirements.txt --without-hashes && pip install -r requirements.txt
 
-# For temporary testing, copy the temp folder for sets.
-COPY temp/genesis_themes/ temp/genesis_themes
-
 COPY briq_api/ briq_api
 COPY jobs/ jobs
 COPY gunicorn.conf.py gunicorn.conf.py
