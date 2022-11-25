@@ -56,7 +56,7 @@ trio = ["trio (>=0.16,<0.22)"]
 
 [[package]]
 name = "apibara"
-version = "0.5.11"
+version = "0.5.12"
 description = "Apibara cliend SDK. Build web3-powered applications."
 category = "main"
 optional = false
@@ -1480,7 +1480,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "~3.9"
-content-hash = "3ff2eccc2ce8472fdeccaf8ddefc8af37d66534c1d8a992726a73162210b70e3"
+content-hash = "e6dfd71b426069e5dd70a2bf20891c75ef517b8ccb928558b5fcee7890c002d4"
 
 [metadata.files]
 aiochannel = [
@@ -1584,8 +1584,8 @@ anyio = [
     {file = "anyio-3.6.2.tar.gz", hash = "sha256:25ea0d673ae30af41a0c442f81cf3b38c7e79fdc7b60335a4c14e05eb0947421"},
 ]
 apibara = [
-    {file = "apibara-0.5.11-py3-none-any.whl", hash = "sha256:f723b712cb9c7e068a619e6b965adcfb9962b833f86d894a6c450813dfcfba53"},
-    {file = "apibara-0.5.11.tar.gz", hash = "sha256:560aaa7e275611b377e32df8280f9cdaa2c09a0ef7b3e0a2795fc568f413ccf6"},
+    {file = "apibara-0.5.12-py3-none-any.whl", hash = "sha256:4a7d4cb4f9a2291b4d505ec9eee4be6b602a3931148c4a1f6d0c555228ffdb2d"},
+    {file = "apibara-0.5.12.tar.gz", hash = "sha256:f0ca4e0778154d6993077582fea65ee55099c45606826c5e346ecd221e4ac731"},
 ]
 asgiref = [
     {file = "asgiref-3.5.2-py3-none-any.whl", hash = "sha256:1d2880b792ae8757289136f1db2b7b99100ce959b2aa57fd69dab783d05afac4"},
