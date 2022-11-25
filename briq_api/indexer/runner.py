@@ -34,7 +34,10 @@ async def handle_events(info: Info, block_events: NewEvents):
     await briqs
     await sets
 
-    # await process_pending_box(info, block_events.block, [event for event in block_events.events])
+    try:
+        await process_pending_box(info, block_events.block, [event for event in block_events.events])
+    except Exception as e:
+        logger.warning(e, exc_info=e)
 
 
 async def handle_pending_events(info: Info, block_events: NewEvents):
@@ -43,7 +46,10 @@ async def handle_pending_events(info: Info, block_events: NewEvents):
         'block_number': block_events.block.number,
         'block_time': block_time.isoformat()
     })
-    await process_pending_box(info, block_events.block, [event for event in block_events.events])
+    try:
+        await process_pending_box(info, block_events.block, [event for event in block_events.events])
+    except Exception as e:
+        logger.warning(e, exc_info=e)
 
 
 async def handle_block(info: Info, block: NewBlock):
