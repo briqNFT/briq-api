@@ -98,5 +98,13 @@ class MongoStorage(StorageClient[MongoBackend]):
             pass
         return None
 
+    def set_to_0(self, chain_id: str, box_token_id: int):
+        self.get_backend(chain_id).db['box_tokens'].delete_many({
+            "token_id": box_token_id.to_bytes(32, "big"),
+        })
+        self.get_backend(chain_id).db['box_pending_tokens'].delete_many({
+            "token_id": box_token_id.to_bytes(32, "big"),
+        })
+
 
 mongo_storage = MongoStorage()
