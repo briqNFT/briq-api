@@ -56,24 +56,31 @@ trio = ["trio (>=0.16,<0.22)"]
 
 [[package]]
 name = "apibara"
-version = "0.5.13"
+version = "0.5.14"
 description = "Apibara cliend SDK. Build web3-powered applications."
 category = "main"
 optional = false
 python-versions = ">=3.8,<3.10"
+develop = false
 
 [package.dependencies]
-aiochannel = ">=1.1.1,<2.0.0"
-aiohttp = ">=3.8.1,<4.0.0"
-backoff = ">=2.1.2,<3.0.0"
-click = ">=8.1.3,<9.0.0"
-click-help-colors = ">=0.9.1,<0.10.0"
-eth-hash = {version = ">=0.3.2,<0.4.0", extras = ["pysha3"]}
-grpc-requests = ">=0.1.3,<0.2.0"
-grpcio = ">=1.47.0,<2.0.0"
-grpcio-tools = ">=1.47.0,<2.0.0"
-pymongo = {version = ">=4.1.1,<5.0.0", extras = ["srv"]}
+aiochannel = "^1.1.1"
+aiohttp = "^3.8.1"
+backoff = "^2.1.2"
+click = "^8.1.3"
+click-help-colors = "^0.9.1"
+eth-hash = {version = "^0.3.2", extras = ["pysha3"]}
+grpc-requests = "^0.1.3"
+grpcio = "^1.47.0"
+grpcio-tools = "^1.47.0"
+pymongo = {version = "^4.1.1", extras = ["srv"]}
 starknet-py = "0.6.1a0"
+
+[package.source]
+type = "git"
+url = "https://github.com/apibara/python-sdk"
+reference = "3a13a9c6492f24aae2fdc8cf50184b4e6bc47527"
+resolved_reference = "3a13a9c6492f24aae2fdc8cf50184b4e6bc47527"
 
 [[package]]
 name = "asgiref"
@@ -1480,7 +1487,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "~3.9"
-content-hash = "a1a299307fb6869fa3cd1468745dd059f91f27f4758ed0c316a6deaf70a9204c"
+content-hash = "43e7b6b099d69990b8500342b0569d85852ac2bba10f615fce0057e27cad028c"
 
 [metadata.files]
 aiochannel = [
@@ -1583,10 +1590,7 @@ anyio = [
     {file = "anyio-3.6.2-py3-none-any.whl", hash = "sha256:fbbe32bd270d2a2ef3ed1c5d45041250284e31fc0a4df4a5a6071842051a51e3"},
     {file = "anyio-3.6.2.tar.gz", hash = "sha256:25ea0d673ae30af41a0c442f81cf3b38c7e79fdc7b60335a4c14e05eb0947421"},
 ]
-apibara = [
-    {file = "apibara-0.5.13-py3-none-any.whl", hash = "sha256:609b5c9a95c51a8e947d011d9c43a8a209bd922aaa7c563ea575e146ad84bbd8"},
-    {file = "apibara-0.5.13.tar.gz", hash = "sha256:035ffa534f557384044c90591c095a6966b78666866d14cc087b848b1b0fd2f3"},
-]
+apibara = []
 asgiref = [
     {file = "asgiref-3.5.2-py3-none-any.whl", hash = "sha256:1d2880b792ae8757289136f1db2b7b99100ce959b2aa57fd69dab783d05afac4"},
     {file = "asgiref-3.5.2.tar.gz", hash = "sha256:4a29362a6acebe09bf1d6640db38c1dc3d9217c68e6f9f6204d72667fc19a424"},

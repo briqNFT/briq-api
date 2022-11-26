@@ -14,7 +14,7 @@ google-cloud-storage = "^2.3"
 fastapi = "^0.77"
 Pillow = "^9.0"
 pygltflib = "^1.15"
-apibara = "^0.5.13"
+apibara =  { git="https://github.com/apibara/python-sdk", rev="3a13a9c6492f24aae2fdc8cf50184b4e6bc47527" }
 numpy-vox-io = {git = "https://github.com/briqNFT/numpy-vox-io", rev = "master"}
 # uvicorn 0.17 requires websockets 10, but we have a conflict with some other dependency,
 # and that backtracks forever.
