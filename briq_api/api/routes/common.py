@@ -3,7 +3,6 @@ from typing import Callable
 from fastapi import HTTPException, Request, Response
 from fastapi.routing import APIRoute
 
-from briq_api.config import ENV
 from briq_api.storage.multi_backend_client import NoBackendException
 
 

@@ -31,14 +31,7 @@ router.include_router(uri_route.router, tags=["uri"])
 async def metadata(chain_id: str, token_id: str):
     rid = SetRID(chain_id=chain_id, token_id=token_id)
 
-    try:
-        output = api.get_metadata(rid)
-    except FileNotFoundError:
-        logger.warning("File not found: %(file_name)s", {"file_name": token_id})
-        raise HTTPException(status_code=500, detail="File not found")
-    except Exception as e:
-        logger.error(e, exc_info=e)
-        raise HTTPException(status_code=500, detail="File not found")
+    output = api.get_metadata(rid)
 
     # Stream the data because files can get fairly hefty.
     out = io.StringIO()
@@ -56,11 +49,7 @@ async def metadata(chain_id: str, token_id: str):
 async def preview(chain_id: str, token_id: str):
     rid = SetRID(chain_id=chain_id, token_id=token_id)
 
-    try:
-        preview = api.get_preview(rid)
-    except Exception as e:
-        logger.error(e, exc_info=e)
-        raise HTTPException(status_code=500, detail="File not found")
+    preview = api.get_preview(rid)
 
     return StreamingResponse(io.BytesIO(preview), media_type="image/png", headers={
         "Cache-Control": f"public, max-age={3600 * 24}"
@@ -82,17 +71,10 @@ async def model(chain_id: str, token_id: str, kind: str):
     try:
         data = api.get_model(rid, kind)
     except (NotFoundException, OSError):
-        try:
-            metadata = api.get_metadata(rid)
-            data = api.create_model(metadata, kind)
-            api.store_model(rid, kind, data)
-            logger.info("Created %(type)s model for %(rid)s on the fly.", {"type": kind, "rid": rid.json()})
-        except Exception as e:
-            logger.error(e, exc_info=e)
-            raise HTTPException(status_code=500, detail="Error while creating model.")
-    except Exception as e:
-        logger.error(e, exc_info=e)
-        raise HTTPException(status_code=500, detail="Error while fetching model.")
+        metadata = api.get_metadata(rid)
+        data = api.create_model(metadata, kind)
+        api.store_model(rid, kind, data)
+        logger.info("Created %(type)s model for %(rid)s on the fly.", {"type": kind, "rid": rid.json()})
 
     return StreamingResponse(io.BytesIO(data), media_type=mime_type[kind], headers={
         "Cache-Control": f"public, max-age={3600 * 24}"
@@ -119,11 +101,7 @@ async def store_set(set: StoreSetRequest):
 
     rid = SetRID(chain_id=set.chain_id, token_id=set.token_id)
 
-    try:
-        await api.store_set(rid, set.data, set.image_base64)
-    except Exception as err:
-        logger.error("Error saving JSON", exc_info=err)
-        raise HTTPException(status_code=500, detail=str(err))
+    await api.store_set(rid, set.data, set.image_base64)
 
     logger.info("Stored new set %(rid)s for %(owner)s", {
         "rid": rid.json(),
@@ -134,11 +112,7 @@ async def store_set(set: StoreSetRequest):
 @router.head("/bids/user/{chain_id}/{user_id}")
 @router.get("/bids/user/{chain_id}/{user_id}")
 async def get_user_bids(chain_id: str, user_id: str):
-    try:
-        output = api.get_user_bids(chain_id, user_id)
-    except Exception as e:
-        logger.error(e, exc_info=e)
-        raise HTTPException(status_code=500, detail="Could not get user bids data")
+    output = api.get_user_bids(chain_id, user_id)
 
     return output
 
@@ -146,12 +120,8 @@ async def get_user_bids(chain_id: str, user_id: str):
 @router.head("/bids/box/{chain_id}/{theme_name}/{box_name}")
 @router.get("/bids/box/{chain_id}/{theme_name}/{box_name}")
 async def get_bids_for_box(chain_id: str, theme_name: str, box_name: str):
-    try:
-        box_id = f"{theme_name}/{box_name}"
-        output = api.get_bids_for_box(chain_id, box_id)
-    except Exception as e:
-        logger.error(e, exc_info=e)
-        raise HTTPException(status_code=500, detail="Could not get box bids data")
+    box_id = f"{theme_name}/{box_name}"
+    output = api.get_bids_for_box(chain_id, box_id)
 
     return output
 
