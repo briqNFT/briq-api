@@ -38,7 +38,6 @@ app.add_middleware(
 
 # Include the API
 app.include_router(api_router, prefix="/v1")
-app.include_router(api_router)
 
 # Include the legacy api for alpha testnet support.
 app.include_router(legacy_router)
