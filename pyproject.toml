@@ -19,6 +19,7 @@ numpy-vox-io = {git = "https://github.com/briqNFT/numpy-vox-io", rev = "master"}
 # uvicorn 0.17 requires websockets 10, but we have a conflict with some other dependency,
 # and that backtracks forever.
 uvicorn = {version = "0.15", extras = ["standard"]}
+requests = "^2.28.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.1.0"

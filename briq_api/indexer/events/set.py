@@ -1,10 +1,11 @@
 import logging
+import requests
 from apibara import Info
 from apibara.model import EventFilter, BlockHeader, StarkNetEvent
 from starknet_py.contract import FunctionCallSerializer, identifier_manager_from_abi
 
 from .common import uint256_abi, decode_event, encode_int_as_bytes
-from ..config import NETWORK
+from ..config import NETWORK, SET_INDEXER_URL
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,35 @@ async def process_transfers(info: Info, block: BlockHeader, transfers: list[Star
     block_time = block.timestamp
 
     # Store each in Mongo
-    documents = [prepare_transfer_for_storage(tr, block) for tr in transfers if tr.name == 'Transfer' and int.from_bytes(tr.address, 'big') == int(contract_address, 16)]
+    documents = []
+    for tr in transfers:
+        if tr.name == 'Transfer' and int.from_bytes(tr.address, 'big') == int(contract_address, 16):
+            document = prepare_transfer_for_storage(tr, block)
+            documents.append(document)
+
+            if int.from_bytes(document['from'], "big") == 0 and SET_INDEXER_URL is not None:
+                try:
+                    # Need to decode the transaction to find the right offset. There might be several.
+                    assembly_calls = []
+                    calls = int.from_bytes(tr.transaction.calldata[0], "big")
+                    for i in range(calls):
+                        callarray = tr.transaction.calldata[1 + i * 4: 1 + (i + 1) * 4]
+                        if int.from_bytes(callarray[0], "big") == int(contract_address, 16):
+                            if int.from_bytes(callarray[1], "big") == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3:
+                                assembly_calls.append([int.from_bytes(x, "big") for x in callarray[2:4]])  # offset, length
+                    # Now send all transactions to the set indexer
+                    # We don't care if there are repeats, the indexer handles that.
+                    for call in assembly_calls:
+                        calldata = tr.transaction.calldata[calls * 4 + 2 + call[0]:calls * 4 + 2 + call[0] + call[1]]
+                        # Request storage in the set indexer. Short timeout, we don't care outrageously if this fails.
+                        requests.post(f"http://{SET_INDEXER_URL}:5432/store", json={
+                            "chain_id": NETWORK.id,
+                            "token_id": hex(int.from_bytes(document['token_id'], "big")),
+                            "transaction_data": [int.from_bytes(x, "big") for x in calldata],
+                        }, timeout=1)
+                except Exception as f:
+                    logger.warn("Failed to send data to set indexer", exc_info=f)
+
     if (not len(documents)):
         return
 

@@ -20,3 +20,5 @@ APIBARA_URL = {
 }[os.getenv("NETWORK_NAME", "starknet-testnet")]
 
 NETWORK = get_network_metadata(os.getenv("NETWORK_NAME", "starknet-testnet"))
+
+SET_INDEXER_URL = os.getenv("SET_INDEXER_URL", None)

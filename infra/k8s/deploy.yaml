@@ -160,6 +160,8 @@ spec:
           value: #@ data.values.env
         - name: INDEXER_ID
           value: #@ data.values.indexer.indexer_id
+        - name: SET_INDEXER_URL
+          value: #@ data.values.name + "-set-indexer"
         - name: MONGO_URL
           value: #@ data.values.indexer.name + ".default.svc.cluster.local:27017"
         - name: MONGO_USERNAME
@@ -185,6 +187,55 @@ spec:
         #@ #   initialDelaySeconds: 5
         #@ #   periodSeconds: 10
         #@ #   failureThreshold: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: #@ data.values.name + "-set-indexer"
+  labels: #@ data.values.defaultLabels
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployname: #@ data.values.name + "-set-indexer"
+  template:
+    metadata:
+      labels:
+        _: #@ template.replace(data.values.defaultLabels)
+        deployname: #@ data.values.name + "-set-indexer"
+    spec:
+      serviceAccountName: cloud-storage-access
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: node_type
+#@ if data.values.env == 'prod':
+                operator: NotIn
+#@ else:
+                operator: In
+#@ end
+                values:
+                - release_surge
+      containers:
+      - name: "set-indexer"
+        image: #@ "europe-west3-docker.pkg.dev/healthy-saga-329513/sltech-briq/" + data.values.image_name + ":" + data.values.image_tag
+        ports:
+        - containerPort: 5432
+          name: "set-indexer"
+        env:
+        - name: ENV
+          value: #@ data.values.env
+        - name: CLOUD_STORAGE_BUCKET
+          value: #@ data.values.storage_bucket
+        - name: NETWORK_NAME
+          value: #@ data.values.indexer.network_name
+        - name: LOGLEVEL
+          value: "INFO"
+        command: ["gunicorn"]
+        args: ["briq_api.set_indexer.server:app", "-b", "0.0.0.0:5432", "-w", "1"]
 
 #@ if data.values.env == 'prod':
 ---

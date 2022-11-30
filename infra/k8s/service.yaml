@@ -45,3 +45,17 @@ spec:
     - port: 7171
       targetPort: apibara-backend
       name: apibara-backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: #@ data.values.name + "-set-indexer"
+  labels: #@ data.values.defaultLabels
+spec:
+  selector:
+    deployname: #@ data.values.name + "-set-indexer"
+  ports:
+    - port: 5432
+      targetPort: set-indexer
+      name: set-indexer

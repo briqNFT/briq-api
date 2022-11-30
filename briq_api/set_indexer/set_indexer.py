@@ -1,0 +1,126 @@
+"""
+The purpose of this script is to read on-chain data for sets
+and store them in our backend, making sure that things fit.
+
+It is not considered a huge deal if it fails to pick up some sets,
+as those can be corrected manually.
+
+Its main goal is to keep workload light.
+This is achieved by regularly running an async task in the server, for simplicity.
+"""
+
+from dataclasses import dataclass
+import logging
+from typing import Any, Dict, Union
+from briq_api.storage.file.file_client import FileClient
+
+from briq_api.set_identifier import SetRID
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class StorableSetData:
+    name: str
+    description: str
+    briqs: Any
+
+
+class SetIndexer:
+    network: str
+    pending: Dict[str, Union[StorableSetData, None]] = {}
+    storage: FileClient
+
+    def __init__(
+        self,
+        network: str,
+        storage: FileClient,
+    ):
+        self.network = network
+        self.storage = storage
+
+    def add_set_to_pending(self, token_id: str, data: Union[StorableSetData, None] = None):
+        self.pending[token_id] = data
+
+    def process_pending_set(self):
+        if len(self.pending) == 0:
+            return
+        token_id = list(self.pending.keys())[0]
+        self.store_set(token_id)
+
+    def store_set(self, token_id: str):
+        if token_id not in self.pending:
+            logger.warn(
+                'store_set called with set token %(token)s but this set is not in the pending list',
+                {"token": token_id}
+            )
+            return
+        data = self.pending[token_id]
+        # Drop the key from the pending items
+        self.pending.pop(token_id, None)
+
+        if data is None:
+            logger.warn('store_set called with set token %(token)s but no pending data', {"token": token_id})
+            return
+
+        if self.storage.has_set_metadata(SetRID(chain_id=self.network, token_id=token_id)):
+            return self._verify_correct_storage(data, token_id)
+        return self._store_set(data, token_id)
+
+    def _get_storage_data(self, data: StorableSetData, token_id: str) -> dict:
+        # Essentially calqued from the API
+        # TODO: reduce duplication
+        return {
+            "id": token_id,
+            "name": data.name or token_id,
+            "description": data.description or "A set made of briqs",
+            "version": 1,
+            "regionSize": 100000,
+            "briqs": data.briqs,
+            "image": f"https://api.briq.construction/v1/preview/{self.network}/{token_id}.png",
+            "animation_url": f"https://api.briq.construction/v1/model/{self.network}/{token_id}.glb",
+            "external_url": f"https://briq.construction/set/{self.network}/{token_id}",
+        }
+
+    def _verify_correct_storage(self, data: StorableSetData, token_id: str):
+        stored_data = self.storage.load_set_metadata(SetRID(chain_id=self.network, token_id=token_id))
+        expected_data = self._get_storage_data(data, token_id)
+        passes = True
+        mistake = ""
+        for key in expected_data:
+            mistake = key
+            if key == "briqs":
+                if len(stored_data[key]) != len(expected_data[key]):
+                    passes = False
+                    break
+                # Ignore the order of stored briqs for now be cause it is inconsistent
+                # So just store according to what expected_data does (which is what transactions do)
+                sorted_briqs = sorted(stored_data[key], key=lambda x: x['pos'])
+                for i in range(len(sorted_briqs)):
+                    if (sorted_briqs[i]['pos'][0] != expected_data[key][i]['pos'][0]
+                            or sorted_briqs[i]['pos'][1] != expected_data[key][i]['pos'][1]
+                            or sorted_briqs[i]['pos'][2] != expected_data[key][i]['pos'][2]
+                            or sorted_briqs[i]['data']["color"] != expected_data[key][i]['data']["color"]
+                            or sorted_briqs[i]['data']["material"] != expected_data[key][i]['data']["material"]):
+                        passes = False
+                        break
+            elif stored_data[key] != expected_data[key]:
+                passes = False
+                break
+
+        if not passes:
+            self.storage.get_backend(self.network).store_json(
+                self.storage.set_metadata_path(SetRID(chain_id=self.network, token_id=token_id)).replace('_metadata', '_expected_metadata'),
+                expected_data
+            )
+            logger.warn(
+                'store_set called with set token %(token)s but the data does not match the stored data at %(cat)s. '
+                'Storing expected data alongside the stored data.',
+                {"token": token_id, "cat": mistake}
+            )
+        else:
+            logger.info("Verified set %(token)s", {"token": token_id})
+
+    def _store_set(self, data: StorableSetData, token_id: str):
+        self.storage.store_set_metadata(SetRID(chain_id=self.network, token_id=token_id), self._get_storage_data(data, token_id))
+        logger.info('Stored new set %(token)s', {"token": token_id})
