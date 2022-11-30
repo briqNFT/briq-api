@@ -80,7 +80,7 @@ async def main(args):
         new_events_handler=handle_events,
     )
 
-    # runner.add_pending_events_handler(handle_pending_events, interval_seconds=5)
+    runner.add_pending_events_handler(handle_pending_events, interval_seconds=5)
 
     runner.add_block_handler(handle_block)
 
