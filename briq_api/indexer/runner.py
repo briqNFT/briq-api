@@ -34,10 +34,10 @@ async def handle_events(info: Info, block_events: NewEvents):
     await briqs
     await sets
 
-    try:
-        await process_pending_box(info, block_events.block, [event for event in block_events.events])
-    except Exception as e:
-        logger.warning(e, exc_info=e)
+    # try:
+    #    await process_pending_box(info, block_events.block, [event for event in block_events.events])
+    # except Exception as e:
+    #    logger.warning(e, exc_info=e)
 
 
 async def handle_pending_events(info: Info, block_events: NewEvents):
@@ -80,7 +80,8 @@ async def main(args):
         new_events_handler=handle_events,
     )
 
-    runner.add_pending_events_handler(handle_pending_events, interval_seconds=5)
+    # Deactivate pending block for now - not used.
+    # runner.add_pending_events_handler(handle_pending_events, interval_seconds=5)
 
     runner.add_block_handler(handle_block)
 
