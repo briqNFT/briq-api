@@ -138,6 +138,19 @@ spec:
         _: #@ template.replace(data.values.defaultLabels)
         deployname: #@ data.values.indexer.name + "-runner"
     spec:
+      affinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: node_type
+#@ if data.values.env == 'prod':
+                operator: NotIn
+#@ else:
+                operator: In
+#@ end
+                values:
+                - release_surge
       containers:
       - name: "indexer-runner"
         image: #@ "europe-west3-docker.pkg.dev/healthy-saga-329513/sltech-briq/" + data.values.image_name + ":" + data.values.image_tag
