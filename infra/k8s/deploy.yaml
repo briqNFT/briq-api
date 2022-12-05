@@ -139,6 +139,7 @@ spec:
         deployname: #@ data.values.indexer.name + "-runner"
     spec:
       affinity:
+        nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 1
             preference:
