@@ -46,5 +46,7 @@
     "starknet_city_ongoing/speeder": {                  "quantity": 15,  "extra_briqs": 100, "wave": "1", "auction_start": 1668596478, "auction_duration": 31536000, "initial_price": 10000000000000 },
     "starknet_city_ongoing/starkgate": {                "quantity": 20,  "extra_briqs": 100, "wave": "1", "auction_start": 1668596478, "auction_duration": 31536000, "initial_price": 10000000000000 },
     "starknet_city_ongoing/transmission_equipment": {   "quantity": 15,  "extra_briqs": 100, "wave": "1", "auction_start": 1668596478, "auction_duration": 31536000, "initial_price": 10000000000000 },
-    "starknet_city_ongoing/space_kennel": {             "quantity": 15,  "extra_briqs": 100, "wave": "1", "auction_start": 1668596478, "auction_duration": 31536000, "initial_price": 10000000000000 }
+    "starknet_city_ongoing/space_kennel": {             "quantity": 15,  "extra_briqs": 100, "wave": "1", "auction_start": 1668596478, "auction_duration": 31536000, "initial_price": 10000000000000 },
+
+    "briqmas/briqmas_tree": { "quantity": 0,  "extra_briqs": 0, "wave": null, "auction_start": 0, "auction_duration": 31536000, "initial_price": 0 }
 }

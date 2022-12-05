@@ -15,18 +15,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(route_class=ExceptionWrapperRoute(logger))
 
 
-@router.head("/box/data/{chain_id}/{theme_id}/{box_id}")
-@router.head("/box/data/{chain_id}/{theme_id}/{box_id}.json")
-@router.get("/box/data/{chain_id}/{theme_id}/{box_id}")
-@router.get("/box/data/{chain_id}/{theme_id}/{box_id}.json")
-async def box_data(chain_id: str, theme_id: str, box_id: str):
-    rid = BoxRID(chain_id, theme_id, box_id)
-    output = boxes.get_box_metadata(rid)
-    return JSONResponse(output, headers={
-        "Cache-Control": f"public, max-age={24 * 3600}"
-    })
-
-
 @router.head("/booklet/data/{chain_id}/{theme_id}/{booklet_id}")
 @router.head("/booklet/data/{chain_id}/{theme_id}/{booklet_id}.json")
 @router.get("/booklet/data/{chain_id}/{theme_id}/{booklet_id}")
@@ -243,6 +231,18 @@ async def get_box_saledata(chain_id: str, theme_id: str):
         ret[box] = boxes.get_box_saledata(rid=BoxRID(chain_id, theme_id, box.split('/')[1]))
     # Turn off the caching client-side - this updates in real time
     return ret
+
+
+@router.head("/box/data/{chain_id}/{theme_id}/{box_id}")
+@router.head("/box/data/{chain_id}/{theme_id}/{box_id}.json")
+@router.get("/box/data/{chain_id}/{theme_id}/{box_id}")
+@router.get("/box/data/{chain_id}/{theme_id}/{box_id}.json")
+async def box_data(chain_id: str, theme_id: str, box_id: str):
+    rid = BoxRID(chain_id, theme_id, box_id)
+    output = boxes.get_box_metadata(rid)
+    return JSONResponse(output, headers={
+        "Cache-Control": f"public, max-age={24 * 3600}"
+    })
 
 
 @router.head("/box/data_all/{chain_id}/{theme_id}")

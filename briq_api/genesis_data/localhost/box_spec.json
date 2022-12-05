@@ -46,5 +46,7 @@
 
     "starknet_planet/cairo_pyramid": 20,
     "starknet_planet/horus_rocket": 21,
-    "starknet_planet/starkgate": 22
+    "starknet_planet/starkgate": 22,
+
+    "briqmas/briqmas_tree": 25
 }
