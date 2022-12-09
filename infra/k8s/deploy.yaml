@@ -37,23 +37,9 @@ spec:
         image: #@ "europe-west3-docker.pkg.dev/healthy-saga-329513/sltech-briq/" + data.values.image_name + ":" + data.values.image_tag
         ports:
         - containerPort: 5000
-        env:
-        - name: ENV
-          value: #@ data.values.env
-        - name: CLOUD_STORAGE_BUCKET
-          value: #@ data.values.storage_bucket
-        - name: INDEXER_ID
-          value: #@ data.values.indexer.indexer_id
-        - name: MONGO_URL
-          value: #@ data.values.indexer.name + ".default.svc.cluster.local:27017"
-        - name: MONGO_USERNAME
-          value: apibara
-        - name: MONGO_PASSWORD
-          value: apibara
-        #@ if data.values.env != 'prod':
-        - name: LOGLEVEL
-          value: "DEBUG"
-        #@ end
+        envFrom:
+        - configMapRef:
+            name: #@ data.values.name
         resources:
           requests:
             cpu: #@ data.values.resources.cpu
@@ -155,38 +141,15 @@ spec:
       containers:
       - name: "indexer-runner"
         image: #@ "europe-west3-docker.pkg.dev/healthy-saga-329513/sltech-briq/" + data.values.image_name + ":" + data.values.image_tag
-        env:
-        - name: ENV
-          value: #@ data.values.env
-        - name: INDEXER_ID
-          value: #@ data.values.indexer.indexer_id
-        - name: SET_INDEXER_URL
-          value: #@ data.values.name + "-set-indexer"
-        - name: MONGO_URL
-          value: #@ data.values.indexer.name + ".default.svc.cluster.local:27017"
-        - name: MONGO_USERNAME
-          value: apibara
-        - name: MONGO_PASSWORD
-          value: apibara
-        - name: NETWORK_NAME
-          value: #@ data.values.indexer.network_name
-        - name: START_BLOCK
-          value: #@ data.values.indexer.start_block
-        - name: LOGLEVEL
-          value: "DEBUG"
+        envFrom:
+        - configMapRef:
+            name: #@ data.values.name
         resources:
           requests:
             cpu: #@ data.values.indexer.resources.cpu_runner
             memory: #@ data.values.indexer.resources.memory_runner 
         command: ["python3"]
         args: ["-m", "briq_api.indexer.runner"]
-        #@ # livenessProbe:
-        #@ #   httpGet:
-        #@ #     path: /health
-        #@ #     port: 5000
-        #@ #   initialDelaySeconds: 5
-        #@ #   periodSeconds: 10
-        #@ #   failureThreshold: 2
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -225,15 +188,9 @@ spec:
         ports:
         - containerPort: 5432
           name: "set-indexer"
-        env:
-        - name: ENV
-          value: #@ data.values.env
-        - name: CLOUD_STORAGE_BUCKET
-          value: #@ data.values.storage_bucket
-        - name: NETWORK_NAME
-          value: #@ data.values.indexer.network_name
-        - name: LOGLEVEL
-          value: "INFO"
+        envFrom:
+        - configMapRef:
+            name: #@ data.values.name
         command: ["gunicorn"]
         args: ["briq_api.set_indexer.server:app", "-b", "0.0.0.0:5432", "-w", "1"]
 

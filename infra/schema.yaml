@@ -2,7 +2,7 @@
 ---
 name: briq-api
 env: test
-storage_bucket: briq-bucket-test-1
+storage_bucket: ""
 static_ip: lb-sltech-company-ipv4-1
 sites: [""]
 resources:
@@ -10,6 +10,7 @@ resources:
   memory: "128Mi"
 image_name: briq-api
 image_tag: ""
+log_level: "INFO"
 
 #@schema/type any=True
 defaultLabels:
@@ -22,7 +23,8 @@ indexer:
   image_apibara: apibara/apibara:0.3.2-alpha1
   indexer_id: "testnet-test-3"
   network_name: 'starknet-testnet'
-  start_block: '3000'
+  apibara_url: ''
+  start_block: ''
   resources:
     cpu_store: "50m"
     memory_store: "128Mi"

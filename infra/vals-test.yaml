@@ -2,9 +2,11 @@
 ---
 name: dev-briq-api
 env: test
-storage_bucket: briq-bucket-prod-1
+storage_bucket: briq-bucket-test-1
 static_ip: lb-sltech-company-ipv4-3
 sites: ["api.test.sltech.company"]
+log_level: "DEBUG"
+
 #@schema/type any=True
 defaultLabels:
   appname: dev-briq
@@ -13,6 +15,5 @@ defaultLabels:
 indexer:
   name: dev-briq-indexer
   image_store: mongo:latest
-  indexer_id: "kub-test-1"
+  indexer_id: "kub-test-0"
   network_name: 'starknet-testnet'
-  start_block: '3000'

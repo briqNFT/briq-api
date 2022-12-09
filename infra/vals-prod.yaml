@@ -2,13 +2,15 @@
 ---
 name: briq-api
 env: prod
-storage_bucket: briq-bucket-prod-1
 static_ip: lb-sltech-company-ipv4-1
 sites: ["api.briq.construction", "api.sltech.company"]
+log_level: "INFO"
+
 #@schema/type any=True
 defaultLabels:
   appname: briq
   env: prod
+
 resources:
   cpu: "250m"
   memory: "512Mi"
@@ -18,7 +20,6 @@ indexer:
   image_store: mongo:latest
   indexer_id: "kub-mainnet-2"
   network_name: 'starknet-mainnet'
-  start_block: '10400'
   resources:
     cpu_store: "250m"
     memory_store: "256Mi"
