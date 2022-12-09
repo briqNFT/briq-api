@@ -13,13 +13,11 @@ from ..file_client import FileStorageBackend
 
 logger = logging.getLogger(__name__)
 
-BUCKET = os.environ.get('CLOUD_STORAGE_BUCKET') or 'test-bucket'
-
 legacy_chain_id = TESTNET_LEGACY.id
 
 
 class LegacyCloudStorage(FileStorageBackend):
-    def __init__(self, bucket=BUCKET, path="") -> None:
+    def __init__(self, bucket, path="") -> None:
         self.storage_client = storage.Client()
         self.bucket = self.storage_client.bucket(bucket)
         self.path = path

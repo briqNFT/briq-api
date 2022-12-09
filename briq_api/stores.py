@@ -1,4 +1,5 @@
 import logging
+import os
 
 from briq_api.config import ENV
 
@@ -21,14 +22,14 @@ def setup_stores(local: bool, use_mock_chain: bool):
     if not local:
         logger.info("Connecting normally.")
 
-        file_storage.connect_for_chain(TESTNET_LEGACY.id, backend=LegacyCloudStorage('briq-bucket-prod-1'))
+        file_storage.connect_for_chain(TESTNET_LEGACY.id, backend=LegacyCloudStorage(TESTNET_LEGACY.storage_bucket))
 
         # For now, starknet-testnet is connected to the test bucket only in test env.
         if ENV != 'prod':
-            file_storage.connect_for_chain(TESTNET.id, backend=CloudStorage('briq-bucket-test-1'))
-            file_storage.connect_for_chain(MAINNET.id, backend=CloudStorage('briq-bucket-test-1'))
+            file_storage.connect_for_chain(TESTNET.id, backend=CloudStorage(os.getenv("CLOUD_STORAGE_BUCKET", 'briq-bucket-test-1')))
+            file_storage.connect_for_chain(MAINNET.id, backend=CloudStorage(os.getenv("CLOUD_STORAGE_BUCKET", 'briq-bucket-test-1')))
         else:
-            file_storage.connect_for_chain(MAINNET.id, backend=CloudStorage('briq-bucket-prod-1'))
+            file_storage.connect_for_chain(MAINNET.id, backend=CloudStorage(MAINNET.storage_bucket))
 
         if ENV != 'prod':
             mongo_storage.connect_for_chain(TESTNET.id, MongoBackend())

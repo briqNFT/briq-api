@@ -6,6 +6,7 @@ from dataclasses import dataclass
 @dataclass
 class NetworkMetadata:
     id: str
+    storage_bucket: str = ''
     auction_address: str = ''
     box_address: str = ''
     briq_address: str = ''
@@ -37,6 +38,7 @@ TESTNET_NORMAL = NetworkMetadata(
 
 TESTNET = NetworkMetadata(
     id="starknet-testnet",
+    storage_bucket="briq-bucket-test-1",
     auction_address="0x006fbea980d2acb5c63ad97637f6d7f3fa18887e3ad987abbd9eb594a58c0291",
     box_address="0x0799b964cd6a32611fbd589ebae040ad18715ae5cd9b1a42226bb0b1db48c631",
     briq_address="0x029e1fb93825a116daf88902c8bbf1a386890e6a5cf7906b584a1e70e7023e28",
@@ -48,6 +50,7 @@ TESTNET = NetworkMetadata(
 
 MAINNET = NetworkMetadata(
     id="starknet-mainnet",
+    storage_bucket="briq-bucket-prod-1",
     auction_address="0x01712e3e3f133b26d65a3c5aaae78e7405dfca0a3cfe725dd57c4941d9474620",
     box_address="0x01e1f972637ad02e0eed03b69304344c4253804e528e1a5dd5c26bb2f23a8139",
     briq_address="0x00247444a11a98ee7896f9dec18020808249e8aad21662f2fa00402933dce402",
@@ -57,7 +60,7 @@ MAINNET = NetworkMetadata(
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
 )
 
-TESTNET_LEGACY = NetworkMetadata(id="starknet-testnet-legacy")
+TESTNET_LEGACY = NetworkMetadata(id="starknet-testnet-legacy", storage_bucket="briq-bucket-prod-1")
 
 
 def get_network_metadata(network: str):

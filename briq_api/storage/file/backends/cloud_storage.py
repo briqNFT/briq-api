@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 class CloudStorage(FileStorageBackend):
     def __init__(self, bucket) -> None:
         self.storage_client = storage.Client()
+        logger.info("Connecting cloud storage to bucket %s", bucket)
         self.bucket = self.storage_client.bucket(bucket)
 
     def store_json(self, path, data):

@@ -5,7 +5,6 @@ from time import sleep
 from typing import Any, Union
 from briq_api.set_indexer.config import NETWORK
 from briq_api.set_indexer.set_indexer import SetIndexer, StorableSetData
-from briq_api.stores import file_storage, setup_stores
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +13,9 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 
 import logging
+from briq_api.storage.file.backends.cloud_storage import CloudStorage
+
+from briq_api.storage.file.file_client import FileClient
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +104,10 @@ pending_task: Union[asyncio.Task, None] = None
 def startup_event():
     global set_indexer
     global pending_task
-    setup_stores(bool(os.getenv("LOCAL")) or False, False)
+
+    file_storage = FileClient()
+    bucket = os.getenv("CLOUD_STORAGE_BUCKET", NETWORK.storage_bucket)
+    file_storage.connect_for_chain(NETWORK.id, backend=CloudStorage(bucket))
     set_indexer = SetIndexer(NETWORK.id, file_storage)
     pending_task = asyncio.create_task(process_pending_sets())
 
