@@ -1,3 +1,4 @@
 import os
 
-ENV = os.getenv("ENV", "dev")  # dev, test or pro
+ENV = os.getenv("ENV") or "dev"
+assert ENV in ["dev", "test", "prod"]

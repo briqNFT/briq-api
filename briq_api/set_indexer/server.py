@@ -106,7 +106,7 @@ def startup_event():
     global pending_task
 
     file_storage = FileClient()
-    bucket = os.getenv("CLOUD_STORAGE_BUCKET", NETWORK.storage_bucket)
+    bucket = os.getenv("CLOUD_STORAGE_BUCKET") or NETWORK.storage_bucket
     file_storage.connect_for_chain(NETWORK.id, backend=CloudStorage(bucket))
     set_indexer = SetIndexer(NETWORK.id, file_storage)
     pending_task = asyncio.create_task(process_pending_sets())

@@ -26,8 +26,8 @@ def setup_stores(local: bool, use_mock_chain: bool):
 
         # For now, starknet-testnet is connected to the test bucket only in test env.
         if ENV != 'prod':
-            file_storage.connect_for_chain(TESTNET.id, backend=CloudStorage(os.getenv("CLOUD_STORAGE_BUCKET", 'briq-bucket-test-1')))
-            file_storage.connect_for_chain(MAINNET.id, backend=CloudStorage(os.getenv("CLOUD_STORAGE_BUCKET", 'briq-bucket-test-1')))
+            file_storage.connect_for_chain(TESTNET.id, backend=CloudStorage(os.getenv("CLOUD_STORAGE_BUCKET") or 'briq-bucket-test-1'))
+            file_storage.connect_for_chain(MAINNET.id, backend=CloudStorage(os.getenv("CLOUD_STORAGE_BUCKET") or 'briq-bucket-test-1'))
         else:
             file_storage.connect_for_chain(MAINNET.id, backend=CloudStorage(MAINNET.storage_bucket))
 
