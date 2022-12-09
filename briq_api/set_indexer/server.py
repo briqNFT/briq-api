@@ -69,7 +69,7 @@ def parse_transaction(data: list[int]):
         briqs.append({
             "pos": bd[2:5],
             "data": {
-                'color': (bd[0]),
+                'color': bd[0].lower(),
                 'material': hex(bd[1]),
             },
             #  'has_token_id': bd[5],

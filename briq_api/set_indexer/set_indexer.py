@@ -82,9 +82,7 @@ class SetIndexer:
             "external_url": f"https://briq.construction/set/{self.network}/{token_id}",
         }
 
-    def _verify_correct_storage(self, data: StorableSetData, token_id: str):
-        stored_data = self.storage.load_set_metadata(SetRID(chain_id=self.network, token_id=token_id))
-        expected_data = self._get_storage_data(data, token_id)
+    def _compare_storage(self, expected_data: dict, stored_data: dict):
         passes = True
         mistake = ""
         for key in expected_data:
@@ -92,7 +90,7 @@ class SetIndexer:
             if key == "briqs":
                 if len(stored_data[key]) != len(expected_data[key]):
                     passes = False
-                    break
+                    return passes, mistake
                 # Ignore the order of stored briqs for now be cause it is inconsistent
                 # So just store according to what expected_data does (which is what transactions do)
                 sorted_briqs = sorted(stored_data[key], key=lambda x: x['pos'])
@@ -100,13 +98,19 @@ class SetIndexer:
                     if (sorted_briqs[i]['pos'][0] != expected_data[key][i]['pos'][0]
                             or sorted_briqs[i]['pos'][1] != expected_data[key][i]['pos'][1]
                             or sorted_briqs[i]['pos'][2] != expected_data[key][i]['pos'][2]
-                            or sorted_briqs[i]['data']["color"] != expected_data[key][i]['data']["color"]
+                            or sorted_briqs[i]['data']["color"].lower() != expected_data[key][i]['data']["color"].lower()
                             or sorted_briqs[i]['data']["material"] != expected_data[key][i]['data']["material"]):
                         passes = False
-                        break
+                        return passes, mistake
             elif stored_data[key] != expected_data[key]:
                 passes = False
-                break
+                return passes, mistake
+        return passes, mistake
+
+    def _verify_correct_storage(self, data: StorableSetData, token_id: str):
+        stored_data = self.storage.load_set_metadata(SetRID(chain_id=self.network, token_id=token_id))
+        expected_data = self._get_storage_data(data, token_id)
+        passes, mistake = self._compare_storage(expected_data, stored_data)
 
         if not passes:
             self.storage.get_backend(self.network).store_json(
