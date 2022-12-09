@@ -73,7 +73,7 @@ class SetIndexer:
         return {
             "id": token_id,
             "name": data.name or token_id,
-            "description": data.description or "A set made of briqs",
+            "description": data.description or "",
             "version": 1,
             "regionSize": 100000,
             "briqs": data.briqs,
