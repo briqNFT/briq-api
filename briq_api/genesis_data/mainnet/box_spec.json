@@ -7,5 +7,7 @@
     "starknet_planet/flying_saucer": 6,
     "starknet_planet/helper_robot": 7,
     "starknet_planet/landing_module": 8,
-    "starknet_planet/akimbo_fighter": 9
+    "starknet_planet/akimbo_fighter": 9,
+
+    "briqmas/briqmas_tree": 10
 }

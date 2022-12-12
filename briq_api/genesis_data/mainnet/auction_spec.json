@@ -23,5 +23,7 @@
 
     "starknet_planet/cairo_pyramid": {            "quantity": 0,  "extra_briqs": 5000, "wave": null, "auction_start": 0, "auction_duration": 86400, "initial_price": 0 },
     "starknet_planet/horus_rocket": {             "quantity": 0,  "extra_briqs": 5000, "wave": null, "auction_start": 0, "auction_duration": 86400, "initial_price": 0 },
-    "starknet_planet/starkgate": {                "quantity": 0,  "extra_briqs": 5000, "wave": null, "auction_start": 0, "auction_duration": 86400, "initial_price": 0 }
+    "starknet_planet/starkgate": {                "quantity": 0,  "extra_briqs": 5000, "wave": null, "auction_start": 0, "auction_duration": 86400, "initial_price": 0 },
+
+    "briqmas/briqmas_tree": { "quantity": 0, "extra_briqs": 0, "wave": null, "auction_start": 0, "auction_duration": 31536000, "initial_price": 0 }
 }
