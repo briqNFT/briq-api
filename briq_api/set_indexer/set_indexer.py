@@ -12,6 +12,8 @@ This is achieved by regularly running an async task in the server, for simplicit
 from dataclasses import dataclass
 import logging
 from typing import Any, Dict, Union
+import requests
+from briq_api.chain.networks import get_network_metadata
 from briq_api.storage.file.file_client import FileClient
 
 from briq_api.set_identifier import SetRID
@@ -123,6 +125,13 @@ class SetIndexer:
                 {"token": token_id, "cat": mistake}
             )
         else:
+            # Request an update on the mintsquare metadata, in case they indexed us too fast.
+            try:
+                requests.post(f"https://api.mintsquare.io/nft/metadata/{self.network}/{get_network_metadata(self.network).set_address}/{token_id}/")
+                logger.debug("Pinged mintsquare API to update token %(token_id)s", {"token_id": token_id})
+            except Exception as e:
+                logger.debug("Could not ping mintsquare API for token %(token_id)s",{'token_id': token_id}, exc_info=e)
+
             logger.info("Verified set %(token)s", {"token": token_id})
 
     def _store_set(self, data: StorableSetData, token_id: str):
