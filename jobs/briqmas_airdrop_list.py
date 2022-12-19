@@ -4,12 +4,29 @@ mongo = MongoBackend(db_name="kub_mainnet_2")
 
 owners = set()
 
-tokens = mongo.db['box_tokens'].find({
-    "quantity": { "$ne": (0).to_bytes(32, "big") },
-    "$or": [
+validity_condition_now = { "$or": [
         { "_chain.valid_to": { "$gte": 8000, "$lte": 10000 } },
         { "_chain.valid_to": None },
     ]
+}
+# For the purpose of validity, I am running this 'after' the block. Any transaction that is part of the block is counted.
+validity_condition_actual = { "$and": [
+        { "$or": [
+            # Ergo here strictly greater than.
+            { "_chain.valid_to": { "$gt": 17135 } },
+            { "_chain.valid_to": None },
+        ]},
+        { "$or": [
+            # and here less equal than
+            { "_chain.valid_from": { "$lte": 17135 } },
+            { "_chain.valid_from": None },
+        ]}
+    ]
+}
+
+tokens = mongo.db['box_tokens'].find({
+    "quantity": { "$ne": (0).to_bytes(32, "big") },
+    **validity_condition_actual
 })
 
 for data in tokens:
@@ -18,10 +35,7 @@ for data in tokens:
 
 tokens = mongo.db['booklet_tokens'].find({
     "quantity": { "$ne": (0).to_bytes(32, "big") },
-    "$or": [
-        { "_chain.valid_to": { "$gte": 8000, "$lte": 10000 } },
-        { "_chain.valid_to": None },
-    ]
+    **validity_condition_actual
 })
 
 for data in tokens:
@@ -31,10 +45,7 @@ for data in tokens:
 
 tokens = mongo.db['set_tokens'].find({
     "quantity": { "$ne": (0).to_bytes(32, "big") },
-    "$or": [
-        { "_chain.valid_to": { "$gte": 8000, "$lte": 10000 } },
-        { "_chain.valid_to": None },
-    ]
+    **validity_condition_actual
 })
 
 sets = set()
