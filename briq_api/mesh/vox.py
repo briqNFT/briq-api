@@ -66,19 +66,20 @@ def to_vox(briqData: BriqData):
     x1 += 1
     y1 += 1
     z1 += 1
+    x1 -= x0
+    y1 -= y0
+    z1 -= z0
 
     # Vox cannot support more than 255 colors or more than 255*255*255 so for now, clamp to that.
     # For now, we prefer truncating the model over failing to export.
     MAX_VALUE = 255
-    if len(colors) > MAX_VALUE or x1 > MAX_VALUE or y1 > MAX_VALUE or z1 > MAX_VALUE:
-        logger.info("Set will be truncated, some briqs are outside the supported range")
-
-    x1 = min(MAX_VALUE, x1)
-    y1 = min(MAX_VALUE, y1)
-    z1 = min(MAX_VALUE, z1)
+    if len(colors) > MAX_VALUE:
+        logger.info("Too many colors, set will be truncated.")
+    if x1 > MAX_VALUE or y1 > MAX_VALUE or z1 > MAX_VALUE:
+        logger.info(f"Some briqs are outside the range ({x1}/{y1}/{z1}), set will be truncated.")
 
     for briq in briqData.briqs:
-        x = x1 - briq["pos"][0] - 1
+        x = x1 - 1 - briq["pos"][0] + x0
         y = briq["pos"][2] - y0
         z = briq["pos"][1] - z0
         # Have to invert the condition for x
@@ -94,7 +95,7 @@ def to_vox(briqData: BriqData):
         voxMaterials.append(create_material(i + 1, mat))
 
     vox = Vox(
-        models=[Model(size=Size(x=x1 - x0, y=y1 - y0, z=z1 - z0), voxels=voxels)],
+        models=[Model(size=Size(x=min(MAX_VALUE, x1), y=min(MAX_VALUE, y1), z=min(MAX_VALUE, z1)), voxels=voxels)],
         palette=colors[0:255],
         materials=voxMaterials
     )
