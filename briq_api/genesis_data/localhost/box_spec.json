@@ -9,5 +9,19 @@
     "starknet_planet/landing_module": 8,
     "starknet_planet/akimbo_fighter": 9,
 
-    "briqmas/briqmas_tree": 10
+    "briqmas/briqmas_tree": 10,
+
+    "starknet_planet/antigravity_motorbike": 12,
+    "starknet_planet/crawler_robot": 12,
+    "starknet_planet/lunar_capsule": 12,
+    "starknet_planet/space_kennel": 12,
+    "starknet_planet/launchpad": 12,
+    "starknet_planet/transmission_equipment": 12,
+    "starknet_planet/radio_kit": 12,
+    "starknet_planet/lunar_buggy": 12,
+    "starknet_planet/space_mecha": 12,
+    "starknet_planet/briq_rocket": 12,
+    "starknet_planet/cairo_pyramid": 12,
+    "starknet_planet/horus_rocket": 12,
+    "starknet_planet/starkgate": 12
 }
