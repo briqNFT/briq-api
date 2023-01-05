@@ -47,7 +47,23 @@ def get_metadata(rid: SetRID):
 
 
 def get_preview(rid: SetRID):
-    return file_storage.load_set_preview(rid)
+    try:
+        return file_storage.load_set_preview(rid)
+    except Exception:
+        pass
+    # Try to generate a default image, and if that fails store something anyways to avoid DOS.
+    try:
+        data = file_storage.load_set_metadata(rid)
+        image_data_stream = io.BytesIO()
+        BriqData().load(data).to_png().save(image_data_stream, format='PNG')
+        image_data = image_data_stream.getvalue()
+        file_storage.store_set_preview(rid, image_data)
+        return image_data
+    except Exception:
+        import pathlib
+        image_data = open(pathlib.Path(__file__).parent.resolve() / "No_Preview_image_2.png", 'rb').read()
+        file_storage.store_set_preview(rid, image_data)
+        return image_data
 
 
 def get_model(rid: SetRID, kind: str) -> bytes:

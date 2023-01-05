@@ -25,3 +25,7 @@ class BriqData:
     def to_gltf(self, separate_any_color: bool = False):
         from .gltf import to_gltf
         return to_gltf(self.briqs, separate_any_color)
+
+    def to_png(self):
+        from .png import to_png
+        return to_png(self.briqs)
