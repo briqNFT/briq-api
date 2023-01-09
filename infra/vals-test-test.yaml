@@ -15,7 +15,6 @@ indexer:
   image_store: mongo:latest
   indexer_id: "kub-test-2"
   network_name: 'starknet-testnet'
-  start_block: '3000'
   resources:
     cpu_store: "100m"
     memory_store: "128Mi"

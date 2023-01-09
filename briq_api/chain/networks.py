@@ -25,19 +25,19 @@ DEVNET = NetworkMetadata(
     erc20_address="0x62230ea046a9a5fbc261ac77d03c8d41e5d442db2284587570ab46455fd2488",
 )
 
-TESTNET_NORMAL = NetworkMetadata(
+TESTNET = NetworkMetadata(
     id="starknet-testnet",
-    auction_address="0x0435c3be3e2a583c6d9c85f5d751b11acb8230f997b3c7b7ab11bbd97beda220",
-    box_address="0x0324642cf2a18e0873d80ea91e1426b3a776806ba31fc0a694014567ac1018cd",
-    briq_address="0x02165e8c1dd9bd5dd6583da76d08b3c306fda013a6c621bee403c280ead9aaa7",
-    booklet_address="0x053c894cd8ba4d953540dc7056c811289ad631bc1dcea07bc323f6f9c9f1f31f",
-    attributes_registry_address="0x078cf4ac0d91c0e418bdd8ccd08122583daac33a2ba3dfecca66e8953402e2eb",
-    set_address="0x04172804038f94b8ebeec4cb74992e9a6d436ecafd3b018767c7d107550cda90",
+    auction_address="0x033f840d4f7bfa20aaa128e5a69157355478d33182bea6039d55aae3ffb861e2",
+    box_address="0x003b51e657e236e7085d1006e8ae6f955f09793b7f6dbdfad7a1a8abadad464a",
+    briq_address="0x06f18ebcc76b6bd3560da141aeae53f9af3d80c2001415c963ecddbba4e8ba12",
+    booklet_address="0x05646ae11383a9994f958ee9cb29b3cf720b994733100ef7b8a00d6adcbe1c42",
+    attributes_registry_address="0x05d660cb7354bbce7d6ce3861136098eb2ebf8af629f4ea0cc450ca546002d40",
+    set_address="0x05f9e1c4975b0f71f0b1af2b837166d321af1cdba5c30c09b0d4822b493f1347",
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
 )
 
-TESTNET = NetworkMetadata(
-    id="starknet-testnet",
+TESTNET_2 = NetworkMetadata(
+    id="starknet-testnet2",
     storage_bucket="briq-bucket-test-1",
     auction_address="0x006fbea980d2acb5c63ad97637f6d7f3fa18887e3ad987abbd9eb594a58c0291",
     box_address="0x0799b964cd6a32611fbd589ebae040ad18715ae5cd9b1a42226bb0b1db48c631",
