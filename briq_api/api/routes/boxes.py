@@ -210,6 +210,8 @@ async def get_theme_data(chain_id: str, theme_id: str):
 @router.head("/{chain_id}/{theme_id}/boxes")
 @router.get("/{chain_id}/{theme_id}/boxes")
 async def list_boxes_of_theme(chain_id: str, theme_id: str):
+    if theme_id == 'ducks_everywhere':
+        return [f'ducks_everywhere/{i}' for i in range(1, 10)]
     data = boxes.get_theme_data(chain_id, theme_id)
     if data['sale_start'] is None or data['sale_start'] > time.time():
         output = []
@@ -218,6 +220,32 @@ async def list_boxes_of_theme(chain_id: str, theme_id: str):
     # Turn off the caching client-side - this must update when the waves become active
     return output
 
+
+@router.head("/{chain_id}/{theme_id}/auction_data")
+@router.get("/{chain_id}/{theme_id}/auction_data")
+async def get_theme_auction_data(chain_id: str, theme_id: str):
+    if theme_id == 'ducks_everywhere':
+        return {
+            'ducks_everywhere/1': {
+                'token_id': '0x210343a6ce65eaf6818b9fc8e744930e363d9a263918e94000000000000000',
+                'minimum_bid': '1210',
+                'growth_factor': 10,
+                'start_date': 1673606220,
+                'duration': 864000,
+                'highest_bid': '0',
+                'highest_bidder': '',
+            },
+            'ducks_everywhere/2': {
+                'token_id': '0x7d180b4de0656c2d58237be7a77cf1403be2226f42e63a7b800000000000000',
+                'minimum_bid': '1000',
+                'growth_factor': 10,
+                'start_date': 1675606203,
+                'duration': 864000,
+                'highest_bid': '26419864',
+                'highest_bidder': '0xcafebabe'
+            }
+        }
+    return {}
 
 @router.head("/{chain_id}/{theme_id}/saledata")
 @router.get("/{chain_id}/{theme_id}/saledata")

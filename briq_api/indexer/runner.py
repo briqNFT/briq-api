@@ -8,6 +8,7 @@ from apibara.indexer import IndexerRunnerConfiguration
 
 from .config import INDEXER_ID, APIBARA_URL, MONGO_URL, MONGO_USERNAME, MONGO_PASSWORD, START_BLOCK
 from .events.bids import process_bids, bid_filter
+from .events.bids_onchain import process_bids as process_bids_onchain, bid_filter as bid_onchains_filter
 from .events.box import process_transfers as process_box, process_pending_box, transfer_filters as box_filters
 from .events.booklet import process_transfers as process_booklet, transfer_filters as booklet_filters
 from .events.briq import process_transfers as process_briq, transfer_filters as briq_filters
@@ -24,11 +25,13 @@ async def handle_events(info: Info, block_events: NewEvents):
     })
 
     bids = process_bids(info, block_events.block, [event for event in block_events.events if event.name == 'Bid'])
+    bids_onchain = process_bids_onchain(info, block_events.block, [event for event in block_events.events if event.name == 'Bid'])
     boxes = process_box(info, block_events.block, [event for event in block_events.events])
     booklets = process_booklet(info, block_events.block, [event for event in block_events.events])
     briqs = process_briq(info, block_events.block, [event for event in block_events.events])
     sets = process_set(info, block_events.block, [event for event in block_events.events])
     await bids
+    await bids_onchain
     await boxes
     await booklets
     await briqs
@@ -91,7 +94,7 @@ async def main(args):
     # For now, this also helps the SDK map between human-readable
     # event names and StarkNet events.
     runner.create_if_not_exists(
-        filters=bid_filter + box_filters + booklet_filters + briq_filters + set_filters,
+        filters=bid_filter + box_filters + booklet_filters + briq_filters + set_filters + bid_onchains_filter,
         index_from_block=START_BLOCK,
     )
 

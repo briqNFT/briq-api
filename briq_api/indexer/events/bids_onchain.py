@@ -8,7 +8,7 @@ from ..config import NETWORK
 
 logger = logging.getLogger(__name__)
 
-contract_address = NETWORK.auction_address
+contract_address = NETWORK.auction_onchain_address
 
 bid_abi = {
     "name": "Bid",
@@ -16,8 +16,8 @@ bid_abi = {
     "keys": [],
     "outputs": [
         {"name": "bidder", "type": "felt"},
-        {"name": "box_token_id", "type": "felt"},
         {"name": "bid_amount", "type": "felt"},
+        {"name": "auction_id", "type": "felt"},
     ],
 }
 
@@ -33,8 +33,8 @@ def prepare_bid_for_storage(event: StarkNetEvent, block: BlockHeader):
     bid_data = decode_event(bid_decoder, event.data)
     return {
         "bidder": encode_int_as_bytes(bid_data.bidder),
-        "box_token_id": encode_int_as_bytes(bid_data.box_token_id),
         "bid_amount": encode_int_as_bytes(bid_data.bid_amount),
+        "auction_id": encode_int_as_bytes(bid_data.auction_id),
         "_tx_hash": event.transaction_hash,
         "_timestamp": block.timestamp,
         "_block": block.number,
@@ -49,30 +49,30 @@ async def process_bids(info: Info, block: BlockHeader, bids: list[StarkNetEvent]
     if (not len(documents)):
         return
 
-    await info.storage.insert_many("bids", documents)
+    await info.storage.insert_many("bids_onchain", documents)
 
-    logger.info("Stored %(docs)s new onchain bids", {"docs": len(documents)})
+    logger.info("Stored %(docs)s new bids", {"docs": len(documents)})
 
     # Compute the new highest bid on all items
     highest_bid = dict()
     for bid in documents:
-        if bid['box_token_id'] not in highest_bid or highest_bid[bid['box_token_id']][1] < int.from_bytes(bid['bid_amount'], "big"):
-            highest_bid[bid['box_token_id']] = (bid['bidder'], int.from_bytes(bid['bid_amount'], "big"))
+        if bid['auction_id'] not in highest_bid or highest_bid[bid['auction_id']][1] < int.from_bytes(bid['bid_amount'], "big"):
+            highest_bid[bid['auction_id']] = (bid['bidder'], int.from_bytes(bid['bid_amount'], "big"))
 
     skips = []
-    for box_token_id in highest_bid:
-        existing_bid = await info.storage.find_one("highest_bids", {"box_token_id": box_token_id})
-        if existing_bid and int.from_bytes(existing_bid['bid'], "big") >= highest_bid[box_token_id][1]:
-            skips.append(box_token_id)
+    for auction_id in highest_bid:
+        existing_bid = await info.storage.find_one("highest_bids_onchain", {"auction_id": auction_id})
+        if existing_bid and int.from_bytes(existing_bid['bid'], "big") >= highest_bid[auction_id][1]:
+            skips.append(auction_id)
 
-    for box_token_id, data in highest_bid.items():
-        if box_token_id in skips:
+    for auction_id, data in highest_bid.items():
+        if auction_id in skips:
             continue
         await info.storage.find_one_and_replace(
-            "highest_bids",
-            {"box_token_id": box_token_id},
+            "highest_bids_onchain",
+            {"auction_id": auction_id},
             {
-                "box_token_id": box_token_id,
+                "auction_id": auction_id,
                 "bidder": data[0],
                 "bid": encode_int_as_bytes(data[1]),
                 "updated_at": block_time,
@@ -81,4 +81,4 @@ async def process_bids(info: Info, block: BlockHeader, bids: list[StarkNetEvent]
             upsert=True,
         )
 
-    logger.info("Updated %(bids)s highest onchain bids", {"bids": len(highest_bid)})
+    logger.info("Updated %(bids)s highest bids", {"bids": len(highest_bid)})
