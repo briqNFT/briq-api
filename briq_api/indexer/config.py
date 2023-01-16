@@ -4,7 +4,7 @@ from briq_api.chain.networks import get_network_metadata
 NETWORK_NAME = os.getenv("NETWORK_NAME") or "starknet-testnet"
 NETWORK = get_network_metadata(NETWORK_NAME)
 
-INDEXER_ID = os.getenv("INDEXER_ID") or "testnet-test-4"
+INDEXER_ID = os.getenv("INDEXER_ID") or "testnet-test-5"
 
 # TODO: proper secret management
 MONGO_URL = os.getenv("MONGO_URL") or "localhost:27017"

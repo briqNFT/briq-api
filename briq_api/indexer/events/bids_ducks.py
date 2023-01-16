@@ -8,7 +8,7 @@ from ..config import NETWORK
 
 logger = logging.getLogger(__name__)
 
-contract_address = NETWORK.auction_onchain_address
+contract_address = NETWORK.auction_ducks
 
 bid_abi = {
     "name": "Bid",
@@ -49,19 +49,33 @@ async def process_bids(info: Info, block: BlockHeader, bids: list[StarkNetEvent]
     if (not len(documents)):
         return
 
-    await info.storage.insert_many("bids_onchain", documents)
+    await info.storage.insert_many("bids_ducks", documents)
 
     logger.info("Stored %(docs)s new bids", {"docs": len(documents)})
 
     # Compute the new highest bid on all items
     highest_bid = dict()
     for bid in documents:
+        await info.storage.find_one_and_replace(
+            "ducks_bids_per_user",
+            {"auction_id": bid['auction_id'], "bidder": bid['bidder']},
+            {
+                "auction_id": bid['auction_id'],
+                "bidder": bid['bidder'],
+                "bid": bid['bid_amount'],
+                "tx_hash": bid['_tx_hash'],
+                "updated_at": block_time,
+                "updated_block": block.number,
+            },
+            upsert=True,
+        )
+
         if bid['auction_id'] not in highest_bid or highest_bid[bid['auction_id']][1] < int.from_bytes(bid['bid_amount'], "big"):
-            highest_bid[bid['auction_id']] = (bid['bidder'], int.from_bytes(bid['bid_amount'], "big"))
+            highest_bid[bid['auction_id']] = (bid['bidder'], int.from_bytes(bid['bid_amount'], "big"), bid)
 
     skips = []
     for auction_id in highest_bid:
-        existing_bid = await info.storage.find_one("highest_bids_onchain", {"auction_id": auction_id})
+        existing_bid = await info.storage.find_one("highest_bids_ducks", {"auction_id": auction_id})
         if existing_bid and int.from_bytes(existing_bid['bid'], "big") >= highest_bid[auction_id][1]:
             skips.append(auction_id)
 
@@ -69,12 +83,13 @@ async def process_bids(info: Info, block: BlockHeader, bids: list[StarkNetEvent]
         if auction_id in skips:
             continue
         await info.storage.find_one_and_replace(
-            "highest_bids_onchain",
+            "highest_bids_ducks",
             {"auction_id": auction_id},
             {
-                "auction_id": auction_id,
-                "bidder": data[0],
-                "bid": encode_int_as_bytes(data[1]),
+                "auction_id": data[2]['auction_id'],
+                "bidder": data[2]['bidder'],
+                "bid": data[2]['bid_amount'],
+                "tx_hash": data[2]['_tx_hash'],
                 "updated_at": block_time,
                 "updated_block": block.number,
             },

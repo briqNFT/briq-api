@@ -15,5 +15,5 @@ defaultLabels:
 indexer:
   name: dev-briq-indexer
   image_store: mongo:latest
-  indexer_id: "kub-test-4"
+  indexer_id: "kub-test-1"
   network_name: 'starknet-testnet'
