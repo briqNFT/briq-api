@@ -221,11 +221,6 @@ async def list_boxes_of_theme(chain_id: str, theme_id: str):
     return output
 
 
-@router.head("/{chain_id}/{theme_id}/auction_data")
-@router.get("/{chain_id}/{theme_id}/auction_data")
-async def get_theme_auction_data(chain_id: str, theme_id: str):
-    return auctions.get_theme_auction_data(chain_id, theme_id)
-
 
 @router.head("/{chain_id}/{theme_id}/saledata")
 @router.get("/{chain_id}/{theme_id}/saledata")

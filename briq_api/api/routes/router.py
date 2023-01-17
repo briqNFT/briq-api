@@ -11,7 +11,7 @@ from briq_api.mesh.briq import BriqData
 from briq_api.set_identifier import SetRID
 from briq_api.storage.file.backends.cloud_storage import NotFoundException
 from .. import api
-from . import boxes, user, uri_route, forest
+from . import boxes, user, uri_route, forest, auctions as auctions_route
 from briq_api.config import ENV
 
 from .common import ExceptionWrapperRoute
@@ -24,7 +24,7 @@ router.include_router(boxes.router, tags=["box"])
 router.include_router(user.router, tags=["user"])
 router.include_router(uri_route.router, tags=["uri"])
 router.include_router(forest.router, tags=["briqmas_forest"])
-
+router.include_router(auctions_route.router, tags=["auctions"])
 
 @router.head("/metadata/{chain_id}/{token_id}")
 @router.head("/metadata/{chain_id}/{token_id}.json")

@@ -30,8 +30,6 @@ ducks_data = {
 }
 
 
-
-
 def get_theme_auction_data(chain_id: str, theme_id: str):
     if theme_id == 'ducks_everywhere':
         bid_data = mongo_storage.get_backend(chain_id).db['highest_bids_ducks'].find({
@@ -60,6 +58,25 @@ def get_theme_auction_data(chain_id: str, theme_id: str):
         'last_block': 0,
         'data': {}
     }
+
+
+def get_auction_bids(chain_id: str, auction_theme: str, auction_id: str):
+    if auction_theme == 'ducks_everywhere':
+        bids = mongo_storage.get_backend(chain_id).db['bids_ducks'].find({
+            "auction_id": int(auction_id).to_bytes(32, "big"),
+            "_chain.valid_to": None,
+        }).sort("_block", -1)
+        return [
+            {
+                'bid': str(int.from_bytes(b['bid_amount'], "big")),
+                'bidder': hex(int.from_bytes(b['bidder'], "big")),
+                'tx_hash': hex(int.from_bytes(b['_tx_hash'], 'big')),
+                'block': b['_block'],
+                'timestamp': b['_timestamp'],
+            }
+            for b in bids
+        ]
+    return []
 
 
 def get_user_bids(chain_id: str, auction_theme: str, user_id: str):
