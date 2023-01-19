@@ -26,8 +26,38 @@ ducks_data = {
         'growth_factor': 10,
         'start_date': 1673606220,
         'duration': 864000,
+    },
+    4: {
+        'token_id': '0x40aacab2d004b0d8d4d95ed4dcb89b3cc0e2c66898f1a108000000000000000',
+        'minimum_bid': '100000000000000',
+        'growth_factor': 10,
+        'start_date': 1673606220,
+        'duration': 864000,
+    },
+    5: {
+        'token_id': '0x18b440a0ced8601ce3730f544b9d22af7429296442a3e9d9000000000000000',
+        'minimum_bid': '100000000000000',
+        'growth_factor': 10,
+        'start_date': 1673606220,
+        'duration': 864000,
+    },
+    6: {
+        'token_id': '0x791540b80c3891bffda80c230d7c8c8cec060f699ca15c88800000000000000',
+        'minimum_bid': '100000000000000',
+        'growth_factor': 10,
+        'start_date': 1673606220,
+        'duration': 864000,
+    },
+    7: {
+        'token_id': '0x168458834a45dcae045b24600723f4f63a1355e19bea88f8000000000000000',
+        'minimum_bid': '100000000000000',
+        'growth_factor': 10,
+        'start_date': 1673606220,
+        'duration': 864000,
     }
 }
+
+
 
 
 def get_theme_auction_data(chain_id: str, theme_id: str):
