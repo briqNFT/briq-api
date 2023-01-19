@@ -165,7 +165,7 @@ def get_box_transfer(rid: BoxRID, tx_hash: str):
 
 def list_themes(chain_id: str):
     if ENV != 'dev':
-        return ['starknet_planet']
+        return ['starknet_planet', 'ducks_everywhere']
     return box_storage.list_themes(chain_id)
 
 

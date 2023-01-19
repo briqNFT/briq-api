@@ -190,7 +190,7 @@ async def get_theme_splash(chain_id: str, theme_id: str, quality: str):
 
 @router.head("/box_themes/list/{chain_id}")
 @router.get("/box_themes/list/{chain_id}")
-async def box_themes_list(chain_id: str):
+async def list_themes(chain_id: str):
     output = boxes.list_themes(chain_id)
     return JSONResponse(output, headers={
         "Cache-Control": f"public, max-age={60}"
