@@ -263,7 +263,6 @@ data = {
 
 # iterate data dict
 for i, dat in enumerate(data.values()):
-    print(i)
     ducks_data[i + 8] = {
         'token_id': dat,
         'minimum_bid': '1000',
