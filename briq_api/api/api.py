@@ -1,6 +1,7 @@
 import io
 import logging
 import base64
+import pathlib
 
 from PIL import Image
 from briq_api.config import ENV
@@ -60,10 +61,36 @@ def get_preview(rid: SetRID):
         file_storage.store_set_preview(rid, image_data)
         return image_data
     except Exception:
-        import pathlib
         image_data = open(pathlib.Path(__file__).parent.resolve() / "No_Preview_image_2.png", 'rb').read()
         file_storage.store_set_preview(rid, image_data)
         return image_data
+
+
+in_mem_thumbnails: dict[str, bytes] = {}
+
+
+def get_small_preview(rid: SetRID):
+    if f'{rid.chain_id}_{rid.token_id}' in in_mem_thumbnails:
+        return in_mem_thumbnails[f'{rid.chain_id}_{rid.token_id}']
+    try:
+        image = file_storage.load_set_preview(rid)
+        # Load the image
+        loaded_image = Image.open(io.BytesIO(image))
+        # Resize the image
+        resized_image = loaded_image.resize((375, 375)).convert('RGB')
+        # Save as JPG byte stream
+        image_data_stream = io.BytesIO()
+        resized_image.save(image_data_stream, format='jpeg', quality=80)
+        image_data = image_data_stream.getvalue()
+        # Save in memory
+        in_mem_thumbnails[f'{rid.chain_id}_{rid.token_id}'] = image_data
+        return image_data
+    except Exception as e:
+        logger.error(e)
+        pass
+    # Return default image, don't store anything.
+    image_data = open(pathlib.Path(__file__).parent.resolve() / "No_Preview_image_2.png", 'rb').read()
+    return image_data
 
 
 def get_model(rid: SetRID, kind: str) -> bytes:
