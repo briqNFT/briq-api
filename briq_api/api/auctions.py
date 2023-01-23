@@ -6,57 +6,7 @@ from briq_api.indexer.storage import mongo_storage
 logger = logging.getLogger(__name__)
 
 ducks_data = {
-    1: {
-        'token_id': '0x7d180b4de0656c2d58237be7a77cf1403be2226f42e63a7b800000000000000',
-        'minimum_bid': '1000',
-        'growth_factor': 10,
-        'start_date': 1673606220,
-        'duration': 864000,
-    },
-    2: {
-        'token_id': '0x210343a6ce65eaf6818b9fc8e744930e363d9a263918e94000000000000000',
-        'minimum_bid': '1210',
-        'growth_factor': 10,
-        'start_date': 1693606220,
-        'duration': 864000,
-    },
-    3: {
-        'token_id': '0x23cb46e7f35efcb6c22c76b60dc23ffaf0bd324c43534bfb000000000000000',
-        'minimum_bid': '10000',
-        'growth_factor': 10,
-        'start_date': 1673606220,
-        'duration': 864000,
-    },
-    4: {
-        'token_id': '0x40aacab2d004b0d8d4d95ed4dcb89b3cc0e2c66898f1a108000000000000000',
-        'minimum_bid': '100000000000000',
-        'growth_factor': 10,
-        'start_date': 1673606220,
-        'duration': 864000,
-    },
-    5: {
-        'token_id': '0x18b440a0ced8601ce3730f544b9d22af7429296442a3e9d9000000000000000',
-        'minimum_bid': '100000000000000',
-        'growth_factor': 10,
-        'start_date': 1673606220,
-        'duration': 864000,
-    },
-    6: {
-        'token_id': '0x791540b80c3891bffda80c230d7c8c8cec060f699ca15c88800000000000000',
-        'minimum_bid': '100000000000000',
-        'growth_factor': 10,
-        'start_date': 1673606220,
-        'duration': 864000,
-    },
-    7: {
-        'token_id': '0x168458834a45dcae045b24600723f4f63a1355e19bea88f8000000000000000',
-        'minimum_bid': '100000000000000',
-        'growth_factor': 10,
-        'start_date': 1673606220,
-        'duration': 864000,
-    }
 }
-
 
 data = {
     "80sGymDuck.json": "0x20431ff348589bd51d035db2fd27c1f3de48839e0339d290000000000000000",
@@ -263,11 +213,11 @@ data = {
 
 # iterate data dict
 for i, dat in enumerate(data.values()):
-    ducks_data[i + 8] = {
+    ducks_data[i] = {
         'token_id': dat,
         'minimum_bid': '1000',
-        'growth_factor': 10,
-        'start_date': 1673606220,
+        'growth_factor': 50,
+        'start_date': 1674483098,
         'duration': 864000,
     }
 
