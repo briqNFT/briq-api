@@ -46,7 +46,7 @@ def prepare_transfer_for_storage(event: StarkNetEvent, block: BlockHeader):
     }
 
 
-def send_to_set_indexer(calldata: list[Any]):
+def send_to_set_indexer(tx: bytes, calldata: list[Any]):
     """Find all assembly transactions and send them to the set indexer."""
     try:
         # Need to decode the transaction to find the right offset. There might be several.
@@ -61,12 +61,20 @@ def send_to_set_indexer(calldata: list[Any]):
         # Now send all transactions to the set indexer
         # We don't care if there are repeats, the indexer handles that.
         for call in assembly_calls:
-            calldata = calldata[calls * 4 + 2 + call[0]:calls * 4 + 2 + call[0] + call[1]]
+            set_calldata = calldata[calls * 4 + 2 + call[0]:calls * 4 + 2 + call[0] + call[1]]
             # Request storage in the set indexer. Short timeout, we don't care outrageously if this fails.
-            requests.post(f"http://{SET_INDEXER_URL}:5432/store", json={
+            req = requests.post(f"http://{SET_INDEXER_URL}:5432/store", json={
                 "chain_id": NETWORK.id,
-                "transaction_data": [int.from_bytes(x, "big") for x in calldata],
+                "transaction_data": [int.from_bytes(x, "big") for x in set_calldata],
             }, timeout=1)
+            try:
+                req.raise_for_status()
+            except Exception as e:
+                logger.warn("Error while storing set data for TX %(tx)s.", {
+                    "tx": hex(int.from_bytes(tx, "big")),
+                    "call": call,
+                }, exc_info=e)
+
     except Exception as f:
         logger.warn("Failed to send data to set indexer", exc_info=f)
 
@@ -85,7 +93,11 @@ async def process_transfers(info: Info, block: BlockHeader, transfers: list[Star
         return
 
     if SET_INDEXER_URL is not None:
-        send_to_set_indexer(tr.transaction.calldata)
+        tx_processed = set()
+        for tr in transfers:
+            if tr.transaction_hash not in tx_processed:
+                tx_processed.add(tr.transaction_hash)
+                send_to_set_indexer(tr.transaction_hash, tr.transaction.calldata)
 
     await info.storage.insert_many(f'{contract_prefix}_transfers', documents)
 

@@ -4,9 +4,18 @@ from briq_api.indexer.events.common import encode_int_as_bytes
 
 from briq_api.indexer.events.set import send_to_set_indexer
 
-@mock.patch('briq_api.indexer.events.set.requests.post', return_value=lambda a,b,c: print(a, b, c))
+class FakePost:
+    def __init__(self, a, json):
+        # somewhat arbitrary OK number
+        assert len(json['transaction_data']) > 10
+
+    def raise_for_status(self):
+        pass
+
+@mock.patch('briq_api.indexer.events.set.requests.post')
 def test_send_to_set_indexer(mock: mock.MagicMock, tx_data):
-    send_to_set_indexer(tx_data)
+    mock.side_effect = lambda a, json, timeout: FakePost(a, json)
+    send_to_set_indexer(b'0xcafe', tx_data)
     assert mock.call_count == 2
 
 
