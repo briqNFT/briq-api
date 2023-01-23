@@ -16,6 +16,8 @@ import requests
 from briq_api.chain.networks import get_network_metadata
 from briq_api.storage.file.file_client import FileClient
 
+from briq_api.config import ENV
+
 from briq_api.set_identifier import SetRID
 
 logger = logging.getLogger(__name__)
@@ -69,7 +71,7 @@ class SetIndexer:
             return self._verify_correct_storage(data, token_id)
         return self._store_set(data, token_id)
 
-    def _get_storage_data(self, data: StorableSetData, token_id: str) -> dict:
+    def _get_storage_data(self, data: StorableSetData, token_id: str) -> dict[str, Any]:
         # Essentially calqued from the API
         # TODO: reduce duplication
         return {
@@ -84,7 +86,7 @@ class SetIndexer:
             "external_url": f"https://briq.construction/set/{self.network}/{token_id}",
         }
 
-    def _compare_storage(self, expected_data: dict, stored_data: dict):
+    def _compare_storage(self, expected_data: dict[str, Any], stored_data: dict[str, Any]):
         passes = True
         mistake = ""
         for key in expected_data:
@@ -115,22 +117,36 @@ class SetIndexer:
         passes, mistake = self._compare_storage(expected_data, stored_data)
 
         if not passes:
-            self.storage.get_backend(self.network).store_json(
-                self.storage.set_metadata_path(SetRID(chain_id=self.network, token_id=token_id)).replace('_metadata', '_expected_metadata'),
-                expected_data
-            )
-            logger.warn(
-                'store_set called with set token %(token)s but the data does not match the stored data at %(cat)s. '
-                'Storing expected data alongside the stored data.',
-                {"token": token_id, "cat": mistake}
-            )
+            # In prod, store the expected data alongside the stored data.
+            # Otherwise, just erase (convenient in test env when changing storage formats).
+            if ENV == 'prod':    
+                self.storage.get_backend(self.network).store_json(
+                    self.storage.set_metadata_path(SetRID(chain_id=self.network, token_id=token_id)).replace('_metadata', '_expected_metadata'),
+                    expected_data
+                )
+                logger.warn(
+                    'store_set called with set token %(token)s but the data does not match the stored data at %(cat)s. '
+                    'Storing expected data alongside the stored data.',
+                    {"token": token_id, "cat": mistake}
+                )
+            else:
+                self.storage.get_backend(self.network).store_json(
+                    self.storage.set_metadata_path(SetRID(chain_id=self.network, token_id=token_id)),
+                    expected_data
+                )
+                logger.warn(
+                    'store_set called with set token %(token)s but the data does not match the stored data at %(cat)s. '
+                    'Replacing stored data.',
+                    {"token": token_id, "cat": mistake}
+                )
         else:
             # Request an update on the mintsquare metadata, in case they indexed us too fast.
-            try:
-                requests.post(f"https://api.mintsquare.io/nft/metadata/{self.network}/{get_network_metadata(self.network).set_address}/{token_id}/")
-                logger.debug("Pinged mintsquare API to update token %(token_id)s", {"token_id": token_id})
-            except Exception as e:
-                logger.debug("Could not ping mintsquare API for token %(token_id)s",{'token_id': token_id}, exc_info=e)
+            if ENV == 'prod':
+                try:
+                    requests.post(f"https://api.mintsquare.io/nft/metadata/{self.network}/{get_network_metadata(self.network).set_address}/{token_id}/")
+                    logger.debug("Pinged mintsquare API to update token %(token_id)s", {"token_id": token_id})
+                except Exception as e:
+                    logger.debug("Could not ping mintsquare API for token %(token_id)s",{'token_id': token_id}, exc_info=e)
 
             logger.info("Verified set %(token)s", {"token": token_id})
 

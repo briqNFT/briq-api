@@ -17,6 +17,9 @@ from briq_api.storage.file.backends.cloud_storage import CloudStorage
 
 from briq_api.storage.file.file_client import FileClient
 
+from starkware.cairo.common.hash_state import compute_hash_on_elements
+
+
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
@@ -35,15 +38,17 @@ set_indexer: Union[SetIndexer, None] = None
 
 class NewSetStorageRequest(BaseModel):
     chain_id: str
-    token_id: str
     transaction_data: list[int]
+
 
 def decode_string(data: list[int], offset: int):
     l = data[offset]
     return (b''.join(x.to_bytes(math.ceil(x.bit_length() / 8), 'big') for x in data[offset + 1:offset + 1 + l])).decode('utf-8', errors="ignore")
 
+
 def from_storage_form(v):
     return v - 0x8000000000000000
+
 
 # NB -> This can't actually tell what the NFT is, since that depends on other metadata
 def uncompress_shape_item(col_nft_mat: int, x_y_z: int):
@@ -55,7 +60,9 @@ def uncompress_shape_item(col_nft_mat: int, x_y_z: int):
     z: int = from_storage_form(x_y_z & 0xffffffffffffffff)
     return color.to_bytes(7, 'big').decode('ascii'), mat, x, y, z, has_token_id
 
+
 def parse_transaction(data: list[int]):
+    token_id = hex(get_token_id_from_calldata(data[0], data[1], []))
     cursor = 2
     name = decode_string(data, cursor)
     cursor += 1 + data[cursor]
@@ -74,7 +81,14 @@ def parse_transaction(data: list[int]):
             },
             #  'has_token_id': bd[5],
         })
-    return StorableSetData(name=name, description=description, briqs=briqs)
+    return (token_id, StorableSetData(name=name, description=description, briqs=briqs))
+
+
+def get_token_id_from_calldata(owner: int, hint: int, uri: list[int]):
+    raw_tid = compute_hash_on_elements([owner, hint]) & ((2**251 - 1) - (2**59 - 1))
+    if len(uri) == 2 and uri[1] < 2**59:
+        raw_tid += uri[1]
+    return raw_tid
 
 
 @app.get("/health")
@@ -88,17 +102,19 @@ async def store_new_set(request: NewSetStorageRequest):
         raise HTTPException(status_code=400, detail="Invalid chain ID")
 
     try:
-        set_data = parse_transaction(request.transaction_data)
+        token_id, set_data = parse_transaction(request.transaction_data)
     except Exception as e:
-        logger.warn("Failed to decode transaction for token %(token_id)s", {
-            "token_id": request.token_id,
+        logger.warn("Failed to decode transaction", {
             "transaction_data": request.transaction_data,
         }, exc_info=e)
+        raise HTTPException(status_code=400, detail="Invalid transaction data")
 
-    set_indexer.add_set_to_pending(request.token_id, set_data)
+    set_indexer.add_set_to_pending(token_id, set_data)
     return "ok"
 
+
 pending_task: Union[asyncio.Task, None] = None
+
 
 @app.on_event("startup")
 def startup_event():

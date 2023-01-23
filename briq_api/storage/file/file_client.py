@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+from typing import Any
 from briq_api.set_identifier import SetRID
 from ..multi_backend_client import StorageClient
 
@@ -45,10 +46,10 @@ class FileClient(StorageClient[FileStorageBackend]):
     def set_metadata_path(self, rid: SetRID):
         return f"{SET_STORAGE_PREFIX}{rid.chain_id}/{rid.token_id}_metadata.json"
 
-    def store_set_metadata(self, rid: SetRID, data: dict):
+    def store_set_metadata(self, rid: SetRID, data: dict[str, Any]):
         self.get_backend(rid.chain_id).store_json(self.set_metadata_path(rid), data)
 
-    def load_set_metadata(self, rid: SetRID) -> dict:
+    def load_set_metadata(self, rid: SetRID) -> dict[str, Any]:
         return self.get_backend(rid.chain_id).load_json(self.set_metadata_path(rid))
 
     def has_set_metadata(self, rid: SetRID) -> bool:
