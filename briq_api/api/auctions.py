@@ -280,7 +280,7 @@ def get_user_bids(chain_id: str, auction_theme: str, user_id: str):
         for bid in bid_data:
             auction_id = int.from_bytes(bid['auction_id'], "big")
             ret[auction_id] = {
-                'bid': str(int.from_bytes(bid['bid'], "big")),
+                'bid_amount': str(int.from_bytes(bid['bid'], "big")),
                 'tx_hash': hex(int.from_bytes(bid['tx_hash'], 'big')),
                 'block': bid['updated_block'],
                 'timestamp': bid['updated_at'],
