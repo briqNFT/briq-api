@@ -2,7 +2,7 @@ from unittest import mock
 import pytest
 from briq_api.indexer.events.common import encode_int_as_bytes
 
-from briq_api.indexer.events.set import send_to_set_indexer
+from briq_api.indexer.events.set_old import send_to_set_indexer
 
 class FakePost:
     def __init__(self, a, json):

@@ -4,7 +4,7 @@ from briq_api.chain.networks import get_network_metadata
 NETWORK_NAME = os.getenv("NETWORK_NAME") or "starknet-testnet"
 NETWORK = get_network_metadata(NETWORK_NAME)
 
-INDEXER_ID = os.getenv("INDEXER_ID") or "testnet-test-5"
+INDEXER_ID = os.getenv("INDEXER_ID") or "localtest-0"
 
 # TODO: proper secret management
 MONGO_URL = os.getenv("MONGO_URL") or "localhost:27017"
@@ -18,9 +18,9 @@ START_BLOCK = int(os.getenv("START_BLOCK") or {
 }[NETWORK_NAME])
 
 APIBARA_URL = os.getenv("APIBARA_URL") or {
-    "starknet-testnet": "goerli.starknet.stream.apibara.com",
-    "starknet-testnet2": "goerli-2.starknet.stream.apibara.com",
-    "starknet-mainnet": "mainnet.starknet.stream.apibara.com",
+    "starknet-testnet": "goerli.starknet.a5a.ch:443",
+    "starknet-testnet2": "goerli-2.starknet.a5a.ch",
+    "starknet-mainnet": "mainnet.starknet.a5a.ch",
 }[NETWORK_NAME]
 
 SET_INDEXER_URL = os.getenv("SET_INDEXER_URL")

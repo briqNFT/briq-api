@@ -14,12 +14,13 @@ google-cloud-storage = "^2.3"
 fastapi = "^0.77"
 Pillow = "^9.0"
 pygltflib = "^1.15"
-apibara = "^0.5.16"
+apibara = { version = "^0.6.0", extras = ["indexer"] }
 numpy-vox-io = {git = "https://github.com/briqNFT/numpy-vox-io", rev = "master"}
 # uvicorn 0.17 requires websockets 10, but we have a conflict with some other dependency,
 # and that backtracks forever.
 uvicorn = {version = "0.15", extras = ["standard"]}
 requests = "^2.28.1"
+starknet-py = "^0.14.0a0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.1.0"

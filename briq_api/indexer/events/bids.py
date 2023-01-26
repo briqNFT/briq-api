@@ -8,6 +8,7 @@ from ..config import NETWORK
 
 logger = logging.getLogger(__name__)
 
+# This file needs updating if I reuse it
 contract_address = NETWORK.auction_address
 
 bid_abi = {

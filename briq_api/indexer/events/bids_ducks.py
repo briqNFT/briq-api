@@ -8,6 +8,7 @@ from ..config import NETWORK
 
 logger = logging.getLogger(__name__)
 
+# This file needs updating if I reuse it
 contract_address = NETWORK.auction_ducks
 
 bid_abi = {
@@ -27,7 +28,6 @@ bid_decoder = FunctionCallSerializer(
 )
 
 bid_filter = [EventFilter.from_event_name(name="Bid", address=contract_address)]
-
 
 def prepare_bid_for_storage(event: StarkNetEvent, block: BlockHeader):
     bid_data = decode_event(bid_decoder, event.data)

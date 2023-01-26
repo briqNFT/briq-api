@@ -1,189 +1,112 @@
 import logging
-from apibara import Info
-from apibara.model import EventFilter, BlockHeader, StarkNetEvent
-from starknet_py.contract import FunctionCallSerializer, identifier_manager_from_abi
+from typing import Any
+from apibara.starknet import felt
 
-from .common import uint256_abi, decode_event, encode_int_as_bytes
-from ..config import NETWORK
+from .common import (
+    Block, Info, EventIndexer, decode_event, encode_int_as_bytes, get_event_serializer, get_event_filter
+)
 
 logger = logging.getLogger(__name__)
 
-contract_address = NETWORK.box_address
-contract_prefix = "box"
-transfer_filters = [
-    EventFilter.from_event_name(name="TransferSingle", address=contract_address),
-]
 
-transfer_single_abi = {
-    "name": "TransferSingle",
-    "type": "event",
-    "keys": [],
-    "outputs": [
-        {"name": "operator_", "type": "felt"},
-        {"name": "from_", "type": "felt"},
-        {"name": "to_", "type": "felt"},
-        {"name": "id_", "type": "Uint256"},
-        {"name": "value_", "type": "Uint256"},
-    ],
-}
+class Erc1155Indexer(EventIndexer):
+    contract_prefix: str
 
-transfer_batch_abi = {
-    "name": "TransferSingle",
-    "type": "event",
-    "keys": [],
-    "outputs": [
-        {"name": "_operator", "type": "felt"},
-        {"name": "_from", "type": "felt"},
-        {"name": "_to", "type": "felt"},
-        {"name": "_ids_len", "type": "felt"},
-        {"name": "_ids", "type": "Uint256"},
-        {"name": "_values_len", "type": "felt"},
-        {"name": "_values", "type": "Uint256*"},
-    ],
-}
+    def __init__(self, contract_prefix: str, address: str) -> None:
+        super().__init__(contract_prefix, address)
+        self.contract_prefix = contract_prefix
+        self.filters = [get_event_filter(address, "TransferSingle")]
+        self.event_serializer = get_event_serializer({
+            "name": "TransferSingle",
+            "type": "event",
+            "keys": [],
+            "data": [
+                {"name": "operator_", "type": "felt"},
+                {"name": "from_", "type": "felt"},
+                {"name": "to_", "type": "felt"},
+                {"name": "id_", "type": "Uint256"},
+                {"name": "value_", "type": "Uint256"},
+            ],
+        }, "TransferSingle")
 
-transfer_single_decoder = FunctionCallSerializer(
-    abi=transfer_single_abi,
-    identifier_manager=identifier_manager_from_abi([transfer_single_abi, uint256_abi]),
-)
+    def _prepare_transfer_for_storage(self, event_data: dict[str, str], tx_hash: str, data: Block):
+        return {
+            "from": encode_int_as_bytes(event_data.from_),
+            "to": encode_int_as_bytes(event_data.to_),
+            "token_id": encode_int_as_bytes(event_data.id_),
+            "value": encode_int_as_bytes(event_data.value_),
+            "_tx_hash": encode_int_as_bytes(int(tx_hash, 16)),
+            "_timestamp": data.header.timestamp.ToDatetime(),
+            "_block": data.header.block_number,
+        }
 
+    async def process_transfers(self, data: Block, info: Info[Any, Any]):
+        block_time = data.header.timestamp.ToDatetime()
+        block_number = data.header.block_number
 
-def prepare_transfer_for_storage(event: StarkNetEvent, block: BlockHeader):
-    transfer_data = decode_event(transfer_single_decoder, event.data)
-    return {
-        "from": encode_int_as_bytes(transfer_data.from_),
-        "to": encode_int_as_bytes(transfer_data.to_),
-        "token_id": encode_int_as_bytes(transfer_data.id_),
-        "value": encode_int_as_bytes(transfer_data.value_),
-        "_tx_hash": event.transaction_hash,
-        "_timestamp": block.timestamp,
-        "_block": block.number,
-    }
+        # Store each in Mongo
+        documents = []
+        for event_with_tx in data.events:
+            if felt.to_int(event_with_tx.event.from_address) != int(self.address, 16):
+                continue
+            tx_hash = felt.to_hex(event_with_tx.transaction.meta.hash)
+            parsed_event = decode_event(self.event_serializer, event_with_tx.event)
+            document = self._prepare_transfer_for_storage(parsed_event, tx_hash, data)
+            documents.append(document)
 
+        if (not len(documents)):
+            return
 
-async def process_transfers(info: Info, block: BlockHeader, transfers: list[StarkNetEvent]):
-    block_time = block.timestamp
+        await info.storage.insert_many(f'{self.contract_prefix}_transfers', documents)
 
-    # Store each in Mongo
-    documents = [prepare_transfer_for_storage(tr, block) for tr in transfers if tr.name == 'TransferSingle' and int.from_bytes(tr.address, 'big') == int(contract_address, 16)]
-    if (not len(documents)):
-        return
+        logger.info("Stored %(docs)s new %(prefix)s transfers", {"docs": len(documents), "prefix": self.contract_prefix})
 
-    await info.storage.insert_many(f'{contract_prefix}_transfers', documents)
-
-    logger.info("Stored %(docs)s new %(prefix)s transfers", {"docs": len(documents), "prefix": contract_prefix})
-
-    # TODO -> this can be optimised a bit
-    for transfer in documents:
-        # Update from
-        if int.from_bytes(transfer['from'], "big") != 0:
-            og_ownership = await info.storage.find_one(f"{contract_prefix}_tokens", {
-                "token_id": transfer['token_id'],
-                "owner": transfer['from'],
-            })
-            og_amount = int.from_bytes(og_ownership['quantity'], "big") if og_ownership else 0
-            await info.storage.find_one_and_replace(
-                f"{contract_prefix}_tokens",
-                {
+        # TODO -> this can be optimised a bit
+        for transfer in documents:
+            # Update from
+            if int.from_bytes(transfer['from'], "big") != 0:
+                og_ownership = await info.storage.find_one(f"{self.contract_prefix}_tokens", {
                     "token_id": transfer['token_id'],
                     "owner": transfer['from'],
-                },
-                {
-                    "token_id": transfer['token_id'],
-                    "owner": transfer['from'],
-                    "quantity": encode_int_as_bytes(og_amount - int.from_bytes(transfer['value'], 'big')),
-                    "updated_at": block_time,
-                    "updated_block": block.number,
-                },
-                upsert=True,
-            )
+                })
+                og_amount = int.from_bytes(og_ownership['quantity'], "big") if og_ownership else 0
+                await info.storage.find_one_and_replace(
+                    f"{self.contract_prefix}_tokens",
+                    {
+                        "token_id": transfer['token_id'],
+                        "owner": transfer['from'],
+                    },
+                    {
+                        "token_id": transfer['token_id'],
+                        "owner": transfer['from'],
+                        "quantity": encode_int_as_bytes(og_amount - int.from_bytes(transfer['value'], 'big')),
+                        "updated_at": block_time,
+                        "updated_block": block_number,
+                    },
+                    upsert=True,
+                )
 
-        # Update to
-        if int.from_bytes(transfer['to'], "big") != 0:
-            to_ownership = await info.storage.find_one(f"{contract_prefix}_tokens", {
-                "token_id": transfer['token_id'],
-                "owner": transfer['to'],
-            })
-            to_amount = int.from_bytes(to_ownership['quantity'], "big") if to_ownership else 0
-            await info.storage.find_one_and_replace(
-                f"{contract_prefix}_tokens",
-                {
-                    "token_id": transfer['token_id'],
-                    "owner": transfer['to'],
-                },
-                {
+            # Update to
+            if int.from_bytes(transfer['to'], "big") != 0:
+                to_ownership = await info.storage.find_one(f"{self.contract_prefix}_tokens", {
                     "token_id": transfer['token_id'],
                     "owner": transfer['to'],
-                    "quantity": encode_int_as_bytes(to_amount + int.from_bytes(transfer['value'], 'big')),
-                    "updated_at": block_time,
-                    "updated_block": block.number,
-                },
-                upsert=True,
-            )
+                })
+                to_amount = int.from_bytes(to_ownership['quantity'], "big") if to_ownership else 0
+                await info.storage.find_one_and_replace(
+                    f"{self.contract_prefix}_tokens",
+                    {
+                        "token_id": transfer['token_id'],
+                        "owner": transfer['to'],
+                    },
+                    {
+                        "token_id": transfer['token_id'],
+                        "owner": transfer['to'],
+                        "quantity": encode_int_as_bytes(to_amount + int.from_bytes(transfer['value'], 'big')),
+                        "updated_at": block_time,
+                        "updated_block": block_number,
+                    },
+                    upsert=True,
+                )
 
-    logger.info("Updated %(prefix)s token owners", {"prefix": contract_prefix})
-
-
-async def process_pending_box(info: Info, block: BlockHeader, transfers: list[StarkNetEvent]):
-    block_time = block.timestamp
-
-    # Store each in Mongo
-    documents = []
-    for tr in transfers:
-        if tr.name == 'TransferSingle' and int.from_bytes(tr.address, 'big') == int(contract_address, 16):
-            doc = prepare_transfer_for_storage(tr, block)
-            if int.from_bytes(doc['from'], "big") == int(NETWORK.auction_address, 16) or int.from_bytes(doc['to'], "big") == int(NETWORK.auction_address, 16):
-                documents.append(doc)
-
-    if (not len(documents)):
-        return
-
-    # TODO -> this can be optimised a bit
-    for transfer in documents:
-        # Update from
-        if int.from_bytes(transfer['from'], "big") != 0:
-            og_ownership = await info.storage.find_one(f"{contract_prefix}_pending_tokens", {
-                "token_id": transfer['token_id'],
-                "owner": transfer['from'],
-            })
-            og_amount = int.from_bytes(og_ownership['quantity'], "big") if og_ownership else 0
-            await info.storage.find_one_and_replace(
-                f"{contract_prefix}_pending_tokens",
-                {
-                    "token_id": transfer['token_id'],
-                    "owner": transfer['from'],
-                },
-                {
-                    "token_id": transfer['token_id'],
-                    "owner": transfer['from'],
-                    "quantity": encode_int_as_bytes(og_amount - int.from_bytes(transfer['value'], 'big')),
-                    "updated_at": block_time,
-                    "updated_block": block.number,
-                },
-                upsert=True,
-            )
-
-        # Update to
-        if int.from_bytes(transfer['to'], "big") != 0:
-            to_ownership = await info.storage.find_one(f"{contract_prefix}_pending_tokens", {
-                "token_id": transfer['token_id'],
-                "owner": transfer['to'],
-            })
-            to_amount = int.from_bytes(to_ownership['quantity'], "big") if to_ownership else 0
-            await info.storage.find_one_and_replace(
-                f"{contract_prefix}_pending_tokens",
-                {
-                    "token_id": transfer['token_id'],
-                    "owner": transfer['to'],
-                },
-                {
-                    "token_id": transfer['token_id'],
-                    "owner": transfer['to'],
-                    "quantity": encode_int_as_bytes(to_amount + int.from_bytes(transfer['value'], 'big')),
-                    "updated_at": block_time,
-                    "updated_block": block.number,
-                },
-                upsert=True,
-            )
-
-    logger.info("Updated %(prefix)s token owners", {"prefix": contract_prefix})
+        logger.info("Updated %(prefix)s token owners", {"prefix": self.contract_prefix})
