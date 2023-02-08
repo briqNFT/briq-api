@@ -7,6 +7,9 @@ metadata:
   labels: #@ data.values.defaultLabels
   annotations:
     cloud.google.com/backend-config: #@ '{"default": "' + data.values.name + '"}'
+#@ if data.values.env != 'prod':
+    cloud.google.com/neg: '{"ingress": false}'
+#@ end
 spec:
   selector:
     deployname: #@ data.values.name
