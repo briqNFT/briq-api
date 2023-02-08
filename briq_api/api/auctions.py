@@ -58,6 +58,8 @@ def get_theme_auction_data(chain_id: str, theme_id: str):
         }
         for bid in bid_data:
             auction_id = str(int.from_bytes(bid['auction_id'], "big"))
+            if not auction_id in ret['data']:
+                continue
             ret['data'][auction_id] = ret['data'][auction_id].copy()
             ret['data'][auction_id]['highest_bid'] = str(int.from_bytes(bid['bid'], "big"))
             ret['data'][auction_id]['highest_bidder'] = hex(int.from_bytes(bid['bidder'], "big"))
