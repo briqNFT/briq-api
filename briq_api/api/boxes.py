@@ -153,8 +153,7 @@ def get_booklet_metadata(rid: BoxRID):
     metadata = box_storage.load_metadata_booklet(rid)
     metadata['token_id'] = genesis_storage.get_booklet_token_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
     # Parse the number because javascript can't
-    metadata['serial_number'] = (int(metadata['token_id']) - (int(metadata['token_id']) & (2**192 - 1))) / 2**192
-    metadata['auction_id'] = genesis_storage.get_auction_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
+    metadata['serial_number'] = int(metadata['token_id'], 16) // 2**192
     return metadata
 
 

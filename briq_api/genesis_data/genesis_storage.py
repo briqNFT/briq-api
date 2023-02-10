@@ -24,6 +24,9 @@ class GenesisBackend():
         return self.booklet_spec
 
 
+HexTokenId = str
+
+
 class GenesisStorage(StorageClient[GenesisBackend]):
     def connect(self, backend):
         if backend is None:
@@ -34,7 +37,7 @@ class GenesisStorage(StorageClient[GenesisBackend]):
     def get_box_token_id(self, chain_id: str, box_id: str):
         return self.get_backend(chain_id).get_box_data()[box_id]
 
-    def get_booklet_token_id(self, chain_id: str, booklet_id: str):
+    def get_booklet_token_id(self, chain_id: str, booklet_id: str) -> HexTokenId:
         return self.get_backend(chain_id).get_booklet_spec()[booklet_id]
 
     def get_box_id(self, chain_id: str, box_token_id: str) -> str:

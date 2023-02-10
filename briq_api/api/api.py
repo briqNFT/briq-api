@@ -200,7 +200,7 @@ def get_item_activity(item_type: str, chain_id: str, item: str):
             for item in data
         ]
     if item_type == 'booklet':
-        token_id = int(genesis_storage.get_booklet_token_id(chain_id, item))
+        token_id = int(genesis_storage.get_booklet_token_id(chain_id, item), 16)
         data = mongo_storage.get_backend(chain_id).db["booklet_transfers"].find({"token_id": token_id.to_bytes(32, "big")})
         return [
             {
