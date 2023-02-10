@@ -63,6 +63,7 @@ async def box_texture(chain_id: str, theme_id: str, box_id: str):
 @router.head("/box/cover_item/{chain_id}/{theme_id}/{box_id}.png")
 @router.get("/box/cover_item/{chain_id}/{theme_id}/{box_id}.png")
 async def box_cover_item(chain_id: str, theme_id: str, box_id: str):
+    """Used as the preview of the NFT inside the box / when minting from the booklet"""
     rid = BoxRID(chain_id, theme_id, box_id)
     image = boxes.get_box_cover_item(rid)
     return StreamingResponse(io.BytesIO(image), media_type="image/png", headers={
