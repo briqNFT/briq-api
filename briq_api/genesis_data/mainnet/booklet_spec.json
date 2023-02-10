@@ -1,0 +1,15 @@
+{
+    "starknet_planet/spaceman": "0x1000000000000000000000000000000000000000000000001",
+    "starknet_planet/speeder": 2,
+    "starknet_planet/lunar_truck": 3,
+    "starknet_planet/space_doggo": 4,
+    "starknet_planet/hathor_3_rocket": 5,
+    "starknet_planet/flying_saucer": 6,
+    "starknet_planet/helper_robot": 7,
+    "starknet_planet/landing_module": 8,
+    "starknet_planet/akimbo_fighter": 9,
+
+    "briqmas/briqmas_tree": 10,
+
+    "ducks_everywhere/80sGymDuck.json": "0x1000000000000000000000000000000000000000000000001"
+}
