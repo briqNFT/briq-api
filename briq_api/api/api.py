@@ -70,6 +70,7 @@ in_mem_thumbnails: dict[str, bytes] = {}
 
 
 def get_small_preview(rid: SetRID):
+    global in_mem_thumbnails
     if f'{rid.chain_id}_{rid.token_id}' in in_mem_thumbnails:
         return in_mem_thumbnails[f'{rid.chain_id}_{rid.token_id}']
     try:
