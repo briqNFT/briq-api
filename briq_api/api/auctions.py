@@ -88,7 +88,7 @@ def get_auction_bids(chain_id: str, auction_theme: str, auction_id: str):
         bids = mongo_storage.get_backend(chain_id).db['bids_ducks'].find({
             "auction_id": int(auction_id).to_bytes(32, "big"),
             "_chain.valid_to": None,
-        }).sort("_block", -1)
+        }).sort("_timestamp", -1)
         return [
             {
                 'bid': str(int.from_bytes(b['bid_amount'], "big")),
