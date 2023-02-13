@@ -70,7 +70,7 @@ async def handle_block(info: Info, block: NewBlock):
 
 async def main(args):
     parser = ArgumentParser()
-    parser.add_argument("--reset", action="store_true", default=False)
+    parser.add_argument("--reset", action="store_true", default=True)
     args = parser.parse_args()
 
     runner = IndexerRunner(

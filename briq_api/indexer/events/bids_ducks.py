@@ -29,6 +29,8 @@ bid_decoder = FunctionCallSerializer(
 bid_filter = [EventFilter.from_event_name(name="Bid", address=contract_address)]
 
 
+print("Ducks contract - ", contract_address)
+
 def prepare_bid_for_storage(event: StarkNetEvent, block: BlockHeader):
     bid_data = decode_event(bid_decoder, event.data)
     return {

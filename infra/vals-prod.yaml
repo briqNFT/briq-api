@@ -18,7 +18,7 @@ resources:
 indexer:
   name: briq-indexer
   image_store: mongo:latest
-  indexer_id: "kub-mainnet-new-1"
+  indexer_id: "kub-mainnet-new-2"
   network_name: 'starknet-mainnet'
   resources:
     cpu_store: "250m"
