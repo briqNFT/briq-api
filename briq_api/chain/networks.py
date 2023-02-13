@@ -54,6 +54,7 @@ MAINNET = NetworkMetadata(
     id="starknet-mainnet",
     storage_bucket="briq-bucket-prod-1",
     auction_address="0x01712e3e3f133b26d65a3c5aaae78e7405dfca0a3cfe725dd57c4941d9474620",
+    auction_ducks="0x00b9bb7650a88f7e375ae8d31d48b4d4f13c6c34344839837d7dae7ffcdd3df0",
     box_address="0x01e1f972637ad02e0eed03b69304344c4253804e528e1a5dd5c26bb2f23a8139",
     briq_address="0x00247444a11a98ee7896f9dec18020808249e8aad21662f2fa00402933dce402",
     booklet_address="0x05faa82e2aec811d3a3b14c1f32e9bbb6c9b4fd0cd6b29a823c98c7360019aa4",
