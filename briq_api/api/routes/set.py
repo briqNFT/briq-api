@@ -26,13 +26,14 @@ async def metadata(chain_id: str, token_id: str):
     rid = SetRID(chain_id=chain_id, token_id=token_id)
 
     output = api.get_metadata(rid)
+    cache_time = (24 * 3600) if output['created_at'] != -1 else 60
 
     # Stream the data because files can get fairly hefty.
     out = io.StringIO()
-    output = json.dump(output, out)
+    json.dump(output, out)
     out.seek(0)
     return StreamingResponse(out, media_type="application/json", headers={
-        "Cache-Control": f"public, max-age={2 * 60}"
+        "Cache-Control": f"public, max-age={cache_time}"
     })
 
 
