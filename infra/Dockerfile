@@ -1,6 +1,7 @@
 FROM python:3.9-buster as initial
 
 WORKDIR /usr/src/app
+RUN pip install --no-cache-dir poetry
 
 FROM initial
 
@@ -9,7 +10,6 @@ COPY pyproject.toml ./
 
 # This is super unrecommended because poetry can uninstall its own dependencies later,
 # but I don't think I care particularly.
-RUN pip install --no-cache-dir poetry
 RUN poetry export --output requirements.txt --without-hashes && pip install -r requirements.txt
 
 COPY briq_api/ briq_api
