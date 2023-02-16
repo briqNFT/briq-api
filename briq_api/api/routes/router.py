@@ -1,17 +1,9 @@
-import io
-import json
 import logging
 
-from anyio import to_process
 from fastapi import APIRouter, HTTPException
 
-from briq_api.storage.file.backends.cloud_storage import NotFoundException
 from .. import api
-from . import boxes, user, uri_route, forest, auctions as auctions_route, set as set_routes
-from briq_api.config import ENV
-
-from briq_api.storage.file.backends.cloud_storage import NotFoundException
-
+from . import boxes, user, uri_route, forest, auctions as auctions_route, set as set_routes, theme
 
 from .common import ExceptionWrapperRoute
 
@@ -25,6 +17,7 @@ router.include_router(uri_route.router, tags=["uri"])
 router.include_router(forest.router, tags=["briqmas_forest"])
 router.include_router(auctions_route.router, tags=["auctions"])
 router.include_router(set_routes.router, tags=["set"])
+router.include_router(theme.router, tags=["theme"])
 
 
 @router.head("/bids/user/{chain_id}/{user_id}")
