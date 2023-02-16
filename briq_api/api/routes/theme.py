@@ -4,6 +4,12 @@ import time
 
 from starlette.responses import JSONResponse, StreamingResponse
 from fastapi import APIRouter
+from briq_api.api.api import get_metadata
+
+from briq_api.api.theme import list_sets_of_theme
+from briq_api.indexer.events.common import encode_int_as_bytes
+from briq_api.set_identifier import SetRID
+from briq_api.indexer.storage import mongo_storage
 
 from .. import boxes
 from ..boxes import BoxRID
@@ -68,8 +74,6 @@ async def get_theme_data(chain_id: str, theme_id: str):
 @router.head("/{chain_id}/{theme_id}/boxes")
 @router.get("/{chain_id}/{theme_id}/boxes")
 async def list_boxes_of_theme(chain_id: str, theme_id: str):
-    if theme_id == 'ducks_everywhere':
-        return [f'ducks_everywhere/{i}' for i in range(1, 10)]
     data = boxes.get_theme_data(chain_id, theme_id)
     if data['sale_start'] is None or data['sale_start'] > time.time():
         output = []
@@ -106,3 +110,44 @@ async def get_all_boxes_data(chain_id: str, theme_id: str):
         ret[box] = boxes.get_box_metadata(rid=BoxRID(chain_id, theme_id, box.split('/')[1]))
     # Turn off the caching client-side - this must update when the waves become active
     return ret
+
+
+@router.head("/{chain_id}/{theme_id}/all_sets_static_data")
+@router.get("/{chain_id}/{theme_id}/all_sets_static_data")
+async def get_data_for_all_sets(chain_id: str, theme_id: str):
+    """
+    Return a limited, but sufficient, amount of data for all sets in a theme.
+    TODO: paging would probably be a good idea in the mid-term future.
+    """
+    sets = list_sets_of_theme(chain_id, theme_id)
+    out = {}
+    for token_id in sets:
+        rid = SetRID(chain_id=chain_id, token_id=token_id)
+        set_data = get_metadata(rid)
+        out[token_id] = {
+            x: set_data[x] for x in ['id', 'name', 'description', 'image', 'created_at', 'booklet_id', 'background_color'] if x in set_data
+        }
+    return JSONResponse(out, headers={
+        "Cache-Control": f"public, max-age={24 * 3600}"
+    })
+
+
+@router.head("/{chain_id}/{theme_id}/all_sets_dynamic_data")
+@router.get("/{chain_id}/{theme_id}/all_sets_dynamic_data")
+async def get_dynamic_data_for_all_sets(chain_id: str, theme_id: str):
+    """
+    Returns dynamic data for all sets, e.g. current owner.
+    TODO: paging would probably be a good idea in the mid-term future.
+    """
+    sets = list_sets_of_theme(chain_id, theme_id)
+    owners = mongo_storage.get_backend(chain_id).db['set_tokens'].find({
+        'token_id': {"$in": [encode_int_as_bytes(int(token_id, 16)) for token_id in sets]},
+        '_chain.valid_to': None
+    })
+    out = {}
+    for set_nft in owners:
+        out[hex(int.from_bytes(set_nft['token_id'], "big"))] = hex(int.from_bytes(set_nft['owner'], "big"))
+
+    return JSONResponse(out, headers={
+        "Cache-Control": f"public, max-age={60}"
+    })

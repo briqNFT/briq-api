@@ -26,7 +26,8 @@ async def metadata(chain_id: str, token_id: str):
     rid = SetRID(chain_id=chain_id, token_id=token_id)
 
     output = api.get_metadata(rid)
-    cache_time = (24 * 3600) if output['created_at'] != -1 else 60
+    # Don't cache data if the set has no creation date, which means we haven't indexed it yet.
+    cache_time = (24 * 3600) if output['created_at'] != -1 else 10
 
     # Stream the data because files can get fairly hefty.
     out = io.StringIO()
