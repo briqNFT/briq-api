@@ -43,6 +43,11 @@ async def metadata(chain_id: str, token_id: str):
 @router.get("/preview/{chain_id}/{token_id}")
 @router.get("/preview/{chain_id}/{token_id}.png")
 async def preview(chain_id: str, token_id: str):
+    # Remove those two sets which come from a scammer.
+    if int(token_id, 16) == 3237257010082882961400056035578317339222271916371075326396818103833724977152 \
+        or int(token_id, 16) == 2489739008863561988083186495972912854981196782375410526076829889144545083392:
+        raise HTTPException(status_code=404, detail="Not found")
+
     rid = SetRID(chain_id=chain_id, token_id=token_id)
 
     preview = api.get_preview(rid)
