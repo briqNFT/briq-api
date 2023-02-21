@@ -14,6 +14,7 @@ import logging
 from typing import Any, Dict, Union
 import requests
 from briq_api.chain.networks import get_network_metadata
+from briq_api.set_indexer.create_set_metadata import create_set_metadata
 from briq_api.storage.file.file_client import FileClient
 
 from briq_api.config import ENV
@@ -72,19 +73,13 @@ class SetIndexer:
         return self._store_set(data, token_id)
 
     def _get_storage_data(self, data: StorableSetData, token_id: str) -> dict[str, Any]:
-        # Essentially calqued from the API
-        # TODO: reduce duplication
-        return {
-            "id": token_id,
-            "name": data.name or token_id,
-            "description": data.description or "",
-            "version": 1,
-            "regionSize": 100000,
-            "briqs": data.briqs,
-            "image": f"https://api.briq.construction/v1/preview/{self.network}/{token_id}.png",
-            "animation_url": f"https://api.briq.construction/v1/model/{self.network}/{token_id}.glb",
-            "external_url": f"https://briq.construction/set/{self.network}/{token_id}",
-        }
+        return create_set_metadata(
+            token_id=token_id,
+            name=data.name or token_id,
+            description=data.description or "",
+            network=self.network,
+            briqs=data.briqs
+        )
 
     def _compare_storage(self, expected_data: dict[str, Any], stored_data: dict[str, Any]):
         passes = True
