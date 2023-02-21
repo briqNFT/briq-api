@@ -36,6 +36,23 @@ def get_metadata(rid: SetRID):
             "value": len(data['briqs'])
         }
     }
+    # Collection hints for POAPs
+    # TODO: make this more general
+    if 'collection_hint' in data and data['collection_hint'] == 'poaps':
+        data['attributes'].append({
+            "trait_type": "Collections",
+            "value": ["briq POAPs"],
+        })
+        data['attributes'].append({
+            "trait_type": "briq POAPs",
+            "value": True,
+        })
+        data['properties']['collections'] = {
+            "name": "Collections",
+            "value": ["briq POAPs"]
+        }
+        data.pop('collection_hint')
+
     booklets = mongo_storage.get_user_nfts(rid.chain_id, rid.token_id, 'booklet')
     if len(booklets.nfts):
         data['booklet_id'] = genesis_storage.get_booklet_id(rid.chain_id, booklets.nfts[0])
