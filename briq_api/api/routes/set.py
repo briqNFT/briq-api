@@ -34,7 +34,7 @@ async def metadata(chain_id: str, token_id: str):
     json.dump(output, out)
     out.seek(0)
     return StreamingResponse(out, media_type="application/json", headers={
-        "Cache-Control": f"public, max-age={cache_time}"
+        "Cache-Control": f"public,max-age={cache_time}"
     })
 
 
@@ -53,7 +53,7 @@ async def preview(chain_id: str, token_id: str):
     preview = api.get_preview(rid)
 
     return StreamingResponse(io.BytesIO(preview), media_type="image/png", headers={
-        "Cache-Control": f"public, max-age={3600 * 24}"
+        "Cache-Control": f"public,max-age={3600 * 24}"
     })
 
 @router.head("/set/{chain_id}/{token_id}/small_preview.jpg")
@@ -64,7 +64,7 @@ async def get_small_preview(chain_id: str, token_id: str):
     preview = api.get_small_preview(rid)
 
     return StreamingResponse(io.BytesIO(preview), media_type="image/png", headers={
-        "Cache-Control": f"public, max-age={3600 * 24}"
+        "Cache-Control": f"public,max-age={3600 * 24}"
     })
 
 
@@ -90,7 +90,7 @@ async def model(chain_id: str, token_id: str, kind: str):
         logger.info("Created %(type)s model for %(rid)s on the fly.", {"type": kind, "rid": rid.json()})
 
     return StreamingResponse(io.BytesIO(data), media_type=mime_type[kind], headers={
-        "Cache-Control": f"public, max-age={3600 * 24}"
+        "Cache-Control": f"public,max-age={3600 * 24}"
     })
 
 

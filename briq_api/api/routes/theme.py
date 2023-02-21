@@ -30,7 +30,7 @@ async def get_theme_cover(chain_id: str, theme_id: str, quality: str):
     else:
         output = boxes.box_storage.theme_cover_postlaunch(chain_id, theme_id, quality)
     return StreamingResponse(io.BytesIO(output), media_type="image/jpeg", headers={
-        "Cache-Control": f"public, max-age={60 * 5}"
+        "Cache-Control": f"public,max-age={60 * 5}"
     })
 
 
@@ -40,7 +40,7 @@ async def get_theme_logo(chain_id: str, theme_id: str, quality: str):
     # Only in high quality, too cheap
     output = boxes.box_storage.theme_logo(chain_id, theme_id, 'high')
     return StreamingResponse(io.BytesIO(output), media_type="image/png", headers={
-        "Cache-Control": f"public, max-age={60 * 60 * 24 * 7}"
+        "Cache-Control": f"public,max-age={60 * 60 * 24 * 7}"
     })
 
 
@@ -49,7 +49,7 @@ async def get_theme_logo(chain_id: str, theme_id: str, quality: str):
 async def get_theme_splash(chain_id: str, theme_id: str, quality: str):
     output = boxes.box_storage.theme_splash(chain_id, theme_id, quality)
     return StreamingResponse(io.BytesIO(output), media_type="image/jpeg", headers={
-        "Cache-Control": f"public, max-age={60 * 60 * 24 * 7}"
+        "Cache-Control": f"public,max-age={60 * 60 * 24 * 7}"
     })
 
 
@@ -58,7 +58,7 @@ async def get_theme_splash(chain_id: str, theme_id: str, quality: str):
 async def list_themes(chain_id: str):
     output = boxes.list_themes(chain_id)
     return JSONResponse(output, headers={
-        "Cache-Control": f"public, max-age={60}"
+        "Cache-Control": f"public,max-age={60}"
     })
 
 @router.head("/{chain_id}/{theme_id}/data")
@@ -67,7 +67,7 @@ async def get_theme_data(chain_id: str, theme_id: str):
     output = boxes.get_theme_data(chain_id, theme_id)
     # Low cache for fast turnaround time but some minor CDN benefit
     return JSONResponse(output, headers={
-        "Cache-Control": f"public, max-age={60}"
+        "Cache-Control": f"public,max-age={60}"
     })
 
 
@@ -128,7 +128,7 @@ async def get_data_for_all_sets(chain_id: str, theme_id: str):
             x: set_data[x] for x in ['id', 'name', 'description', 'image', 'created_at', 'booklet_id', 'background_color'] if x in set_data
         }
     return JSONResponse(out, headers={
-        "Cache-Control": f"public, max-age={24 * 3600}"
+        "Cache-Control": f"public,max-age={24 * 3600}"
     })
 
 
@@ -149,5 +149,5 @@ async def get_dynamic_data_for_all_sets(chain_id: str, theme_id: str):
         out[hex(int.from_bytes(set_nft['token_id'], "big"))] = hex(int.from_bytes(set_nft['owner'], "big"))
 
     return JSONResponse(out, headers={
-        "Cache-Control": f"public, max-age={60}"
+        "Cache-Control": f"public,max-age={60}"
     })

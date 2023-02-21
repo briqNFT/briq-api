@@ -29,7 +29,7 @@ async def uri_box(chain_id: str, token_id: str):
 
     return JSONResponse(output, headers={
         # TODO: bump cache for prod
-        "Cache-Control": f"public, max-age={2 * 60}"
+        "Cache-Control": f"public,max-age={2 * 60}"
     })
 
 
@@ -50,7 +50,7 @@ async def uri_booklet(chain_id: str, token_id: str):
 
     return JSONResponse(output, headers={
         # TODO: bump cache for prod
-        "Cache-Control": f"public, max-age={2 * 60}"
+        "Cache-Control": f"public,max-age={2 * 60}"
     })
 
 @router.head("/uri/set/{chain_id}/{token_id}")
@@ -73,5 +73,5 @@ async def uri_set(chain_id: str, token_id: str):
 
     return JSONResponse(output, headers={
         # TODO: bump cache for prod
-        "Cache-Control": f"public, max-age={2 * 60}"
+        "Cache-Control": f"public,max-age={2 * 60}"
     })

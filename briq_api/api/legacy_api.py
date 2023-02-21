@@ -46,7 +46,7 @@ async def store_get(token_id: str):
     output = json.dump(output, out)
     out.seek(0)
     return StreamingResponse(out, media_type="application/json", headers={
-        "Cache-Control": f"public, max-age={2 * 60}"
+        "Cache-Control": f"public,max-age={2 * 60}"
     })
 
 
@@ -58,7 +58,7 @@ async def get_preview(token_id: str):
     try:
         data = file_storage.load_set_preview(rid=SetRID(chain_id=TESTNET_LEGACY.id, token_id=token_id))
         return StreamingResponse(io.BytesIO(data), media_type="image/png", headers={
-            "Cache-Control": f"public, max-age={3600 * 24}"
+            "Cache-Control": f"public,max-age={3600 * 24}"
         })
     except Exception:
         raise HTTPException(status_code=500, detail="File not found")
@@ -74,7 +74,7 @@ async def get_model(kind: str, token_id: str):
     try:
         data = file_storage.load_set_model(rid=SetRID(chain_id=TESTNET_LEGACY.id, token_id=token_id), kind=kind)
         return StreamingResponse(io.BytesIO(data), media_type=mime_type[kind], headers={
-            "Cache-Control": f"public, max-age={3600 * 24}"
+            "Cache-Control": f"public,max-age={3600 * 24}"
         })
     except (NotFoundException, OSError):
         try:
@@ -94,7 +94,7 @@ async def get_model(kind: str, token_id: str):
                 raise Exception("Unknown model type " + kind)
             logger.info("Created %(type)s model for %(set)s on the fly.", {"type": kind, "set": token_id})
             return StreamingResponse(io.BytesIO(output), media_type=mime_type[kind], headers={
-                "Cache-Control": f"public, max-age={3600 * 24}"
+                "Cache-Control": f"public,max-age={3600 * 24}"
             })
         except Exception as e:
             logger.error(e, exc_info=e)
