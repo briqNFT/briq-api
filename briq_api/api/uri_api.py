@@ -1,5 +1,6 @@
 
 import logging
+from briq_api.api.theme import get_booklet_id_from_token_id
 from briq_api.set_identifier import SetRID
 
 from briq_api.stores import genesis_storage
@@ -20,9 +21,9 @@ def box_uri(chain_id: str, token_id: str):
 
 def booklet_uri(chain_id: str, token_id: str):
     if '0x' in token_id or '0X' in token_id:
-        box_id = genesis_storage.get_booklet_id(chain_id, token_id).split('/')
+        box_id = get_booklet_id_from_token_id(chain_id, token_id).split('/')
     else:
-        box_id = genesis_storage.get_booklet_id(chain_id, hex(int(token_id))).split('/')
+        box_id = get_booklet_id_from_token_id(chain_id, hex(int(token_id))).split('/')
     return get_booklet_metadata(BoxRID(chain_id, *box_id))
 
 

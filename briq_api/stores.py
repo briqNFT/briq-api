@@ -5,6 +5,7 @@ from briq_api.config import ENV
 
 from .chain.networks import MAINNET, TESTNET, TESTNET_LEGACY
 
+from briq_api.api.theme import theme_storage
 from briq_api.genesis_data.genesis_storage import GenesisStorage
 from briq_api.storage.file.backends.cloud_storage import CloudStorage
 from briq_api.storage.file.backends.file_storage import FileStorage
@@ -26,10 +27,15 @@ def setup_stores(local: bool, use_mock_chain: bool):
 
         # For now, starknet-testnet is connected to the test bucket only in test env.
         if ENV != 'prod':
-            file_storage.connect_for_chain(TESTNET.id, backend=CloudStorage(os.getenv("CLOUD_STORAGE_BUCKET") or 'briq-bucket-test-1'))
-            file_storage.connect_for_chain(MAINNET.id, backend=CloudStorage(os.getenv("CLOUD_STORAGE_BUCKET") or 'briq-bucket-test-1'))
+            cloud_storage = CloudStorage(os.getenv("CLOUD_STORAGE_BUCKET") or 'briq-bucket-test-1')
+            file_storage.connect_for_chain(TESTNET.id, backend=cloud_storage)
+            file_storage.connect_for_chain(MAINNET.id, backend=cloud_storage)
+            theme_storage.connect_for_chain(TESTNET.id, backend=cloud_storage)
+            theme_storage.connect_for_chain(MAINNET.id, backend=cloud_storage)
         else:
-            file_storage.connect_for_chain(MAINNET.id, backend=CloudStorage(MAINNET.storage_bucket))
+            cloud_storage = CloudStorage(MAINNET.storage_bucket)
+            file_storage.connect_for_chain(MAINNET.id, backend=cloud_storage)
+            theme_storage.connect_for_chain(MAINNET.id, backend=cloud_storage)
 
         if ENV != 'prod':
             mongo_storage.connect_for_chain(TESTNET.id, MongoBackend())
@@ -46,6 +52,7 @@ def setup_stores(local: bool, use_mock_chain: bool):
         # we expect to run locally and it makes it faster to reload the API
         logger.info("Connecting locally.")
         file_storage.connect(FileStorage())
+        theme_storage.connect(FileStorage())
         # TODO: change this
         genesis_storage.connect(FileStorage("briq_api/genesis_data/localhost/"))
         mongo_storage.connect(MongoBackend())

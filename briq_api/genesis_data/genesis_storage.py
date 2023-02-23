@@ -20,9 +20,6 @@ class GenesisBackend():
     def get_auction_data(self):
         return self.auction_data
 
-    def get_booklet_spec(self):
-        return self.booklet_spec
-
 
 HexTokenId = str
 
@@ -37,20 +34,10 @@ class GenesisStorage(StorageClient[GenesisBackend]):
     def get_box_token_id(self, chain_id: str, box_id: str):
         return self.get_backend(chain_id).get_box_data()[box_id]
 
-    def get_booklet_token_id(self, chain_id: str, booklet_id: str) -> HexTokenId:
-        return self.get_backend(chain_id).get_booklet_spec()[booklet_id]
-
     def get_box_id(self, chain_id: str, box_token_id: str) -> str:
         box_data = self.get_backend(chain_id).get_box_data()
         try:
             return [box_name for box_name in box_data if box_data[box_name] == int(box_token_id, 16)][0]
-        except:
-            return None
-
-    def get_booklet_id(self, chain_id: str, booklet_token_id: str):
-        booklet_data = self.get_backend(chain_id).get_booklet_spec()
-        try:
-            return [box_id for box_id in booklet_data if int(booklet_data[box_id], 16) == int(booklet_token_id, 16)][0]
         except:
             return None
 

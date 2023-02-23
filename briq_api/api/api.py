@@ -4,6 +4,7 @@ import base64
 import pathlib
 
 from PIL import Image
+from briq_api.api.theme import get_booklet_id_from_token_id, get_booklet_token_id_from_id
 from briq_api.config import ENV
 
 from datetime import datetime
@@ -55,7 +56,7 @@ def get_metadata(rid: SetRID):
 
     booklets = mongo_storage.get_user_nfts(rid.chain_id, rid.token_id, 'booklet')
     if len(booklets.nfts):
-        data['booklet_id'] = genesis_storage.get_booklet_id(rid.chain_id, booklets.nfts[0])
+        data['booklet_id'] = get_booklet_id_from_token_id(rid.chain_id, booklets.nfts[0])
         booklet_meta = get_booklet_metadata(BoxRID(rid.chain_id, data['booklet_id'].split("/")[0], data['booklet_id'].split("/")[1]))
         data['attributes'] += booklet_meta['attributes']
         for prop in booklet_meta['properties']:
@@ -218,7 +219,7 @@ def get_item_activity(item_type: str, chain_id: str, item: str):
             for item in data
         ]
     if item_type == 'booklet':
-        token_id = int(genesis_storage.get_booklet_token_id(chain_id, item), 16)
+        token_id = int(get_booklet_token_id_from_id(chain_id, item), 16)
         data = mongo_storage.get_backend(chain_id).db["booklet_transfers"].find({"token_id": token_id.to_bytes(32, "big")})
         return [
             {

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from itertools import chain
 import logging
+from briq_api.api.theme import get_booklet_token_id_from_id
 from briq_api.config import ENV
 from briq_api.storage.file.backends.file_storage import FileStorage
 import time
@@ -151,7 +152,7 @@ def get_box_metadata(rid: BoxRID):
 
 def get_booklet_metadata(rid: BoxRID):
     metadata = box_storage.load_metadata_booklet(rid)
-    metadata['token_id'] = genesis_storage.get_booklet_token_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
+    metadata['token_id'] = get_booklet_token_id_from_id(rid.chain_id, f'{rid.theme_id}/{rid.box_id}')
     # Parse the number because javascript can't
     metadata['serial_number'] = int(metadata['token_id'], 16) // 2**192
     return metadata
