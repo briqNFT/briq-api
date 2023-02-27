@@ -1,8 +1,9 @@
 import asyncio
 import logging
 import math
-import os
-from typing import Any, Union
+from typing import Union
+from briq_api.chain.networks import MAINNET
+from briq_api.config import ENV
 from briq_api.set_indexer.config import NETWORK
 from briq_api.set_indexer.set_indexer import SetIndexer, StorableSetData
 from briq_api.stores import file_storage
@@ -14,7 +15,6 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 
 from starkware.cairo.common.hash_state import compute_hash_on_elements
-
 
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-set_indexer: Union[SetIndexer, None] = None
+set_indexer: dict[str, SetIndexer] = {}
 
 
 class NewSetStorageRequest(BaseModel):
@@ -95,7 +95,7 @@ async def health():
 
 @app.post("/store")
 async def store_new_set(request: NewSetStorageRequest):
-    if request.chain_id != NETWORK.id:
+    if request.chain_id not in set_indexer:
         raise HTTPException(status_code=400, detail="Invalid chain ID")
 
     try:
@@ -106,7 +106,7 @@ async def store_new_set(request: NewSetStorageRequest):
         }, exc_info=e)
         raise HTTPException(status_code=400, detail="Invalid transaction data")
 
-    set_indexer.add_set_to_pending(token_id, set_data)
+    set_indexer[request.chain_id].add_set_to_pending(token_id, set_data)
     return "ok"
 
 
@@ -118,14 +118,18 @@ def startup_event():
     global set_indexer
     global pending_task
 
-    set_indexer = SetIndexer(NETWORK.id, file_storage)
+    set_indexer[NETWORK.id] = SetIndexer(NETWORK.id, file_storage)
+    # In test, add mainnet processing.
+    if ENV == 'test':
+        set_indexer[MAINNET.id] = SetIndexer(MAINNET.id, file_storage)
     pending_task = asyncio.create_task(process_pending_sets())
 
 
 async def process_pending_sets():
     global pending_task
     try:
-        set_indexer.process_pending_set()
+        for indexer in set_indexer.values():
+            indexer.process_pending_set()
     except Exception as e:
         logger.error("Error processing pending set", exc_info=e)
     await asyncio.sleep(1)
