@@ -1,45 +1,19 @@
-from dataclasses import dataclass
-from itertools import chain
 import logging
 from time import time
-from typing import Any
 from briq_api.api.boxes import BoxStorage
 
 from briq_api.indexer.storage import mongo_storage
+from briq_api.memory_cache import CacheData
 from briq_api.stores import file_storage
 
 logger = logging.getLogger(__name__)
 
-@dataclass
-class CacheData:
-    data: Any
-    timeout: int
 
-
-def memory_cache(cache_path, timeout):
-    memcache = {}
-    def wrapper2(f):
-        def wrapper(*args, **kwargs):
-            c_p = cache_path(*args)
-            try:
-                cache_data = memcache[c_p]
-                if cache_data.timeout > time():
-                    return cache_data.data
-                else:
-                    raise Exception('Cache expired')
-            except Exception:
-                data = f(*args, **kwargs)
-                memcache[c_p] = CacheData(data=data, timeout=time() + timeout)
-                return data
-        return wrapper
-    return wrapper2
-
-
-@memory_cache(lambda chain_id, theme_id: f'{chain_id}_{theme_id}_auction_json_data', timeout=5 * 60)
+@CacheData.memory_cache(lambda chain_id, theme_id: f'{chain_id}_{theme_id}_auction_json_data', timeout=5 * 60)
 def get_auction_json_data(chain_id: str, theme_id: str):
     if theme_id == 'ducks_everywhere':
         try:
-            return file_storage.get_backend(chain_id).load_json(f"{BoxStorage.PREFIX}/{theme_id}/auction_data.json")
+            return file_storage.get_backend(chain_id).load_json(f"auctions/{theme_id}/auction_data.json")
         except Exception:
             # Ignore, we'll just return an empty dict
             return {}
