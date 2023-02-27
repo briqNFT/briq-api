@@ -5,6 +5,7 @@ env: prod
 static_ip: lb-sltech-company-ipv4-1
 sites: ["api.briq.construction", "api.sltech.company"]
 log_level: "INFO"
+service_account: cloud-storage-access
 
 #@schema/type any=True
 defaultLabels:

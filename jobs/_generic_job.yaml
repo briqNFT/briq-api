@@ -10,7 +10,7 @@ spec:
       labels:
         app: #@ data.values.job_name
     spec:
-      serviceAccountName: cloud-storage-access
+      serviceAccountName: #@ data.values.service_account
       containers:
       - name: #@ data.values.job_name
         image: #@ "europe-west3-docker.pkg.dev/healthy-saga-329513/sltech-briq/" + data.values.image_name + ":" + data.values.image_tag

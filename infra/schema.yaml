@@ -11,6 +11,7 @@ resources:
 image_name: briq-api
 image_tag: ""
 log_level: "INFO"
+service_account: cloud-storage-access-test
 
 #@schema/type any=True
 defaultLabels:

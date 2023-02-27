@@ -17,7 +17,7 @@ spec:
         _: #@ template.replace(data.values.defaultLabels)
         deployname: #@ data.values.name
     spec:
-      serviceAccountName: cloud-storage-access
+      serviceAccountName: #@ data.values.service_account
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -217,7 +217,7 @@ spec:
         _: #@ template.replace(data.values.defaultLabels)
         deployname: #@ data.values.name + "-set-indexer"
     spec:
-      serviceAccountName: cloud-storage-access
+      serviceAccountName: #@ data.values.service_account
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
