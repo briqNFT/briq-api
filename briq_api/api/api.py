@@ -8,6 +8,7 @@ from briq_api.api.theme import get_booklet_id_from_token_id, get_booklet_token_i
 from briq_api.config import ENV
 
 from datetime import datetime
+from briq_api.memory_cache import CacheData
 
 from briq_api.set_identifier import SetRID
 from briq_api.stores import genesis_storage, file_storage
@@ -18,8 +19,13 @@ from briq_api.mesh.briq import BriqData
 logger = logging.getLogger(__name__)
 
 
+@CacheData.memory_cache(lambda rid: f"{rid.chain_id},{rid.token_id}", timeout=5 * 60)
+def cached_set_metadata(rid: SetRID):
+    return file_storage.load_set_metadata(rid)
+
+
 def get_metadata(rid: SetRID):
-    data = file_storage.load_set_metadata(rid)
+    data = cached_set_metadata(rid)
     data['created_at'] = mongo_storage.get_mint_date(rid.chain_id, 'set', int(rid.token_id, 16))
     data['attributes'] = [{
         "trait_type": "Number of briqs",
