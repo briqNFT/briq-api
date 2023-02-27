@@ -1,23 +1,11 @@
 import logging
 from time import time
-from briq_api.api.boxes import BoxStorage
 
 from briq_api.indexer.storage import mongo_storage
 from briq_api.memory_cache import CacheData
-from briq_api.stores import file_storage
+from briq_api.stores import get_auction_json_data
 
 logger = logging.getLogger(__name__)
-
-
-@CacheData.memory_cache(lambda chain_id, theme_id: f'{chain_id}_{theme_id}_auction_json_data', timeout=5 * 60)
-def get_auction_json_data(chain_id: str, theme_id: str):
-    if theme_id == 'ducks_everywhere':
-        try:
-            return file_storage.get_backend(chain_id).load_json(f"auctions/{theme_id}/auction_data.json")
-        except Exception:
-            # Ignore, we'll just return an empty dict
-            return {}
-    return {}
 
 
 def get_theme_auction_data(chain_id: str, theme_id: str):

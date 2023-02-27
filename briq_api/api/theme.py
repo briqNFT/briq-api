@@ -1,26 +1,6 @@
-
-from typing import Any, Union
-from briq_api.api.auctions import get_auction_json_data
-from briq_api.memory_cache import CacheData
-from briq_api.storage.file.file_client import FileStorageBackend
-from briq_api.storage.multi_backend_client import StorageClient
-from briq_api.stores import genesis_storage
-
-
-class ThemeStorage(StorageClient[FileStorageBackend]):
-    _spec = {}
-
-    def __init__(self) -> None:
-        super().__init__()
-
-    @CacheData.memory_cache(lambda chain_id: f'{chain_id}_booklet_spec', timeout=5 * 60)
-    def get_booklet_spec(self, chain_id: str):
-        if chain_id not in self._spec:
-            self._spec[chain_id] = self.get_backend(chain_id).load_json("booklet_spec.json")
-        return self._spec[chain_id]
-
-
-theme_storage = ThemeStorage()
+from typing import Union
+from briq_api.stores import get_auction_json_data
+from briq_api.stores import theme_storage
 
 
 def list_sets_of_theme(chain_id: str, theme_id: str) -> list[str]:

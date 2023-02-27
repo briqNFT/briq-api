@@ -24,6 +24,9 @@ class GenesisBackend():
 HexTokenId = str
 
 
+# TODO: change this to use the nwe system
+
+
 class GenesisStorage(StorageClient[GenesisBackend]):
     def connect(self, backend):
         if backend is None:
