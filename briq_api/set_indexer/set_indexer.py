@@ -89,6 +89,7 @@ class SetIndexer:
             if key == "briqs":
                 if len(stored_data[key]) != len(expected_data[key]):
                     passes = False
+                    mistake = "briqs_length"
                     return passes, mistake
                 # Ignore the order of stored briqs for now be cause it is inconsistent
                 # So just store according to what expected_data does (which is what transactions do)
