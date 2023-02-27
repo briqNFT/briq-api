@@ -11,6 +11,7 @@ This is achieved by regularly running an async task in the server, for simplicit
 
 from dataclasses import dataclass
 import logging
+from time import time
 from typing import Any, Dict, Union
 import requests
 from briq_api.chain.networks import get_network_metadata
@@ -114,8 +115,10 @@ class SetIndexer:
 
         if not passes:
             # In prod, store the expected data alongside the stored data.
-            # Otherwise, just erase (convenient in test env when changing storage formats).
-            if ENV == 'prod':    
+            # Otherwise, just replace (convenient in test env when changing storage formats).
+            # Exception: if the mistake is related to the # of briqs, replace anyways,
+            # as that could lead to scamming.
+            if ENV == 'prod' and mistake != "briqs_length":
                 self.storage.get_backend(self.network).store_json(
                     self.storage.set_metadata_path(SetRID(chain_id=self.network, token_id=token_id)).replace('_metadata', '_expected_metadata'),
                     expected_data
@@ -126,6 +129,11 @@ class SetIndexer:
                     {"token": token_id, "cat": mistake}
                 )
             else:
+                # First backup the OG data
+                self.storage.get_backend(self.network).store_json(
+                    self.storage.set_metadata_path(SetRID(chain_id=self.network, token_id=token_id)) + '_backup_' + str(int(time())),
+                    stored_data
+                )
                 self.storage.get_backend(self.network).store_json(
                     self.storage.set_metadata_path(SetRID(chain_id=self.network, token_id=token_id)),
                     expected_data
