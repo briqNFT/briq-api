@@ -10,7 +10,7 @@ class NoBackendException(Exception):
     chain_id: str
 
     def __init__(self, chain_id: str) -> None:
-        super().__init__("No backend found")
+        super().__init__(f"No backend found for network {chain_id}")
         self.chain_id = chain_id
 
 

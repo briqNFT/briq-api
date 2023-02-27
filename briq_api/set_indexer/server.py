@@ -1,12 +1,13 @@
 import asyncio
 import logging
 import math
+import os
 from typing import Union
 from briq_api.chain.networks import MAINNET
 from briq_api.config import ENV
 from briq_api.set_indexer.config import NETWORK
 from briq_api.set_indexer.set_indexer import SetIndexer, StorableSetData
-from briq_api.stores import file_storage
+from briq_api.stores import file_storage, setup_stores
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -117,6 +118,8 @@ pending_task: Union[asyncio.Task, None] = None
 def startup_event():
     global set_indexer
     global pending_task
+
+    setup_stores(os.getenv("LOCAL") or False, False)
 
     set_indexer[NETWORK.id] = SetIndexer(NETWORK.id, file_storage)
     # In test, add mainnet processing.
