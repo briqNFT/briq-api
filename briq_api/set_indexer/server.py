@@ -1,10 +1,11 @@
 import asyncio
+import logging
 import math
 import os
-from time import sleep
 from typing import Any, Union
 from briq_api.set_indexer.config import NETWORK
 from briq_api.set_indexer.set_indexer import SetIndexer, StorableSetData
+from briq_api.stores import file_storage
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,12 +13,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import HTTPException
 from pydantic import BaseModel
 
-import logging
-from briq_api.storage.file.backends.cloud_storage import CloudStorage
-
-from briq_api.storage.file.file_client import FileClient
-
 from starkware.cairo.common.hash_state import compute_hash_on_elements
+
 
 
 logger = logging.getLogger(__name__)
@@ -121,9 +118,6 @@ def startup_event():
     global set_indexer
     global pending_task
 
-    file_storage = FileClient()
-    bucket = os.getenv("CLOUD_STORAGE_BUCKET") or NETWORK.storage_bucket
-    file_storage.connect_for_chain(NETWORK.id, backend=CloudStorage(bucket))
     set_indexer = SetIndexer(NETWORK.id, file_storage)
     pending_task = asyncio.create_task(process_pending_sets())
 

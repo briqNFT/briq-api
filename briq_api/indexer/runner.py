@@ -50,19 +50,18 @@ class BriqIndexer(StarkNetIndexer):
 
 
 async def main():
-    print(APIBARA_URL)
     runner = IndexerRunner(
         config=IndexerRunnerConfiguration(
             stream_url=APIBARA_URL,
             storage_url=f"mongodb://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_URL}"
         ),
-        reset_state=True,
+        reset_state=False,
         client_options=[
             ('grpc.max_receive_message_length', 100 * 1024 * 1024)
         ]
     )
 
-    logger.info("Starting indexer from block %(block)s", {'block': START_BLOCK})
+    logger.info("Starting indexer %(indexer)s from block %(block)s", {'indexer': INDEXER_ID, 'block': START_BLOCK})
 
     await runner.run(BriqIndexer(), ctx={"network": NETWORK.id})
 
