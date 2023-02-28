@@ -162,9 +162,6 @@ async def store_set(rid: SetRID, setData: dict, image_base64: bytes):
     # This can happen if a first mint fails for some reason but the 'hint' went through,
     # or if a set happens to have the same token ID as an earlier one.
     # This is intended to prevent hostile replacement of data.
-    # TODO: there should be a regular job that checks for newly added sets and
-    # checks that the on-chain transaction went through, then updates the metadata.
-    # For previews, trickier.
     if file_storage.has_set_metadata(rid):
         return
     if len(image_base64) > 0:
