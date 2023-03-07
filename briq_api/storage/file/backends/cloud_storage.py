@@ -1,6 +1,9 @@
 import os
 import json
 import logging
+from random import randint
+from time import time
+from uuid import uuid1
 
 # Imports the Google Cloud client library
 from google.cloud import storage
@@ -21,7 +24,6 @@ class CloudStorage(FileStorageBackend):
     def store_json(self, path, data):
         logger.debug("storing JSON at %s", path)
         self.bucket.blob(path).upload_from_string(json.dumps(data), content_type='application/json', timeout=10)
-        return True
 
     def load_json(self, path):
         logger.debug("loading JSON from %s", path)
@@ -42,10 +44,23 @@ class CloudStorage(FileStorageBackend):
             pass
         return [result for result in [x.name[len(path):] for x in results] + [x[len(path):-1] for x in results.prefixes] if len(result) > 0]
 
+    def has_path(self, path: str):
+        return self.bucket.blob(path).exists()
+
+    def backup_file(self, path: str):
+        # Backup a file by making a timestamped copy next to it.
+        # First generate a timestamped path
+        backup_path = path + ".backup." + uuid1().hex
+        # If the path exists, fail hard as it should really not happen.
+        if self.has_path(backup_path):
+            raise Exception("Backup path already exists, which is astronomically unlikely")
+        self.bucket.blob(backup_path).rewrite(self.bucket.blob(path))
+
+    # Bytes stuff
+
     def store_bytes(self, path: str, data: bytes):
         logger.debug("Storing data to %s", path)
         self.bucket.blob(path).upload_from_string(data, content_type="application/octet-stream", timeout=10)
-        return True
 
     def load_bytes(self, path: str):
         logger.debug("Loading data from %s", path)

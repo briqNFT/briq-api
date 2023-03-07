@@ -1,8 +1,10 @@
 import os
 import json
 import logging
+import shutil
 import time
 from pathlib import Path
+from uuid import uuid1
 from ..file_client import FileStorageBackend
 
 logger = logging.getLogger(__name__)
@@ -72,6 +74,19 @@ class FileStorage(FileStorageBackend):
             time.sleep(self.slowdown)
         for file in os.listdir(self.path):
             yield file
+
+    def has_path(self, path: str):
+        if self.slowdown:
+            time.sleep(self.slowdown)
+        return os.path.exists(self.path + path)
+
+    def backup_file(self, path: str):
+        # Backup a file by making a timestamped copy on disk
+        if self.slowdown:
+            time.sleep(self.slowdown)
+        if os.path.exists(self.path + path):
+            # This errors if the destination file already exists so it's safe enough
+            shutil.copy2(src=self.path + path, dst=self.path + path + f".{uuid1().hex}")
 
     # Bytes data
 

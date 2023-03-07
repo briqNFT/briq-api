@@ -27,10 +27,14 @@ class ThemeStorage(StorageClient[FileStorageBackend]):
     def __init__(self) -> None:
         super().__init__()
 
+    @staticmethod
+    def booklet_path():
+        return "genesis_themes/booklet_spec.json"
+
     @CacheData.memory_cache(lambda _self, chain_id: f'{chain_id}_booklet_spec', timeout=5 * 60)
     def get_booklet_spec(self, chain_id: str) -> dict[str, str]:
         if chain_id not in self._spec:
-            self._spec[chain_id] = self.get_backend(chain_id).load_json("genesis_themes/booklet_spec.json")
+            self._spec[chain_id] = self.get_backend(chain_id).load_json(self.booklet_path())
         return self._spec[chain_id]
 
 

@@ -28,6 +28,15 @@ class FileStorageBackend(ABC):
         pass
 
     @abstractmethod
+    def has_path(self, path: str) -> bool:
+        pass
+
+    @abstractmethod
+    def backup_file(self, path: str):
+        """Backup a file using an appropriate method for the backend."""
+        pass
+
+    @abstractmethod
     def store_bytes(self, path: str, data: bytes):
         pass
 
