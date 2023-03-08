@@ -1,24 +1,24 @@
 import base64
-from dataclasses import dataclass
-from datetime import datetime
 import io
 import logging
 import os
-from pathlib import Path
 import re
+import shutil
 import tempfile
-from time import time
-from typing import Any, List, Optional
+from dataclasses import dataclass
+from datetime import datetime
 from fastapi import APIRouter, HTTPException
+from pathlib import Path
 from PIL import Image
 from pydantic import BaseModel
-from briq_api.api import theme
-from briq_api.api.theme import list_booklets_of_theme
+from typing import Any, List, Optional
 
+from briq_api.api.theme import list_booklets_of_theme
+from briq_api.set_identifier import SetRID
 from briq_api.set_indexer.create_set_metadata import create_booklet_metadata, create_set_metadata
 from briq_api.stores import file_storage, theme_storage
-
 from briq_api.mesh.briq import BriqData
+
 from .common import ExceptionWrapperRoute
 
 logger = logging.getLogger(__name__)
@@ -52,14 +52,19 @@ async def validate_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str
     }
 
 
+class CompileRequest(BaseModel):
+    data: dict[str, Any]
+    serial_number: int
+
+
 @router.post("/admin/{chain_id}/{auction_theme}/compile_shape")
-async def compile_shape(set: NewNFTRequest, chain_id: str, auction_theme: str):
+async def compile_shape(cr: CompileRequest):
     data = BriqData()
-    data.load(set.data)
+    data.load(cr.data)
 
     loop = asyncio.get_event_loop()
     thread_pool = concurrent.futures.ThreadPoolExecutor(1)
-    contract_json, class_hash = await loop.run_in_executor(thread_pool, compile_shape_contract, data)
+    contract_json, class_hash = await loop.run_in_executor(thread_pool, compile_shape_contract, cr.serial_number, data)
     return {
         "contract_json": contract_json,
         "class_hash": class_hash,
@@ -74,18 +79,13 @@ async def mint_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
     data = await generate_data(set, chain_id, auction_theme)
     serial, booklet_metadata, metadata = data.serial, data.booklet_metadata, data.metadata
 
+    # This doesn't reuse the API function because it skips the validation.
+    rid = SetRID(chain_id=chain_id, token_id=set.token_id)
+    file_storage.store_set_metadata(rid, metadata)
+
     PATH = f"genesis_themes/{auction_theme}/{set.data['name']}"
-
-    if file_storage.get_backend(chain_id).has_path(PATH + "/metadata_booklet.json"):
-        raise HTTPException(status_code=400, detail="Booklet already exists")
     file_storage.get_backend(chain_id).store_json(PATH + "/metadata_booklet.json", booklet_metadata)
-
-    if file_storage.get_backend(chain_id).has_path(PATH + "/cover.png"):
-        raise HTTPException(status_code=400, detail="Cover already exists")
     file_storage.get_backend(chain_id).store_bytes(PATH + "/cover.png", decode_base64(set.preview_base64))
-
-    if file_storage.get_backend(chain_id).has_path(PATH + "/booklet_cover.png"):
-        raise HTTPException(status_code=400, detail="Booklet cover already exists")
     file_storage.get_backend(chain_id).store_bytes(PATH + "/booklet_cover.png", decode_base64(set.booklet_base64))
 
     # No existence check for those, subsumed by the HQ ones.
@@ -96,7 +96,9 @@ async def mint_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
     bg.paste(image, mask=image.getchannel('A'))
     output = io.BytesIO()
     bg.convert('RGB').save(output, format='JPEG', quality=60)
-    file_storage.get_backend(chain_id).store_bytes(PATH + "/cover.jpg", output.getvalue())
+    preview_bytes = output.getvalue()
+    file_storage.get_backend(chain_id).store_bytes(PATH + "/cover.jpg", preview_bytes)
+    file_storage.store_set_preview(rid, preview_bytes)
 
     image = Image.open(io.BytesIO(decode_base64(set.booklet_base64)))
     # If there is a background color, presumably the image is not transparent,
@@ -129,9 +131,6 @@ async def mint_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
     theme_storage.get_backend(chain_id).backup_file(theme_storage.booklet_path())
 
     duck_collection_id = 3
-    # TODO move to validate
-    if f"{auction_theme}/{set.data['name']}" in booklet_spec:
-        raise HTTPException(status_code=400, detail="Booklet already exists")
     booklet_spec[f"{auction_theme}/{set.data['name']}"] = hex(duck_collection_id + 2**192 * serial)
     # TODO check properly serial
     theme_storage.get_backend(chain_id).store_json(theme_storage.booklet_path(), booklet_spec)
@@ -148,7 +147,7 @@ async def generate_data(set: NewNFTRequest, chain_id: str, auction_theme: str):
         briqs=set.data["briqs"],
     )
     if set.background_color:
-        metadata["backgroundColor"] = set.background_color
+        metadata["background_color"] = set.background_color
         # Check format matches 6 hex values without preceding #
         if not re.match(r"^[0-9a-fA-F]{6}$", set.background_color):
             raise HTTPException(status_code=400, detail="Invalid background color")
@@ -174,6 +173,8 @@ async def generate_data(set: NewNFTRequest, chain_id: str, auction_theme: str):
 
     serial = len(booklets) + 1
 
+    run_validation(set, chain_id, auction_theme)
+
     @dataclass
     class Output:
         serial: int
@@ -183,13 +184,31 @@ async def generate_data(set: NewNFTRequest, chain_id: str, auction_theme: str):
     return Output(metadata=metadata, booklet_metadata=booklet_metadata, serial=serial)
 
 
+def run_validation(set: NewNFTRequest, chain_id: str, auction_theme: str):
+    # TODO move to validate
+    booklet_spec = theme_storage.get_booklet_spec(chain_id)
+    if f"{auction_theme}/{set.data['name']}" in booklet_spec:
+        raise HTTPException(status_code=400, detail="Booklet already exists")
+
+    if file_storage.get_backend(chain_id).has_path(f"sets/{chain_id}/{set.token_id}_metadata.json"):
+        raise HTTPException(status_code=400, detail="Set JSON already exists")
+
+    PATH = f"genesis_themes/{auction_theme}/{set.data['name']}"
+    if file_storage.get_backend(chain_id).has_path(PATH + "/metadata_booklet.json"):
+        raise HTTPException(status_code=400, detail="Booklet already exists")
+    if file_storage.get_backend(chain_id).has_path(PATH + "/cover.png"):
+        raise HTTPException(status_code=400, detail="Cover already exists")
+    if file_storage.get_backend(chain_id).has_path(PATH + "/booklet_cover.png"):
+        raise HTTPException(status_code=400, detail="Booklet cover already exists")
+
+
 from starkware.starknet.compiler.compile import compile_starknet_files
 from briq_protocol.generate_shape import generate_shape_code
 from briq_protocol.shape_utils import compress_shape_item
 import briq_protocol
 from starkware.starknet.core.os.class_hash import compute_class_hash
 
-def compile_shape_contract(data: BriqData):
+def compile_shape_contract(serial_num: int, data: BriqData):
     shape_data = []
     for briq in data.briqs:
         int_mat = int(briq['data']['material'], 16)
@@ -202,8 +221,16 @@ def compile_shape_contract(data: BriqData):
         with open(os.path.join(tmpdirname, "contracts/shape/data_ducks.cairo"), "w") as f:
             f.write(data_code)
         path = os.path.dirname(briq_protocol.__file__)
+        with open(os.path.join(path, "contracts/shape/shape_store_ducks.cairo"), "r") as f:
+            shape_store = f.read()
+        with open(os.path.join(tmpdirname, "contracts/shape/shape_store_ducks.cairo"), "w") as f:
+            # robust AF
+            f.write(shape_store.replace(
+                '(global_index - DUCKS_COLLECTION) / (2 ** 192) - 1',
+                f'(global_index - DUCKS_COLLECTION) / (2 ** 192) - {serial_num}')
+            )
         compile = compile_starknet_files(
-            files=[os.path.join(path, "contracts/shape/shape_store_ducks.cairo")],
+            files=[os.path.join(tmpdirname, "contracts/shape/shape_store_ducks.cairo")],
             cairo_path=[tmpdirname, path],
             debug_info=False,
             disable_hint_validation=False

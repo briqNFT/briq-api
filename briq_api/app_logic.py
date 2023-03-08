@@ -56,7 +56,7 @@ async def trigger_hook_once_complete(set: StoreSetRequest):
                 "token_id": set.token_id,
                 "minter": set.owner,
                 "name": set.data["name"],
-                "backgroundColor": set.data["background_color"],
+                "background_color": set.data["background_color"],
                 "image": set.data["image"],
                 "external_url": set.data["external_url"],
                 "animation_url": set.data["animation_url"],
