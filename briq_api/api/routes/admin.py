@@ -147,7 +147,10 @@ async def mint_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
 
 
 async def check_signature(owner: str, token_id: str, signature: Tuple[int, int]):
-    if int(owner, 16) not in {0x069cfa382ea9d2e81aea2d868b0dd372f70f523fa49a765f4da320f38f9343b3}:
+    if int(owner, 16) not in {
+        0x069cfa382ea9d2e81aea2d868b0dd372f70f523fa49a765f4da320f38f9343b3,
+        0x059df66Af2E0E350842b11eA6b5a903b94640C4ff0418b04cCedCC320f531a08
+    }:
         raise HTTPException(status_code=400, detail="You are not authorized to call this function")
 
     contract = await Contract.from_address(
