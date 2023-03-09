@@ -18,6 +18,9 @@ def ExceptionWrapperRoute(logger):
                     logger.warning("No backend found for network %(network)s", {"network": e.chain_id}, exc_info=e)
                 except FileNotFoundError as e:
                     logger.warning("File not found", exc_info=e)
+                except HTTPException as e:
+                    logger.error(e, exc_info=e)
+                    raise e
                 except Exception as e:
                     logger.error(e, exc_info=e)
                 raise HTTPException(status_code=500, detail="Data could not be returned.")
