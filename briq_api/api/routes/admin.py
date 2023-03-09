@@ -1,5 +1,6 @@
 import base64
 import io
+import json
 import logging
 import os
 import re
@@ -11,7 +12,7 @@ from fastapi import APIRouter, HTTPException
 from pathlib import Path
 from PIL import Image
 from pydantic import BaseModel
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 from briq_api.api.theme import list_booklets_of_theme
 from briq_api.set_identifier import SetRID
@@ -29,11 +30,16 @@ router = APIRouter(route_class=ExceptionWrapperRoute(logger))
 class NewNFTRequest(BaseModel):
     token_id: str
     data: dict[str, Any]
+    owner: str
+    signature: Tuple[int, int]
     preview_base64: bytes
     booklet_base64: bytes
     background_color: Optional[str] = None
 
-
+from starknet_py.contract import Contract
+from starknet_py.net.gateway_client import GatewayClient
+from starknet_py.utils.typed_data import TypedData
+from starknet_py.net.models import StarknetChainId
 @router.post("/admin/{chain_id}/{auction_theme}/validate_new_nft")
 async def validate_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
     if auction_theme != "ducks_everywhere":
@@ -41,6 +47,8 @@ async def validate_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str
 
     # TODO:
     # - Check token_id is not already used
+
+    await check_signature(set.owner, set.token_id, set.signature)
 
     data = await generate_data(set, chain_id, auction_theme)
     serial, booklet_metadata, metadata = data.serial, data.booklet_metadata, data.metadata
@@ -75,6 +83,8 @@ async def compile_shape(cr: CompileRequest):
 async def mint_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
     if auction_theme != "ducks_everywhere":
         raise HTTPException(status_code=400, detail="Invalid auction theme")
+
+    await check_signature(set.owner, set.token_id, set.signature)
 
     data = await generate_data(set, chain_id, auction_theme)
     serial, booklet_metadata, metadata = data.serial, data.booklet_metadata, data.metadata
@@ -134,6 +144,50 @@ async def mint_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
     booklet_spec[f"{auction_theme}/{set.data['name']}"] = hex(duck_collection_id + 2**192 * serial)
     # TODO check properly serial
     theme_storage.get_backend(chain_id).store_json(theme_storage.booklet_path(), booklet_spec)
+
+
+async def check_signature(owner: str, token_id: str, signature: Tuple[int, int]):
+    if int(owner, 16) not in {0x069cfa382ea9d2e81aea2d868b0dd372f70f523fa49a765f4da320f38f9343b3}:
+        raise HTTPException(status_code=400, detail="You are not authorized to call this function")
+
+    contract = await Contract.from_address(
+        address=owner,
+        client=GatewayClient("testnet"),
+        proxy_config=True,
+    )
+
+    # Or if just a message hash is needed
+    data = TypedData.from_dict({
+        "types": {
+            "StarkNetDomain": [
+                {"name": 'name', "type": 'felt'},
+                {"name": 'version', "type": 'felt'},
+                {"name": 'chainId', "type": 'felt'},
+            ],
+            "Message": [
+                {
+                    "name": 'tokenId',
+                    "type": 'felt',
+                },
+            ],
+        },
+        "domain": {
+            "name": 'briq', "version": "1", "chainId": StarknetChainId.TESTNET.value
+        },
+        "primaryType": 'Message',
+        "message": {
+            "tokenId": int(token_id, 16),
+        },
+    })
+    message_hash = data.message_hash(int(owner, 16))
+    try:
+        (value,) = await contract.functions["is_valid_signature"].call(
+            message_hash, signature
+        )
+        if value != 1:
+            raise
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid signature")
 
 
 import concurrent.futures
