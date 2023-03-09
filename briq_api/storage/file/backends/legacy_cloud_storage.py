@@ -53,3 +53,9 @@ class LegacyCloudStorage(FileStorageBackend):
         logger.debug("Loading data from %s", path)
         path = path.replace(f'{legacy_chain_id}/', '')
         return self.bucket.blob(self.path + path).download_as_bytes()
+
+    def has_path(self, path: str) -> bool:
+        raise NotImplementedError()
+
+    def backup_file(self, path: str):
+        raise NotImplementedError()

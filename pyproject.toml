@@ -16,7 +16,7 @@ Pillow = "^9.0"
 pygltflib = "^1.15"
 apibara = { version = "^0.6.0", extras = ["indexer"] }
 numpy-vox-io = {git = "https://github.com/briqNFT/numpy-vox-io", rev = "master"}
-briq-protocol = {git = "ssh://git@github.com/briqNFT/briq-protocol-private", rev = "next"}
+briq-protocol = {git = "https://github.com/briqNFT/briq-protocol", rev = "main"}
 # uvicorn 0.17 requires websockets 10, but we have a conflict with some other dependency,
 # and that backtracks forever.
 uvicorn = {version = "0.15", extras = ["standard"]}
