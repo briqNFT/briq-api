@@ -23,19 +23,26 @@ logger = logging.getLogger(__name__)
 
 class ThemeStorage(StorageClient[FileStorageBackend]):
     _spec = {}
+    _memcache: dict[str, CacheData[dict[str, str]]] = {}
 
     def __init__(self) -> None:
         super().__init__()
+        # Decorate out of band so I can use self (so I can reset the cache).
+        # (this feels kinda horrible, but alternatives have bad tradeoffs as well)
+        # Guess I could just not reuse the cache decorator.
+        self.get_booklet_spec = CacheData.memory_cache(lambda chain_id: f'{chain_id}_booklet_spec', timeout=5 * 60, memcache=self._memcache)(self.get_booklet_spec)
 
     @staticmethod
     def booklet_path():
         return "genesis_themes/booklet_spec.json"
 
-    @CacheData.memory_cache(lambda _self, chain_id: f'{chain_id}_booklet_spec', timeout=5 * 60)
     def get_booklet_spec(self, chain_id: str) -> dict[str, str]:
         if chain_id not in self._spec:
             self._spec[chain_id] = self.get_backend(chain_id).load_json(self.booklet_path())
         return self._spec[chain_id]
+
+    def reset_cache(self):
+        self._memcache = {}
 
 
 @CacheData.memory_cache(lambda chain_id, theme_id: f'{chain_id}_{theme_id}_auction_json_data', timeout=5 * 60)

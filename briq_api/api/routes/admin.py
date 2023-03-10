@@ -150,6 +150,8 @@ async def mint_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
     booklet_spec[f"{auction_theme}/{set.data['name']}"] = hex(duck_collection_id + 2**192 * serial)
     # TODO check properly serial
     theme_storage.get_backend(chain_id).store_json(theme_storage.booklet_path(), booklet_spec)
+    # Reset the cache, otherwise for some time the old file keeps being used (it's cached)
+    theme_storage.reset_cache()
 
 
 async def check_signature(owner: str, token_id: str, signature: Tuple[int, int]):

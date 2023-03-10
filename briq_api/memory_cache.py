@@ -14,21 +14,24 @@ class CacheData(Generic[T]):
     timeout: int
 
     @staticmethod
-    def memory_cache(cache_path: Callable[..., str], timeout: int) -> Callable[[Callable[..., T]], Callable[..., T]]:
-        memcache: dict[str, CacheData[T]] = {}
+    def memory_cache(cache_path: Callable[..., str], timeout: int, memcache=None) -> Callable[[Callable[..., T]], Callable[..., T]]:
+        if memcache is None:
+            _memcache: dict[str, CacheData[T]] = {}
+        else:
+            _memcache = memcache
 
         def wrapper2(f: Callable[..., T]) -> Callable[..., T]:
             def wrapper(*args, **kwargs) -> T:
                 c_p = cache_path(*args, **kwargs)
                 try:
-                    cache_data = memcache[c_p]
+                    cache_data = _memcache[c_p]
                     if cache_data.timeout > time():
                         return cache_data.data
                     else:
                         raise Exception('Cache expired')
                 except Exception:
                     data = f(*args, **kwargs)
-                    memcache[c_p] = CacheData(data=data, timeout=int(time()) + timeout)
+                    _memcache[c_p] = CacheData(data=data, timeout=int(time()) + timeout)
                     return data
             return wrapper
         return wrapper2
