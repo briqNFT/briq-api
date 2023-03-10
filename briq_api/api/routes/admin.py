@@ -103,7 +103,10 @@ async def mint_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
     # If there is a background color, presumably the image is not transparent,
     # so it doesn't really matter if we paste it on a white background or not.
     bg = Image.new("RGBA", image.size, (255, 255, 255, 255))
-    bg.paste(image, mask=image.getchannel('A'))
+    try:
+        bg.paste(image, mask=image.getchannel('A'))
+    except:
+        bg.paste(image)
     output = io.BytesIO()
     bg.convert('RGB').save(output, format='JPEG', quality=60)
     preview_bytes = output.getvalue()
@@ -114,7 +117,10 @@ async def mint_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
     # If there is a background color, presumably the image is not transparent,
     # so it doesn't really matter if we paste it on a white background or not.
     bg = Image.new("RGBA", image.size, (255, 255, 255, 255))
-    bg.paste(image, mask=image.getchannel('A'))
+    try:
+        bg.paste(image, mask=image.getchannel('A'))
+    except:
+        bg.paste(image)
     output = io.BytesIO()
     bg.convert('RGB').save(output, format='JPEG', quality=50)
     file_storage.get_backend(chain_id).store_bytes(PATH + "/booklet_cover.jpg", output.getvalue())
