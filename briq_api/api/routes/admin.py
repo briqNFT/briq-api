@@ -63,10 +63,15 @@ async def validate_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str
 class CompileRequest(BaseModel):
     data: dict[str, Any]
     serial_number: int
+    owner: str
+    signature: Tuple[int, int]
+    token_id: str
 
 
 @router.post("/admin/{chain_id}/{auction_theme}/compile_shape")
 async def compile_shape(cr: CompileRequest):
+    await check_signature(cr.owner, cr.token_id, cr.signature)
+
     data = BriqData()
     data.load(cr.data)
 
@@ -158,7 +163,8 @@ async def mint_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
 async def check_signature(owner: str, token_id: str, signature: Tuple[int, int]):
     if int(owner, 16) not in {
         0x069cfa382ea9d2e81aea2d868b0dd372f70f523fa49a765f4da320f38f9343b3,
-        0x059df66Af2E0E350842b11eA6b5a903b94640C4ff0418b04cCedCC320f531a08
+        0x059df66Af2E0E350842b11eA6b5a903b94640C4ff0418b04cCedCC320f531a08,
+        0x03eF5B02BCC5D30F3f0d35D55f365E6388fE9501ECA216cb1596940Bf41083E2
     }:
         raise HTTPException(status_code=400, detail="You are not authorized to call this function")
 
