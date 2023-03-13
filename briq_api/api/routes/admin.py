@@ -151,6 +151,7 @@ async def mint_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
     # TODO check properly serial
     theme_storage.get_backend(chain_id).store_json(theme_storage.booklet_path(), booklet_spec)
     # Reset the cache, otherwise for some time the old file keeps being used (it's cached)
+    # NB -> if there are several instances of the API, this won't clear all of them.
     theme_storage.reset_cache()
 
 

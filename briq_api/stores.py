@@ -42,7 +42,7 @@ class ThemeStorage(StorageClient[FileStorageBackend]):
         return self._spec[chain_id]
 
     def reset_cache(self):
-        self._memcache = {}
+        self._memcache.clear()
 
 
 @CacheData.memory_cache(lambda chain_id, theme_id: f'{chain_id}_{theme_id}_auction_json_data', timeout=5 * 60)
