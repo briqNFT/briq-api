@@ -233,6 +233,7 @@ async def generate_data(set: NewNFTRequest, chain_id: str, auction_theme: str):
 
     booklet_metadata = create_booklet_metadata(
         theme_id=auction_theme,
+        booklet_id=set.data["name"],
         theme_name="Ducks Everywhere",
         theme_artist="OutSmth",
         theme_date=datetime.now().strftime("%Y-%m-%d"),

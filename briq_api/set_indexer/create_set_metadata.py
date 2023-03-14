@@ -24,6 +24,7 @@ def create_set_metadata(
 
 def create_booklet_metadata(
     theme_id: str,
+    booklet_id: str,
     theme_name: str,
     theme_artist: str,
     theme_date: str,
@@ -40,9 +41,9 @@ def create_booklet_metadata(
         "version": "1",
         "nb_pages": nb_steps,
         "steps_progress": step_progress_data,
-        "booklet_id": f"{theme_id}/{name}",
-        "image": f"https://api.briq.construction/v1/box/cover_booklet/{network}/{theme_id}/{name}.png",
-        "external_url": f"https://api.briq.construction/v1/booklet/pdf/{network}/{theme_id}/{name}.pdf",
+        "booklet_id": f"{theme_id}/{booklet_id}",
+        "image": f"https://api.briq.construction/v1/box/cover_booklet/{network}/{theme_id}/{booklet_id}.png",
+        "external_url": f"https://api.briq.construction/v1/booklet/pdf/{network}/{theme_id}/{booklet_id}.pdf",
         "properties": {
             "collections": {
                 "name": "Collections",
