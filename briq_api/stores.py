@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 
 
 class ThemeStorage(StorageClient[FileStorageBackend]):
-    _spec = {}
     _memcache: dict[str, CacheData[dict[str, str]]] = {}
 
     def __init__(self) -> None:
@@ -37,9 +36,7 @@ class ThemeStorage(StorageClient[FileStorageBackend]):
         return "genesis_themes/booklet_spec.json"
 
     def get_booklet_spec(self, chain_id: str) -> dict[str, str]:
-        if chain_id not in self._spec:
-            self._spec[chain_id] = self.get_backend(chain_id).load_json(self.booklet_path())
-        return self._spec[chain_id]
+        return self.get_backend(chain_id).load_json(self.booklet_path())
 
     def reset_cache(self):
         self._memcache.clear()
