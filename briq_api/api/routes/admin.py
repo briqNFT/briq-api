@@ -1,11 +1,11 @@
 import base64
 import io
-import json
 import logging
 import os
 import re
-import shutil
 import tempfile
+import concurrent.futures
+import asyncio
 from dataclasses import dataclass
 from datetime import datetime
 from fastapi import APIRouter, HTTPException
@@ -15,10 +15,15 @@ from pydantic import BaseModel
 from typing import Any, List, Optional, Tuple
 
 from briq_api.api.theme import list_booklets_of_theme
+from briq_api.chain.networks import get_gateway_client, get_network_metadata
 from briq_api.set_identifier import SetRID
 from briq_api.set_indexer.create_set_metadata import create_booklet_metadata, create_set_metadata
 from briq_api.stores import file_storage, theme_storage
 from briq_api.mesh.briq import BriqData
+
+from starknet_py.contract import Contract
+from starknet_py.utils.typed_data import TypedData
+
 
 from .common import ExceptionWrapperRoute
 
@@ -36,10 +41,7 @@ class NewNFTRequest(BaseModel):
     booklet_base64: bytes
     background_color: Optional[str] = None
 
-from starknet_py.contract import Contract
-from starknet_py.net.gateway_client import GatewayClient
-from starknet_py.utils.typed_data import TypedData
-from starknet_py.net.models import StarknetChainId
+
 @router.post("/admin/{chain_id}/{auction_theme}/validate_new_nft")
 async def validate_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
     if auction_theme != "ducks_everywhere":
@@ -48,7 +50,7 @@ async def validate_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str
     # TODO:
     # - Check token_id is not already used
 
-    await check_signature(set.owner, set.token_id, set.signature)
+    await check_signature(chain_id, set.owner, set.token_id, set.signature)
 
     data = await generate_data(set, chain_id, auction_theme)
     serial, booklet_metadata, metadata = data.serial, data.booklet_metadata, data.metadata
@@ -69,8 +71,8 @@ class CompileRequest(BaseModel):
 
 
 @router.post("/admin/{chain_id}/{auction_theme}/compile_shape")
-async def compile_shape(cr: CompileRequest):
-    await check_signature(cr.owner, cr.token_id, cr.signature)
+async def compile_shape(cr: CompileRequest, chain_id: str):
+    await check_signature(chain_id, cr.owner, cr.token_id, cr.signature)
 
     data = BriqData()
     data.load(cr.data)
@@ -89,7 +91,7 @@ async def mint_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
     if auction_theme != "ducks_everywhere":
         raise HTTPException(status_code=400, detail="Invalid auction theme")
 
-    await check_signature(set.owner, set.token_id, set.signature)
+    await check_signature(chain_id, set.owner, set.token_id, set.signature)
 
     data = await generate_data(set, chain_id, auction_theme)
     serial, booklet_metadata, metadata = data.serial, data.booklet_metadata, data.metadata
@@ -160,7 +162,7 @@ async def mint_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
     theme_storage.reset_cache()
 
 
-async def check_signature(owner: str, token_id: str, signature: Tuple[int, int]):
+async def check_signature(chain_id: str, owner: str, token_id: str, signature: Tuple[int, int]):
     if int(owner, 16) not in {
         0x069cfa382ea9d2e81aea2d868b0dd372f70f523fa49a765f4da320f38f9343b3,
         0x059df66Af2E0E350842b11eA6b5a903b94640C4ff0418b04cCedCC320f531a08,  # sylve
@@ -171,7 +173,7 @@ async def check_signature(owner: str, token_id: str, signature: Tuple[int, int])
 
     contract = await Contract.from_address(
         address=owner,
-        client=GatewayClient("testnet"),
+        client=get_gateway_client(chain_id),
         proxy_config=True,
     )
 
@@ -191,7 +193,7 @@ async def check_signature(owner: str, token_id: str, signature: Tuple[int, int])
             ],
         },
         "domain": {
-            "name": 'briq', "version": "1", "chainId": StarknetChainId.TESTNET.value
+            "name": 'briq', "version": "1", "chainId": get_network_metadata(chain_id).chain_id
         },
         "primaryType": 'Message',
         "message": {
@@ -209,8 +211,6 @@ async def check_signature(owner: str, token_id: str, signature: Tuple[int, int])
         raise HTTPException(status_code=400, detail="Invalid signature")
 
 
-import concurrent.futures
-import asyncio
 async def generate_data(set: NewNFTRequest, chain_id: str, auction_theme: str):
     metadata = create_set_metadata(
         token_id=set.token_id,
