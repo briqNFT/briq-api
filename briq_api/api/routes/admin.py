@@ -167,7 +167,7 @@ async def check_signature(chain_id: str, owner: str, token_id: str, signature: T
         if int(owner, 16) not in {
             0x03eF5B02BCC5D30F3f0d35D55f365E6388fE9501ECA216cb1596940Bf41083E2,
             0x059df66Af2E0E350842b11eA6b5a903b94640C4ff0418b04cCedCC320f531a08,
-            0x02ef9325a17d3ef302369fd049474bc30bfeb60f59cca149daa0a0b7bcc278f8
+            0x02ef9325a17d3ef302369fd049474bc30bfeb60f59cca149daa0a0b7bcc278f8  # OutSmth
         }:
             raise HTTPException(status_code=400, detail="You are not authorized to call this function")
     elif int(owner, 16) not in {
