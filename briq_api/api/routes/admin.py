@@ -178,11 +178,57 @@ async def check_signature(chain_id: str, owner: str, token_id: str, signature: T
     }:
         raise HTTPException(status_code=400, detail="You are not authorized to call this function")
 
-    contract = await Contract.from_address(
-        address=owner,
-        client=get_gateway_client(chain_id),
-        proxy_config=True,
-    )
+    contract = Contract(owner, [{
+            "name": "is_valid_signature",
+            "type": "function",
+            "inputs": [
+            {
+                "name": "hash",
+                "type": "felt"
+            },
+            {
+                "name": "signature_len",
+                "type": "felt"
+            },
+            {
+                "name": "signature",
+                "type": "felt*"
+            }
+            ],
+            "outputs": [
+            {
+                "name": "is_valid",
+                "type": "felt"
+            }
+            ],
+            "stateMutability": "view"
+        },
+        {
+            "name": "isValidSignature",
+            "type": "function",
+            "inputs": [
+            {
+                "name": "hash",
+                "type": "felt"
+            },
+            {
+                "name": "signature_len",
+                "type": "felt"
+            },
+            {
+                "name": "signature",
+                "type": "felt*"
+            }
+            ],
+            "outputs": [
+            {
+                "name": "isValid",
+                "type": "felt"
+            }
+            ],
+            "stateMutability": "view"
+        },
+    ], get_gateway_client(chain_id))
 
     # Or if just a message hash is needed
     data = TypedData.from_dict({
