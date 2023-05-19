@@ -40,6 +40,8 @@ spec:
         envFrom:
         - configMapRef:
             name: #@ data.values.name
+        - secretRef:
+            name: #@ data.values.name
         resources:
           requests:
             cpu: #@ data.values.resources.cpu

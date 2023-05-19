@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, HTTPException
 
 from .. import api
-from . import boxes, user, uri_route, forest, auctions as auctions_route, set as set_routes, theme, admin
+from . import boxes, user, uri_route, forest, auctions as auctions_route, set as set_routes, theme, admin, node
 
 from .common import ExceptionWrapperRoute
 
@@ -19,6 +19,7 @@ router.include_router(auctions_route.router, tags=["auctions"])
 router.include_router(set_routes.router, tags=["set"])
 router.include_router(theme.router, tags=["theme"])
 router.include_router(admin.router, tags=["admin"])
+router.include_router(node.router, tags=["node"])
 
 
 @router.head("/bids/user/{chain_id}/{user_id}")

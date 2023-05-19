@@ -23,6 +23,7 @@ uvicorn = {version = "0.15", extras = ["standard"]}
 requests = "^2.28.1"
 starknet-py = "0.14.0a0"
 typeguard="~2"
+aiohttp="^3.8"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.1.0"
