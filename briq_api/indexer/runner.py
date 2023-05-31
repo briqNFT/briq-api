@@ -10,7 +10,7 @@ from apibara.starknet import EventFilter, Filter, StarkNetIndexer, TransactionFi
 from apibara.starknet.cursor import starknet_cursor
 from apibara.starknet.proto.starknet_pb2 import Block
 
-from .config import NETWORK, INDEXER_ID, APIBARA_URL, MONGO_URL, MONGO_USERNAME, MONGO_PASSWORD, START_BLOCK
+from .config import AUTH_TOKEN, NETWORK, INDEXER_ID, APIBARA_URL, MONGO_URL, MONGO_USERNAME, MONGO_PASSWORD, START_BLOCK
 
 from .events.set import SetIndexer
 from .events.box import Erc1155Indexer
@@ -58,7 +58,8 @@ async def main():
     runner = IndexerRunner(
         config=IndexerRunnerConfiguration(
             stream_url=APIBARA_URL,
-            storage_url=f"mongodb://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_URL}"
+            storage_url=f"mongodb://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_URL}",
+            token=AUTH_TOKEN,
         ),
         reset_state=False,
         client_options=[

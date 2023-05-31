@@ -24,3 +24,5 @@ APIBARA_URL = os.getenv("APIBARA_URL") or {
 }[NETWORK_NAME]
 
 SET_INDEXER_URL = os.getenv("SET_INDEXER_URL")
+
+AUTH_TOKEN = os.getenv("APIBARA_AUTH_TOKEN")
