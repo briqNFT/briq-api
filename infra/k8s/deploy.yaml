@@ -146,6 +146,8 @@ spec:
         envFrom:
         - configMapRef:
             name: #@ data.values.name
+        - secretRef:
+            name: #@ data.values.name
         resources:
           requests:
             cpu: #@ data.values.indexer.resources.cpu_runner
@@ -189,6 +191,8 @@ spec:
         image: #@ "europe-west3-docker.pkg.dev/healthy-saga-329513/sltech-briq/" + data.values.image_name + ":" + data.values.image_tag
         envFrom:
         - configMapRef:
+            name: #@ data.values.name
+        - secretRef:
             name: #@ data.values.name
         env:
         - name: NETWORK_NAME
