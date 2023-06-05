@@ -34,7 +34,7 @@ class BriqIndexer(StarkNetIndexer):
         return IndexerConfiguration(
             filter=filters,
             starting_cursor=starknet_cursor(START_BLOCK),
-            finality=DataFinality.DATA_STATUS_ACCEPTED,
+            finality=DataFinality.DATA_STATUS_PENDING,
         )
 
     async def handle_data(self, info: Info[Any, Any], data: Block):
