@@ -14,7 +14,7 @@ router = APIRouter(route_class=ExceptionWrapperRoute(logger))
 alchemy_session = None
 alchemy_endpoint = {
     'starknet-testnet': "https://starknet-goerli.g.alchemy.com/v2/" + (os.getenv("ALCHEMY_API_KEY_TESTNET") or ""),
-    'starknet-mainnet': "https://starknet-goerli.g.alchemy.com/v2/" + (os.getenv("ALCHEMY_API_KEY_MAINNET") or "")
+    'starknet-mainnet': "https://starknet-mainnet.g.alchemy.com/v2/" + (os.getenv("ALCHEMY_API_KEY_MAINNET") or "")
 }
 
 @router.post("/node/{chain_id}/rpc")
