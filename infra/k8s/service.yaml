@@ -24,6 +24,8 @@ metadata:
   name: #@ data.values.name
   labels: #@ data.values.defaultLabels
 spec:
+  securityPolicy:
+    name: "default-policy"
   timeoutSec: 60
   healthCheck:
     checkIntervalSec: 10

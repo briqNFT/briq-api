@@ -264,6 +264,13 @@ spec:
     name: #@ data.values.name
   minReplicas: 1
   maxReplicas: 4
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 30
   metrics:
   - type: Resource
     resource:
