@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from dataclasses import dataclass
 from time import time
@@ -21,7 +22,20 @@ class CacheData(Generic[T]):
             _memcache = memcache
 
         def wrapper2(f: Callable[..., T]) -> Callable[..., T]:
-            def wrapper(*args, **kwargs) -> T:
+            async def wrapper(*args, **kwargs) -> T:
+                c_p = cache_path(*args, **kwargs)
+                try:
+                    cache_data = _memcache[c_p]
+                    if cache_data.timeout > time():
+                        return cache_data.data
+                    else:
+                        raise Exception('Cache expired')
+                except Exception:
+                    data = await f(*args, **kwargs)
+                    _memcache[c_p] = CacheData(data=data, timeout=int(time()) + timeout)
+                    return data
+
+            def sync_wrapper(*args, **kwargs) -> T:
                 c_p = cache_path(*args, **kwargs)
                 try:
                     cache_data = _memcache[c_p]
@@ -33,5 +47,6 @@ class CacheData(Generic[T]):
                     data = f(*args, **kwargs)
                     _memcache[c_p] = CacheData(data=data, timeout=int(time()) + timeout)
                     return data
-            return wrapper
+
+            return wrapper if asyncio.iscoroutinefunction(f) else sync_wrapper
         return wrapper2

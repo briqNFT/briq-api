@@ -20,6 +20,23 @@ alchemy_endpoint = {
 }
 
 
+@CacheData.memory_cache(lambda chain_id, _, tx_hash: f'{chain_id}_{tx_hash}_rpc_tx_data', timeout=30)
+async def get_rpc_tx_data(chain_id: str, data, tx_hash: str):
+    async with alchemy_session.post(alchemy_endpoint[chain_id], data=data) as response:
+        return await response.json()
+
+
+@CacheData.memory_cache(lambda chain_id, _: f'{chain_id}_rpc_chain_id', timeout=3600)
+async def get_rpc_chain_id(chain_id: str, data):
+    async with alchemy_session.post(alchemy_endpoint[chain_id], data=data) as response:
+        return await response.json()
+
+
+async def get_rpc_call(chain_id: str, data):
+    async with alchemy_session.post(alchemy_endpoint[chain_id], data=data) as response:
+        return await response.json()
+
+
 @router.post("/node/{chain_id}/rpc")
 async def post_rpc(chain_id: str, request: Request):
     body = await request.json()
@@ -28,6 +45,8 @@ async def post_rpc(chain_id: str, request: Request):
         tx_hash = body.get("params").get("transaction_hash")
         if len(tx_hash) < 3:
             raise HTTPException(status_code=400, detail="Invalid transaction hash")
+        return await get_rpc_tx_data(chain_id, await request.body(), tx_hash)
+
     elif body.get("method") == "starknet_call":
         block = body.get("params").get("block_id")
         if block != "latest":
@@ -39,11 +58,12 @@ async def post_rpc(chain_id: str, request: Request):
             "0x05b021b6743c4f420e20786baa7fb9add1d711302c267afbc171252a74687376",  # mainnet briq factory
         ]:
             raise HTTPException(status_code=400, detail="Invalid contract address")
-    elif body.get("method") != "starknet_chainId":
-        raise HTTPException(status_code=400, detail="Invalid method")
+        return await get_rpc_call(chain_id, await request.body())
 
-    async with alchemy_session.post(alchemy_endpoint[chain_id], data=await request.body()) as response:
-        return await response.json()
+    elif body.get("method") == "starknet_chainId":
+        return await get_rpc_chain_id(chain_id, await request.body())
+
+    raise HTTPException(status_code=400, detail="Invalid method")
 
 
 @router.on_event("startup")
