@@ -2,8 +2,10 @@ import logging
 import os
 import aiohttp
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from starlette.responses import JSONResponse
+
+from briq_api.memory_cache import CacheData
 
 from .common import ExceptionWrapperRoute
 
@@ -17,13 +19,31 @@ alchemy_endpoint = {
     'starknet-mainnet': "https://starknet-mainnet.g.alchemy.com/v2/" + (os.getenv("ALCHEMY_API_KEY_MAINNET") or "")
 }
 
+
 @router.post("/node/{chain_id}/rpc")
 async def post_rpc(chain_id: str, request: Request):
+    body = await request.json()
+
+    if body.get("method") == "starknet_getTransactionReceipt":
+        tx_hash = body.get("params").get("transaction_hash")
+        if len(tx_hash) < 3:
+            raise HTTPException(status_code=400, detail="Invalid transaction hash")
+    elif body.get("method") == "starknet_call":
+        block = body.get("params").get("block_id")
+        if block != "latest":
+            raise HTTPException(status_code=400, detail="Only latest block is supported")
+        contract_address = body.get("params").get("request").get("contract_address")
+        if contract_address not in [
+            "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",  # eth-usd contracts
+            "0x0011ff172f1a9f3af71e77ef67036e81dcdb4c4d294d74bf5440d0d4c6ae61b7",  # testnet briq factory
+            "0x05b021b6743c4f420e20786baa7fb9add1d711302c267afbc171252a74687376",  # mainnet briq factory
+        ]:
+            raise HTTPException(status_code=400, detail="Invalid contract address")
+    elif body.get("method") != "starknet_chainId":
+        raise HTTPException(status_code=400, detail="Invalid method")
+
     async with alchemy_session.post(alchemy_endpoint[chain_id], data=await request.body()) as response:
-        # Return with some minor caching, hoping the CDNs will lift some weight of our shoulders
-        return JSONResponse(await response.json(), headers={
-            "Cache-Control": f"public,max-age={60 * 2}"
-        })
+        return await response.json()
 
 
 @router.on_event("startup")
