@@ -32,8 +32,8 @@ async def get_rpc_chain_id(chain_id: str, data):
         return await response.json()
 
 
-@CacheData.memory_cache(lambda chain_id, _: f'{chain_id}_rpc_factory', timeout=60)
-async def get_rpc_call_factory(chain_id: str, data):
+@CacheData.memory_cache(lambda chain_id, _, entrypoint: f'{chain_id}_{entrypoint}_rpc_factory', timeout=60)
+async def get_rpc_call_factory(chain_id: str, data, entrypoint: str):
     async with alchemy_session.post(alchemy_endpoint[chain_id], data=data) as response:
         return await response.json()
 
@@ -65,7 +65,7 @@ async def post_rpc(chain_id: str, request: Request):
         ]:
             raise HTTPException(status_code=400, detail="Invalid contract address")
         if contract_address == '0x05b021b6743c4f420e20786baa7fb9add1d711302c267afbc171252a74687376':
-            return await get_rpc_call_factory(chain_id, await request.body())
+            return await get_rpc_call_factory(chain_id, await request.body(), body.get("params").get("request").get("entry_point_selector"))
         return await get_rpc_call(chain_id, await request.body())
 
     elif body.get("method") == "starknet_chainId":
