@@ -263,7 +263,7 @@ spec:
     kind: Deployment
     name: #@ data.values.name
   minReplicas: 1
-  maxReplicas: 4
+  maxReplicas: 8
   behavior:
     scaleUp:
       stabilizationWindowSeconds: 30
