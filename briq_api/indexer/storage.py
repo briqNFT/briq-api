@@ -22,7 +22,7 @@ class MongoBackend:
     def __init__(self, url=f"mongodb://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_URL}", db_name=INDEXER_ID.replace("-", "_")) -> None:
         # TODO: separate reader/writer urls.
         try:
-            self.mongo = MongoClient(url, serverSelectionTimeoutMS=3000)
+            self.mongo = MongoClient(url, serverSelectionTimeoutMS=3000, connectTimeoutMS=3000, timeoutMS=3000)
             self.db = self.mongo[db_name]
             logger.debug("MongoDB server information: \n%(mongo)s", {"mongo": self.mongo.server_info()})
         except:

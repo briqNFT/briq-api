@@ -54,7 +54,8 @@ spec:
             port: 5000
           initialDelaySeconds: 5
           periodSeconds: 10
-          failureThreshold: 2
+          failureThreshold: 3
+          timeoutSeconds: 30
 ---
 apiVersion: apps/v1
 kind: Deployment
