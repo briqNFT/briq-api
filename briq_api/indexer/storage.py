@@ -24,6 +24,10 @@ class MongoBackend:
         try:
             self.mongo = MongoClient(url, serverSelectionTimeoutMS=3000, connectTimeoutMS=3000, timeoutMS=3000)
             self.db = self.mongo[db_name]
+            self.db["briq_tokens"].create_index("owner")
+            self.db["set_tokens"].create_index("owner")
+            self.db["booklet_tokens"].create_index("owner")
+            self.db["box_tokens"].create_index("owner")
             logger.debug("MongoDB server information: \n%(mongo)s", {"mongo": self.mongo.server_info()})
         except:
             logger.info("Could not connect to a mongo DB instance for indexing data")
