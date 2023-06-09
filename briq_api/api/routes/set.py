@@ -18,11 +18,22 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(route_class=ExceptionWrapperRoute(logger))
 
+hidden_sets = {
+    hex(3237257010082882961400056035578317339222271916371075326396818103833724977152),
+    hex(2489739008863561988083186495972912854981196782375410526076829889144545083392),
+    '0x01435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672',
+    '0x01435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672'
+}
+
+
 @router.head("/metadata/{chain_id}/{token_id}")
 @router.head("/metadata/{chain_id}/{token_id}.json")
 @router.get("/metadata/{chain_id}/{token_id}")
 @router.get("/metadata/{chain_id}/{token_id}.json")
 async def metadata(chain_id: str, token_id: str):
+    if token_id in hidden_sets:
+        raise HTTPException(status_code=404, detail="Not found")
+
     rid = SetRID(chain_id=chain_id, token_id=token_id)
 
     output = api.get_metadata(rid)
@@ -43,9 +54,7 @@ async def metadata(chain_id: str, token_id: str):
 @router.get("/preview/{chain_id}/{token_id}")
 @router.get("/preview/{chain_id}/{token_id}.png")
 async def preview(chain_id: str, token_id: str):
-    # Remove those two sets which come from a scammer.
-    if int(token_id, 16) == 3237257010082882961400056035578317339222271916371075326396818103833724977152 \
-        or int(token_id, 16) == 2489739008863561988083186495972912854981196782375410526076829889144545083392:
+    if token_id in hidden_sets:
         raise HTTPException(status_code=404, detail="Not found")
 
     rid = SetRID(chain_id=chain_id, token_id=token_id)
@@ -59,6 +68,9 @@ async def preview(chain_id: str, token_id: str):
 @router.head("/set/{chain_id}/{token_id}/small_preview.jpg")
 @router.get("/set/{chain_id}/{token_id}/small_preview.jpg")
 async def get_small_preview(chain_id: str, token_id: str):
+    if token_id in hidden_sets:
+        raise HTTPException(status_code=404, detail="Not found")
+
     rid = SetRID(chain_id=chain_id, token_id=token_id)
 
     preview = api.get_small_preview(rid)
@@ -72,6 +84,9 @@ async def get_small_preview(chain_id: str, token_id: str):
 @router.head("/model/{chain_id}/{token_id}.{kind}")
 @router.get("/model/{chain_id}/{token_id}.{kind}")
 async def model(chain_id: str, token_id: str, kind: str):
+    if token_id in hidden_sets:
+        raise HTTPException(status_code=404, detail="Not found")
+
     mime_type = {
         "gltf": "model/gltf-binary",
         "glb": "model/gltf-binary",
