@@ -28,6 +28,8 @@ class MongoBackend:
             self.db["set_tokens"].create_index("owner")
             self.db["booklet_tokens"].create_index("owner")
             self.db["box_tokens"].create_index("owner")
+            self.db["briq_transfers"].create_index("token_id")
+            self.db["set_transfers"].create_index("token_id")
             logger.debug("MongoDB server information: \n%(mongo)s", {"mongo": self.mongo.server_info()})
         except:
             logger.info("Could not connect to a mongo DB instance for indexing data")
