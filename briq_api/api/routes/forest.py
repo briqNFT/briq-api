@@ -27,17 +27,17 @@ async def get_forest_data(chain_id: str):
             "Cache-Control": f"public,max-age={5*60}"
         })
 
-    trees = mongo_storage.get_backend(chain_id).db["booklet_tokens"].find({
+    trees = mongo_storage.get_backend(chain_id).async_db["booklet_tokens"].find({
         "token_id": ((2**192 * 10) + 1).to_bytes(32, "big"),
         "_chain.valid_to": None,
     })
     potential_sets = []
-    for tree in trees:
+    async for tree in trees:
         potential_sets.append(tree["owner"])
 
     out = {}
     for token_id in potential_sets:
-        actual_set = mongo_storage.get_backend(chain_id).db["set_tokens"].find_one({
+        actual_set = await mongo_storage.get_backend(chain_id).async_db["set_tokens"].find_one({
             "token_id": token_id,
             "_chain.valid_to": None,
         })

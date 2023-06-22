@@ -24,9 +24,9 @@ def cached_set_metadata(rid: SetRID):
     return file_storage.load_set_metadata(rid)
 
 
-def get_metadata(rid: SetRID):
+async def get_metadata(rid: SetRID):
     data = cached_set_metadata(rid)
-    data['created_at'] = mongo_storage.get_mint_date(rid.chain_id, 'set', int(rid.token_id, 16))
+    data['created_at'] = await mongo_storage.get_mint_date(rid.chain_id, 'set', int(rid.token_id, 16))
     data['attributes'] = [{
         "trait_type": "Number of briqs",
         "value": len(data['briqs'])
@@ -60,7 +60,7 @@ def get_metadata(rid: SetRID):
         }
         data.pop('collection_hint')
 
-    booklets = mongo_storage.get_user_nfts(rid.chain_id, rid.token_id, 'booklet')
+    booklets = await mongo_storage.get_user_nfts(rid.chain_id, rid.token_id, 'booklet')
     if len(booklets.nfts):
         data['booklet_id'] = get_booklet_id_from_token_id(rid.chain_id, booklets.nfts[0])
         booklet_meta = get_booklet_metadata(BoxRID(rid.chain_id, data['booklet_id'].split("/")[0], data['booklet_id'].split("/")[1]))
@@ -169,12 +169,12 @@ async def store_set(rid: SetRID, setData: dict, image_base64: bytes):
     file_storage.store_set_metadata(rid, setData)
 
 
-def get_user_bids(chain_id: str, user_id: str):
+async def get_user_bids(chain_id: str, user_id: str):
     try:
         encoded_user_id = int(user_id)
     except:
         encoded_user_id = int(user_id, 16)
-    data = mongo_storage.get_backend(chain_id).db["bids"].find({"bidder": encoded_user_id.to_bytes(32, "big"), "valid_to": None})
+    data = mongo_storage.get_backend(chain_id).async_db["bids"].find({"bidder": encoded_user_id.to_bytes(32, "big"), "valid_to": None})
     bids = [
         {
             "box_token_id": hex(int.from_bytes(item['box_token_id'], "big")),
@@ -185,14 +185,14 @@ def get_user_bids(chain_id: str, user_id: str):
             "block": item['_block'],
             "timestamp": item['_timestamp'],
         }
-        for item in data
+        async for item in data
     ]
     return bids
 
 
-def get_bids_for_box(chain_id: str, box_id: str):
+async def get_bids_for_box(chain_id: str, box_id: str):
     box_token_id = genesis_storage.get_box_token_id(chain_id, box_id)
-    data = mongo_storage.get_backend(chain_id).db["bids"].find({"box_token_id": box_token_id.to_bytes(32, "big"), "valid_to": None})
+    data = mongo_storage.get_backend(chain_id).async_db["bids"].find({"box_token_id": box_token_id.to_bytes(32, "big"), "valid_to": None})
     bids = [
         {
             "bidder": hex(int.from_bytes(item['bidder'], "big")),
@@ -202,15 +202,15 @@ def get_bids_for_box(chain_id: str, box_id: str):
             "block": item['_block'],
             "timestamp": item['_timestamp'],
         }
-        for item in data
+        async for item in data
     ]
     return bids
 
 
-def get_item_activity(item_type: str, chain_id: str, item: str):
+async def get_item_activity(item_type: str, chain_id: str, item: str):
     if item_type == 'box':
         token_id = int(genesis_storage.get_box_token_id(chain_id, item))
-        data = mongo_storage.get_backend(chain_id).db["box_transfers"].find({"token_id": token_id.to_bytes(32, "big")})
+        data = mongo_storage.get_backend(chain_id).async_db["box_transfers"].find({"token_id": token_id.to_bytes(32, "big")})
         return [
             {
                 "from": hex(int.from_bytes(item['from'], "big")),
@@ -219,11 +219,11 @@ def get_item_activity(item_type: str, chain_id: str, item: str):
                 "block": item['_block'],
                 "timestamp": item['_timestamp'],
             }
-            for item in data
+            async for item in data
         ]
     if item_type == 'booklet':
         token_id = int(get_booklet_token_id_from_id(chain_id, item), 16)
-        data = mongo_storage.get_backend(chain_id).db["booklet_transfers"].find({"token_id": token_id.to_bytes(32, "big")})
+        data = mongo_storage.get_backend(chain_id).async_db["booklet_transfers"].find({"token_id": token_id.to_bytes(32, "big")})
         return [
             {
                 "from": hex(int.from_bytes(item['from'], "big")),
@@ -232,11 +232,11 @@ def get_item_activity(item_type: str, chain_id: str, item: str):
                 "block": item['_block'],
                 "timestamp": item['_timestamp'],
             }
-            for item in data
+            async for item in data
         ]
     if item_type == 'set':
         token_id = int(item, 16)
-        data = mongo_storage.get_backend(chain_id).db["set_transfers"].find({"token_id": token_id.to_bytes(32, "big")})
+        data = mongo_storage.get_backend(chain_id).async_db["set_transfers"].find({"token_id": token_id.to_bytes(32, "big")})
         return [
             {
                 "from": hex(int.from_bytes(item['from'], "big")),
@@ -245,5 +245,5 @@ def get_item_activity(item_type: str, chain_id: str, item: str):
                 "block": item['_block'],
                 "timestamp": item['_timestamp'],
             }
-            for item in data
+            async for item in data
         ]

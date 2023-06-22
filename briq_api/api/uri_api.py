@@ -27,9 +27,9 @@ def booklet_uri(chain_id: str, token_id: str):
     return get_booklet_metadata(BoxRID(chain_id, *box_id))
 
 
-def set_uri(chain_id: str, token_id: str):
+async def set_uri(chain_id: str, token_id: str):
     if '0x' in token_id or '0X' in token_id:
         set_id = token_id
     else:
         set_id = hex(int(token_id))
-    return get_metadata(SetRID(chain_id=chain_id, token_id=set_id))
+    return await get_metadata(SetRID(chain_id=chain_id, token_id=set_id))

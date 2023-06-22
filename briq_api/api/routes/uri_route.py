@@ -53,6 +53,7 @@ async def uri_booklet(chain_id: str, token_id: str):
         "Cache-Control": f"public,max-age={2 * 60}"
     })
 
+
 @router.head("/uri/set/{chain_id}/{token_id}")
 @router.head("/uri/set/{chain_id}/{token_id}.json")
 @router.get("/uri/set/{chain_id}/{token_id}")
@@ -63,7 +64,7 @@ async def uri_set(chain_id: str, token_id: str):
         Note that token_id can be base 10 or base 16 (done for convenience on-chain).
     """
     try:
-        output = uri_api.set_uri(chain_id, token_id)
+        output = await uri_api.set_uri(chain_id, token_id)
         output['image'] = output['image'].replace('//preview', '/v1/preview')
         output['animation_url'] = output['animation_url'].replace('//model', '/v1/model')
         output['external_url'] = f'https://briq.construction/set/starknet-mainnet/{output["id"]}'

@@ -167,8 +167,3 @@ async def box_data(chain_id: str, theme_id: str, box_id: str):
         "Cache-Control": f"public,max-age={24 * 3600}"
     })
 
-
-@router.head("/box/get_transfer/{chain_id}/{theme_id}/{box_id}/{tx_hash}")
-@router.get("/box/get_transfer/{chain_id}/{theme_id}/{box_id}/{tx_hash}")
-async def get_box_transfer(chain_id: str, theme_id: str, box_id: str, tx_hash: str):
-    return boxes.get_box_transfer(rid=BoxRID(chain_id, theme_id, box_id), tx_hash=tx_hash)

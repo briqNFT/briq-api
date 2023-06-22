@@ -8,19 +8,19 @@ from briq_api.stores import get_auction_json_data
 logger = logging.getLogger(__name__)
 
 
-def get_theme_auction_data(chain_id: str, theme_id: str):
+async def get_theme_auction_data(chain_id: str, theme_id: str):
     if theme_id == 'ducks_everywhere':
         ducks_data = get_auction_json_data(chain_id, theme_id)
-        bid_data = mongo_storage.get_backend(chain_id).db['highest_bids_ducks'].find({
+        bid_data = mongo_storage.get_backend(chain_id).async_db['highest_bids_ducks'].find({
             "_chain.valid_to": None,
         })
         ret = {
             'lastBlock': 0,
             'data': ducks_data.copy()
         }
-        for bid in bid_data:
+        async for bid in bid_data:
             auction_id = str(int.from_bytes(bid['auction_id'], "big"))
-            if not auction_id in ret['data']:
+            if not (auction_id in ret['data']):
                 continue
             ret['data'][auction_id] = ret['data'][auction_id].copy()
             ret['data'][auction_id]['highest_bid'] = str(int.from_bytes(bid['bid'], "big"))
@@ -45,9 +45,9 @@ def get_theme_auction_data(chain_id: str, theme_id: str):
     }
 
 
-def get_auction_bids(chain_id: str, auction_theme: str, auction_id: str):
+async def get_auction_bids(chain_id: str, auction_theme: str, auction_id: str):
     if auction_theme == 'ducks_everywhere':
-        bids = mongo_storage.get_backend(chain_id).db['bids_ducks'].find({
+        bids = mongo_storage.get_backend(chain_id).async_db['bids_ducks'].find({
             "auction_id": int(auction_id).to_bytes(32, "big"),
             "_chain.valid_to": None,
         }).sort("_timestamp", -1)
@@ -59,19 +59,19 @@ def get_auction_bids(chain_id: str, auction_theme: str, auction_id: str):
                 'block': b['_block'],
                 'timestamp': b['_timestamp'],
             }
-            for b in bids
+            async for b in bids
         ]
     return []
 
 
-def get_user_bids(chain_id: str, auction_theme: str, user_id: str):
+async def get_user_bids(chain_id: str, auction_theme: str, user_id: str):
     if auction_theme == 'ducks_everywhere':
-        bid_data = mongo_storage.get_backend(chain_id).db['ducks_bids_per_user'].find({
+        bid_data = mongo_storage.get_backend(chain_id).async_db['ducks_bids_per_user'].find({
             "bidder": int(user_id, 16).to_bytes(32, "big"),
             "_chain.valid_to": None,
         })
         ret = {}
-        for bid in bid_data:
+        async for bid in bid_data:
             auction_id = int.from_bytes(bid['auction_id'], "big")
             ret[auction_id] = {
                 'bid_amount': str(int.from_bytes(bid['bid'], "big")),

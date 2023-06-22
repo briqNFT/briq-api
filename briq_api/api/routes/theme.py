@@ -93,7 +93,7 @@ async def get_box_saledata(chain_id: str, theme_id: str):
         return {}
     ret = {}
     for box in box_list:
-        ret[box] = boxes.get_box_saledata(rid=BoxRID(chain_id, theme_id, box.split('/')[1]))
+        ret[box] = await boxes.get_box_saledata(rid=BoxRID(chain_id, theme_id, box.split('/')[1]))
     # Turn off the caching client-side - this updates in real time
     return ret
 
@@ -119,11 +119,11 @@ async def get_data_for_all_sets(chain_id: str, theme_id: str):
     Return a limited, but sufficient, amount of data for all sets in a theme.
     TODO: paging would probably be a good idea in the mid-term future.
     """
-    sets = list_sets_of_theme(chain_id, theme_id)
+    sets = await list_sets_of_theme(chain_id, theme_id)
     out = {}
     for token_id in sets:
         rid = SetRID(chain_id=chain_id, token_id=token_id)
-        set_data = get_metadata(rid)
+        set_data = await get_metadata(rid)
         out[token_id] = {
             x: set_data[x] for x in ['id', 'name', 'description', 'image', 'created_at', 'booklet_id', 'background_color'] if x in set_data
         }
@@ -139,13 +139,13 @@ async def get_dynamic_data_for_all_sets(chain_id: str, theme_id: str):
     Returns dynamic data for all sets, e.g. current owner.
     TODO: paging would probably be a good idea in the mid-term future.
     """
-    sets = list_sets_of_theme(chain_id, theme_id)
-    owners = mongo_storage.get_backend(chain_id).db['set_tokens'].find({
+    sets = await list_sets_of_theme(chain_id, theme_id)
+    owners = mongo_storage.get_backend(chain_id).async_db['set_tokens'].find({
         'token_id': {"$in": [encode_int_as_bytes(int(token_id, 16)) for token_id in sets]},
         '_chain.valid_to': None
     })
     out = {}
-    for set_nft in owners:
+    async for set_nft in owners:
         out[hex(int.from_bytes(set_nft['token_id'], "big"))] = hex(int.from_bytes(set_nft['owner'], "big"))
 
     return JSONResponse(out, headers={

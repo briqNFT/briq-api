@@ -36,7 +36,7 @@ async def metadata(chain_id: str, token_id: str):
 
     rid = SetRID(chain_id=chain_id, token_id=token_id)
 
-    output = api.get_metadata(rid)
+    output = await api.get_metadata(rid)
     # Don't cache data if the set has no creation date, which means we haven't indexed it yet.
     cache_time = (24 * 3600) if output['created_at'] != -1 else 10
 
@@ -65,6 +65,7 @@ async def preview(chain_id: str, token_id: str):
         "Cache-Control": f"public,max-age={3600 * 24}"
     })
 
+
 @router.head("/set/{chain_id}/{token_id}/small_preview.jpg")
 @router.get("/set/{chain_id}/{token_id}/small_preview.jpg")
 async def get_small_preview(chain_id: str, token_id: str):
@@ -78,7 +79,6 @@ async def get_small_preview(chain_id: str, token_id: str):
     return StreamingResponse(io.BytesIO(preview), media_type="image/png", headers={
         "Cache-Control": f"public,max-age={3600 * 24}"
     })
-
 
 
 @router.head("/model/{chain_id}/{token_id}.{kind}")
@@ -99,7 +99,7 @@ async def model(chain_id: str, token_id: str, kind: str):
     try:
         data = api.get_model(rid, kind)
     except (NotFoundException, OSError):
-        metadata = api.get_metadata(rid)
+        metadata = await api.get_metadata(rid)
         data = api.create_model(metadata, kind)
         api.store_model(rid, kind, data)
         logger.info("Created %(type)s model for %(rid)s on the fly.", {"type": kind, "rid": rid.json()})

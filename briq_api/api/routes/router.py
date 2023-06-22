@@ -25,18 +25,14 @@ router.include_router(node.router, tags=["node"])
 @router.head("/bids/user/{chain_id}/{user_id}")
 @router.get("/bids/user/{chain_id}/{user_id}")
 async def get_user_bids(chain_id: str, user_id: str):
-    output = api.get_user_bids(chain_id, user_id)
-
-    return output
+    return await api.get_user_bids(chain_id, user_id)
 
 
 @router.head("/bids/box/{chain_id}/{theme_name}/{box_name}")
 @router.get("/bids/box/{chain_id}/{theme_name}/{box_name}")
 async def get_bids_for_box(chain_id: str, theme_name: str, box_name: str):
     box_id = f"{theme_name}/{box_name}"
-    output = api.get_bids_for_box(chain_id, box_id)
-
-    return output
+    return await api.get_bids_for_box(chain_id, box_id)
 
 
 @router.head("/activity/set/{chain_id}/{set_id}")
@@ -56,7 +52,7 @@ async def get_item_activity(item_type: str, chain_id: str, item: str):
         raise HTTPException(status_code=400, detail="Item type is invalid")
 
     try:
-        output = api.get_item_activity(item_type, chain_id, item)
+        output = await api.get_item_activity(item_type, chain_id, item)
     except Exception as e:
         logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="Could not get item activity")
