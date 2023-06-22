@@ -73,6 +73,7 @@ spec:
         _: #@ template.replace(data.values.defaultLabels)
         deployname: #@ data.values.indexer.name
     spec:
+      serviceAccountName: #@ data.values.service_account
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -88,7 +89,6 @@ spec:
                 values:
                 - release_surge
       containers:
-      #@ # This should match configuration.toml -> TODO do this automagically
       - name: "mongo"
         image: #@ data.values.indexer.image_store
         ports:
@@ -102,14 +102,32 @@ spec:
         resources:
           requests:
             cpu: #@ data.values.indexer.resources.cpu_store
-            memory: #@ data.values.indexer.resources.memory_store 
-        #@ # livenessProbe:
-        #@ #   httpGet:
-        #@ #     path: /health
-        #@ #     port: 5000
-        #@ #   initialDelaySeconds: 5
-        #@ #   periodSeconds: 10
-        #@ #   failureThreshold: 2
+            memory: #@ data.values.indexer.resources.memory_store
+      - name: "sidecar"
+        image: #@ "europe-west3-docker.pkg.dev/healthy-saga-329513/sltech-briq/" + data.values.image_name + ":" + data.values.image_tag
+        command: ['/bin/sh', '-c']
+        args:
+          - wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2004-x86_64-100.7.2.deb;
+            apt install ./mongodb-database-tools-ubuntu2004-x86_64-100.7.2.deb;
+            uvicorn briq_api.indexer.backups:app --host 0.0.0.0 --port 8080;
+        ports:
+        - containerPort: 8080
+          name: "sidecar"
+        envFrom:
+        - configMapRef:
+            name: #@ data.values.name
+        resources:
+          requests:
+            cpu: 50m
+            memory: 100Mi
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 10
 ---
 apiVersion: apps/v1
 kind: Deployment
