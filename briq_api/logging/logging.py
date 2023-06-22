@@ -6,7 +6,7 @@ class CustomLoggingFormatter(logging.Formatter):
     def __init__(self):
         super(CustomLoggingFormatter, self).__init__()
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord):
         record.message = record.getMessage()
         input_data = {
             "time": datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -18,6 +18,9 @@ class CustomLoggingFormatter(logging.Formatter):
             input_data['exc_info'] = self.formatException(record.exc_info)
         if record.stack_info is not None:
             input_data['stack_info'] = self.formatStack(record.stack_info)
+
+        if hasattr(record, 'request_url'):
+            input_data['request_url'] = record.request_url
 
         if isinstance(record.args, dict):
             for key in record.args:
