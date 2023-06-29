@@ -25,12 +25,13 @@ router = APIRouter(route_class=ExceptionWrapperRoute(logger))
 @router.get("/{chain_id}/{theme_id}/{quality}/cover.jpg")
 async def get_theme_cover(chain_id: str, theme_id: str, quality: str):
     data = boxes.get_theme_data(chain_id, theme_id)
-    if data['sale_start'] is None or data['sale_start'] > time.time():
+    is_post_launch = data['sale_start'] is None or data['sale_start'] > time.time()
+    if not is_post_launch:
         output = boxes.box_storage.theme_cover_prelaunch(chain_id, theme_id, quality)
     else:
         output = boxes.box_storage.theme_cover_postlaunch(chain_id, theme_id, quality)
     return StreamingResponse(io.BytesIO(output), media_type="image/jpeg", headers={
-        "Cache-Control": f"public,max-age={60 * 5}"
+        "Cache-Control": f"public,max-age={60 * (60 * 24 * 7 if is_post_launch else 5)}"
     })
 
 
