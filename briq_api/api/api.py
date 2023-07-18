@@ -59,15 +59,29 @@ async def get_metadata(rid: SetRID):
             "value": ["briq POAPs"]
         }
         data.pop('collection_hint')
-
-    booklets = await mongo_storage.get_user_nfts(rid.chain_id, rid.token_id, 'booklet')
-    if len(booklets.nfts):
-        data['booklet_id'] = get_booklet_id_from_token_id(rid.chain_id, booklets.nfts[0])
-        booklet_meta = get_booklet_metadata(BoxRID(rid.chain_id, data['booklet_id'].split("/")[0], data['booklet_id'].split("/")[1]))
-        data['attributes'] += booklet_meta['attributes']
-        for prop in booklet_meta['properties']:
-            if not (prop in data['properties']):
-                data['properties'][prop] = booklet_meta['properties'][prop]
+    elif 'collection_hint' in data and data['collection_hint'] == 'unframed':
+        data['attributes'].append({
+            "trait_type": "Collections",
+            "value": ["Ducks Everywhere x Unframed"],
+        })
+        data['attributes'].append({
+            "trait_type": "Ducks Everywhere x Unframed",
+            "value": True,
+        })
+        data['properties']['collections'] = {
+            "name": "Collections",
+            "value": ["Ducks Everywhere x Unframed"]
+        }
+        data.pop('collection_hint')
+    else:
+        booklets = await mongo_storage.get_user_nfts(rid.chain_id, rid.token_id, 'booklet')
+        if len(booklets.nfts):
+            data['booklet_id'] = get_booklet_id_from_token_id(rid.chain_id, booklets.nfts[0])
+            booklet_meta = get_booklet_metadata(BoxRID(rid.chain_id, data['booklet_id'].split("/")[0], data['booklet_id'].split("/")[1]))
+            data['attributes'] += booklet_meta['attributes']
+            for prop in booklet_meta['properties']:
+                if not (prop in data['properties']):
+                    data['properties'][prop] = booklet_meta['properties'][prop]
     return data
 
 
