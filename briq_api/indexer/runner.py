@@ -5,6 +5,7 @@ from typing import Any
 from apibara.indexer import IndexerRunnerConfiguration
 from apibara.indexer import IndexerRunner, IndexerRunnerConfiguration, Info
 from apibara.indexer.indexer import IndexerConfiguration, Reconnect
+from apibara.indexer.info import Info
 from apibara.protocol.proto.stream_pb2 import Cursor, DataFinality
 from apibara.starknet import EventFilter, Filter, StarkNetIndexer, TransactionFilter
 from apibara.starknet.cursor import starknet_cursor
@@ -48,9 +49,13 @@ class BriqIndexer(StarkNetIndexer):
         await booklet_indexer.process_transfers(data, info)
         await briq_indexer.process_transfers(data, info)
 
+    async def handle_pending_data(self, info: Info[Any, Filter], data: Block):
+        # TODO
+        pass
+
     # Temporarily override this to help with k8s crashing issues.
     async def handle_reconnect(self, exc: Exception, retry_count: int) -> Reconnect:
-        await asyncio.sleep(min(10, retry_count))
+        await asyncio.sleep(min(30, retry_count * 5))
         return Reconnect(reconnect=retry_count < 20)
 
 
