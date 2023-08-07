@@ -14,9 +14,9 @@ class CustomLoggingFormatter(logging.Formatter):
             "message": record.message,
             "name": record.name,
         }
-        if record.exc_info is not None:
+        if record.exc_info:
             input_data['exc_info'] = self.formatException(record.exc_info)
-        if record.stack_info is not None:
+        if record.stack_info:
             input_data['stack_info'] = self.formatStack(record.stack_info)
 
         if hasattr(record, 'request_url'):
