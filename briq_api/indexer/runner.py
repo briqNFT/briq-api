@@ -25,6 +25,8 @@ briq_indexer = Erc1155Indexer("briq", NETWORK.briq_address)
 
 
 class BriqIndexer(StarkNetIndexer):
+    last_block = -1
+
     def indexer_id(self) -> str:
         return INDEXER_ID
 
@@ -39,10 +41,16 @@ class BriqIndexer(StarkNetIndexer):
         )
 
     async def handle_data(self, info: Info[Any, Any], data: Block):
+        if data.header.block_number == self.last_block:
+            logger.warning("Skipping double-received block %(block_number)s", {
+                'block_number': data.header.block_number,
+            })
+            return
         logger.info("Handle block events: Block No. %(block_number)s - %(block_time)s", {
             'block_number': data.header.block_number,
             'block_time': data.header.timestamp.ToDatetime().isoformat(),
         })
+        self.last_block = data.header.block_number
 
         await set_indexer.process_transfers(data, info)
         await box_indexer.process_transfers(data, info)
