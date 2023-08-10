@@ -137,6 +137,8 @@ metadata:
   labels: #@ data.values.defaultLabels
 spec:
   replicas: 1
+  strategy:
+    type: "Recreate"
   selector:
     matchLabels:
       deployname: #@ data.values.indexer.name + "-runner"
@@ -182,7 +184,9 @@ metadata:
   name: #@ data.values.indexer.name + "-mn-runner"
   labels: #@ data.values.defaultLabels
 spec:
-  replicas: 1
+  replicas: 0
+  strategy:
+    type: "Recreate"
   selector:
     matchLabels:
       deployname: #@ data.values.indexer.name + "-mn-runner"
