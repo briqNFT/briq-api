@@ -32,11 +32,11 @@ TESTNET = NetworkMetadata(
     chain_id=StarknetChainId.TESTNET.value,
     auction_address="0x033f840d4f7bfa20aaa128e5a69157355478d33182bea6039d55aae3ffb861e2",
     auction_ducks="0x04ef0bd475fb101cc1b5dc2c4fc9d11b4fa233cfa1876924ec84b2f3dcf32f75",
-    box_address="0x003b51e657e236e7085d1006e8ae6f955f09793b7f6dbdfad7a1a8abadad464a",
-    briq_address="0x06f18ebcc76b6bd3560da141aeae53f9af3d80c2001415c963ecddbba4e8ba12",
-    booklet_address="0x05646ae11383a9994f958ee9cb29b3cf720b994733100ef7b8a00d6adcbe1c42",
-    attributes_registry_address="0x05d660cb7354bbce7d6ce3861136098eb2ebf8af629f4ea0cc450ca546002d40",
-    set_address="0x05f9e1c4975b0f71f0b1af2b837166d321af1cdba5c30c09b0d4822b493f1347",
+    box_address="0x043bafcb15f12c137229406f96735eba51018fe75e5330058479556bc77dfd94",
+    briq_address="0x0068eb19445f96b3c3775fba757de89ee8f44fda42dc08173a501acacd97853f",
+    booklet_address="0x018734a90e5df97235c0ff83f92174cf6f16ad3ec572e38e2e146e47c8878839",
+    attributes_registry_address="0x06a780187cfd58ad6ce1279cb4291bcf4f8acb2806dc1dccc9aee8183a9c1c40",
+    set_address="0x038bf557306ab58c7e2099036b00538b51b37bdad3b8abc31220001fb5139365",
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
 )
 
