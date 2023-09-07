@@ -23,6 +23,6 @@ indexer:
   network_name: 'starknet-mainnet'
   resources:
     cpu_store: "250m"
-    memory_store: "256Mi"
+    memory_store: "512Mi"
     cpu_runner: "100m"
     memory_runner: "128Mi"
