@@ -105,7 +105,7 @@ spec:
             memory: #@ data.values.indexer.resources.memory_store
       - name: "sidecar"
       #@ # Hardcoded to avoid recreating the pods on new deployments.
-        image: "europe-west3-docker.pkg.dev/healthy-saga-329513/sltech-briq/briq-api:a3733b43b17a2fc291aaf38e53ce3efb91c56aa3"
+        image: "europe-west3-docker.pkg.dev/healthy-saga-329513/sltech-briq/briq-api:df831f881988d4d8001c817ea341fcf9ec9a874f"
         command: ['/bin/sh', '-c']
         args:
           - wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2004-x86_64-100.7.2.deb;
