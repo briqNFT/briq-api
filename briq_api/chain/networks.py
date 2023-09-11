@@ -16,6 +16,7 @@ class NetworkMetadata:
     set_address: str = ''
     erc20_address: str = ''
     attributes_registry_address: str = ''
+    world_address: str = ''
 
 
 DEVNET = NetworkMetadata(
@@ -43,6 +44,8 @@ TESTNET = NetworkMetadata(
 TESTNET_DOJO = NetworkMetadata(
     id="starknet-testnet-dojo",
     storage_bucket="briq-bucket-test-1",
+
+    world_address="0x2bef66bac33c7c8a668049a870b9795a468800ec54e398d592fd84f831ae2c",
 
     briq_address="0x251cd76d4f31f1c0a1a719a315d524a6338697120e5bede50bc7949819c93e5",
     set_address="0x43045108736ec538ac6a4f57ea6da423ad18787eb2da8c7d644a91b4ebd5cc4",
