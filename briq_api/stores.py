@@ -3,7 +3,7 @@ import os
 
 from briq_api.config import ENV
 
-from .chain.networks import MAINNET, TESTNET, TESTNET_LEGACY
+from .chain.networks import MAINNET, TESTNET, TESTNET_DOJO, TESTNET_LEGACY
 
 from briq_api.genesis_data.genesis_storage import GenesisStorage
 from briq_api.storage.file.backends.cloud_storage import CloudStorage
@@ -68,8 +68,10 @@ def setup_stores(local: bool, use_mock_chain: bool):
         if ENV != 'prod':
             cloud_storage = CloudStorage(os.getenv("CLOUD_STORAGE_BUCKET") or 'briq-bucket-test-1')
             file_storage.connect_for_chain(TESTNET.id, backend=cloud_storage)
+            file_storage.connect_for_chain(TESTNET_DOJO.id, backend=cloud_storage)
             file_storage.connect_for_chain(MAINNET.id, backend=cloud_storage)
             theme_storage.connect_for_chain(TESTNET.id, backend=cloud_storage)
+            theme_storage.connect_for_chain(TESTNET_DOJO.id, backend=cloud_storage)
             theme_storage.connect_for_chain(MAINNET.id, backend=cloud_storage)
         else:
             cloud_storage = CloudStorage(MAINNET.storage_bucket)
@@ -78,6 +80,7 @@ def setup_stores(local: bool, use_mock_chain: bool):
 
         if ENV != 'prod':
             mongo_storage.connect_for_chain(TESTNET.id, MongoBackend())
+            mongo_storage.connect_for_chain(TESTNET_DOJO.id, MongoBackend(db_name="dojo_0"))
             mongo_storage.connect_for_chain(MAINNET.id, MongoBackend(db_name=INDEXER_ID.replace('-', '_') + '_mn'))
         else:
             mongo_storage.connect_for_chain(MAINNET.id, MongoBackend())
@@ -95,6 +98,7 @@ def setup_stores(local: bool, use_mock_chain: bool):
         # TODO: change this
         genesis_storage.connect(FileStorage("briq_api/genesis_data/localhost/"))
         mongo_storage.connect(MongoBackend())
+        mongo_storage.connect_for_chain(TESTNET_DOJO.id, MongoBackend(db_name="dojo_0"))
 
     if use_mock_chain:
         logger.info("Connecting for mock chain.")

@@ -40,15 +40,18 @@ TESTNET = NetworkMetadata(
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
 )
 
-TESTNET_2 = NetworkMetadata(
-    id="starknet-testnet2",
+TESTNET_DOJO = NetworkMetadata(
+    id="starknet-testnet-dojo",
     storage_bucket="briq-bucket-test-1",
-    auction_address="0x006fbea980d2acb5c63ad97637f6d7f3fa18887e3ad987abbd9eb594a58c0291",
-    box_address="0x0799b964cd6a32611fbd589ebae040ad18715ae5cd9b1a42226bb0b1db48c631",
-    briq_address="0x029e1fb93825a116daf88902c8bbf1a386890e6a5cf7906b584a1e70e7023e28",
-    booklet_address="0x048891a90426d468603732453afa919f280a3bc61a9ef246519eec87760aad76",
-    attributes_registry_address="0x0504b76a068732bf5791a826fb37d3de5ebcafbbcecce27532b27245cc8e7563",
-    set_address="0x065ee60db9e38ecdf4afb9e070466b81984ffbcd06bc8650b1a21133310255c8",
+
+    briq_address="0x251cd76d4f31f1c0a1a719a315d524a6338697120e5bede50bc7949819c93e5",
+    set_address="0x43045108736ec538ac6a4f57ea6da423ad18787eb2da8c7d644a91b4ebd5cc4",
+
+    auction_address="0x06a780187cfd58ad6ce1279cb4291bcf4f8acb2806dc1dccc9aee8183a9c1c40",
+    box_address="0x06a780187cfd58ad6ce1279cb4291bcf4f8acb2806dc1dccc9aee8183a9c1c40",
+    booklet_address="0x06a780187cfd58ad6ce1279cb4291bcf4f8acb2806dc1dccc9aee8183a9c1c40",
+    attributes_registry_address="0x06a780187cfd58ad6ce1279cb4291bcf4f8acb2806dc1dccc9aee8183a9c1c40",
+
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
 )
 
@@ -73,6 +76,7 @@ def get_network_metadata(network: str):
     return {
         'localhost': DEVNET,
         'starknet-testnet': TESTNET,
+        'starknet-testnet-dojo': TESTNET_DOJO,
         'starknet-mainnet': MAINNET,
     }[network]
 
@@ -81,5 +85,6 @@ def get_gateway_client(network: str):
     return GatewayClient({
         'localhost': 'http://localhost:8000',
         'starknet-testnet': 'testnet',
+        'starknet-testnet-dojo': 'testnet',
         'starknet-mainnet': 'mainnet',
     }[network])

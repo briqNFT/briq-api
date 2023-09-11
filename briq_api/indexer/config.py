@@ -13,12 +13,14 @@ MONGO_PASSWORD = os.getenv("MONGO_PASSWORD") or "apibara"
 
 START_BLOCK = int(os.getenv("START_BLOCK") or {
     "starknet-testnet": 857000,
+    "starknet-testnet-dojo": 857000,
     "starknet-testnet2": 3000,
     "starknet-mainnet": 10400,
 }[NETWORK_NAME])
 
 APIBARA_URL = os.getenv("APIBARA_URL") or {
     "starknet-testnet": "goerli.starknet.a5a.ch:443",
+    "starknet-testnet-dojo": "goerli.starknet.a5a.ch:443",
     "starknet-testnet2": "goerli-2.starknet.a5a.ch",
     "starknet-mainnet": "mainnet.starknet.a5a.ch",
 }[NETWORK_NAME]
