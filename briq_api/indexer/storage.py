@@ -3,6 +3,8 @@ import logging
 from typing import Any
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo import MongoClient
+
+from briq_api.indexer.events.common import decode_bytes, encode_int_as_bytes
 from ..chain.networks import TESTNET, get_network_metadata
 
 from briq_api.config import ENV
@@ -37,7 +39,10 @@ class MongoBackend:
 
             logger.debug("MongoDB server information: \n%(mongo)s", {"mongo": self.mongo.server_info()})
         except:
-            logger.info("Could not connect to a mongo DB instance for indexing data")
+            if ENV == "prod":
+                raise Exception("Could not connect to a mongo DB instance for indexing data")
+            else:
+                logger.warning("Could not connect to a mongo DB instance for indexing data")
 
 
 class MongoStorage(StorageClient[MongoBackend]):
