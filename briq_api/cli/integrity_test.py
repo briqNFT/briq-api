@@ -67,6 +67,5 @@ def check_file_storage():
             #folders = set(fst.list_paths(root))
             #for folder in folders:
 
-
 if __name__ == "__main__":
     check_file_storage()

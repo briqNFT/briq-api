@@ -16,7 +16,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 
 from starkware.cairo.common.hash_state import compute_hash_on_elements
-
+from starkware.cairo.lang.vm.crypto import pedersen_hash
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +59,30 @@ def uncompress_shape_item(col_nft_mat: int, x_y_z: int):
     return color.to_bytes(7, 'big').decode('ascii'), mat, x, y, z, has_token_id
 
 
+def parse_dojo_transaction(data: list[int]):
+    owner = data[0]
+    token_id_hint = data[1]
+    cursor = 2
+    name = decode_string(data, cursor)
+    cursor += 1 + data[cursor]
+    description = decode_string(data, cursor)
+    cursor += 1 + data[cursor]
+    cursor += 1 + data[cursor] * 2 # FTs have two items
+    token_id = hex(get_dojo_token_id_from_calldata(owner, token_id_hint, data[cursor]))
+    briqs = []
+    for i in range(0, data[cursor] * 2, 2):
+        bd = uncompress_shape_item(*data[cursor + i + 1:cursor + i + 3])
+        briqs.append({
+            "pos": bd[2:5],
+            "data": {
+                'color': bd[0].lower(),
+                'material': hex(bd[1]),
+            },
+            #  'has_token_id': bd[5],
+        })
+    return (token_id, StorableSetData(name=name, description=description, briqs=briqs))
+
+
 def parse_transaction(data: list[int]):
     token_id = hex(get_token_id_from_calldata(data[0], data[1], []))
     cursor = 2
@@ -82,6 +106,13 @@ def parse_transaction(data: list[int]):
     return (token_id, StorableSetData(name=name, description=description, briqs=briqs))
 
 
+def get_dojo_token_id_from_calldata(owner: int, hint: int, nb_briqs: int):
+    raw_tid = pedersen_hash(0, owner)
+    raw_tid = pedersen_hash(raw_tid, hint)
+    raw_tid = pedersen_hash(raw_tid, nb_briqs)
+    return raw_tid % 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+
+
 def get_token_id_from_calldata(owner: int, hint: int, uri: list[int]):
     raw_tid = compute_hash_on_elements([owner, hint]) & ((2**251 - 1) - (2**59 - 1))
     if len(uri) == 2 and uri[1] < 2**59:
@@ -102,10 +133,13 @@ async def store_new_set(request: NewSetStorageRequest):
     try:
         token_id, set_data = parse_transaction(request.transaction_data)
     except Exception as e:
-        logger.warn("Failed to decode transaction", {
-            "transaction_data": request.transaction_data,
-        }, exc_info=e)
-        raise HTTPException(status_code=400, detail="Invalid transaction data")
+        try:
+            token_id, set_data = parse_dojo_transaction(request.transaction_data)
+        except Exception as e:
+            logger.warn("Failed to decode transaction", {
+                "transaction_data": request.transaction_data,
+            }, exc_info=e)
+            raise HTTPException(status_code=400, detail="Invalid transaction data")
 
     set_indexer[request.chain_id].add_set_to_pending(token_id, set_data)
     return "ok"
