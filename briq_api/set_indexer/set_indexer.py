@@ -53,7 +53,6 @@ class SetIndexer:
             return
         token_id = list(self.pending.keys())[0]
         self.store_set(token_id)
-        del self.pending[token_id]
 
     def store_set(self, token_id: str):
         if token_id not in self.pending:
