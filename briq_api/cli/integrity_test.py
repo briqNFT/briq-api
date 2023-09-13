@@ -3,20 +3,20 @@ The purpose of this file is to check the storage for data.
 It loops through files and reports files unused by the API.
 """
 
-import os
-from briq_api.chain.networks import get_network_metadata
-
-from briq_api.stores import setup_stores, file_storage, mongo_storage, genesis_storage, theme_storage
-
-setup_stores(os.getenv("LOCAL") or False, False)
-
-NETWORK_NAME = os.getenv("NETWORK_NAME") or "starknet-testnet"
-NETWORK = get_network_metadata(NETWORK_NAME)
-
-fst = file_storage.get_backend(NETWORK.id)
-
 
 def check_file_storage():
+    import os
+    from briq_api.chain.networks import get_network_metadata
+
+    from briq_api.stores import setup_stores, file_storage
+
+    setup_stores(os.getenv("LOCAL") or False, False)
+    NETWORK_NAME = os.getenv("NETWORK_NAME") or "starknet-testnet"
+
+    NETWORK = get_network_metadata(NETWORK_NAME)
+
+    fst = file_storage.get_backend(NETWORK.id)
+
     """Check the file storage for unused files."""
     print("Checking file storage")
     roots = set(fst.list_paths(""))
@@ -68,4 +68,5 @@ def check_file_storage():
             #for folder in folders:
 
 
-check_file_storage()
+if __name__ == "__main__":
+    check_file_storage()
