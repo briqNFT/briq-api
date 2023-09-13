@@ -287,7 +287,7 @@ spec:
     kind: Deployment
     name: #@ data.values.name
   minReplicas: 1
-  maxReplicas: 8
+  maxReplicas: 4
   behavior:
     scaleUp:
       stabilizationWindowSeconds: 30
@@ -301,5 +301,5 @@ spec:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 50
+        averageUtilization: 75
 #@ end
