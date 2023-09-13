@@ -75,15 +75,14 @@ def to_vox(briqData: BriqData):
     MAX_VALUE = 255
     if len(colors) > MAX_VALUE:
         logger.info("Too many colors, set will be truncated.")
-    if x1 > MAX_VALUE or y1 > MAX_VALUE or z1 > MAX_VALUE:
+    if x1 - x0 > MAX_VALUE or y1 - y0 > MAX_VALUE or z1 - z0 > MAX_VALUE:
         logger.info(f"Some briqs are outside the range ({x1}/{y1}/{z1}), set will be truncated.")
 
     for briq in briqData.briqs:
         x = x1 - 1 - briq["pos"][0] + x0
         y = briq["pos"][2] - y0
         z = briq["pos"][1] - z0
-        # Have to invert the condition for x
-        if x < 0 or y > MAX_VALUE or z > MAX_VALUE:
+        if x > MAX_VALUE or y > MAX_VALUE or z > MAX_VALUE:
             continue
         col = briq['data']['color']
         mat = briq['data']['material']

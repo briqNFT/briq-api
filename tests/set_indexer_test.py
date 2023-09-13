@@ -12,7 +12,7 @@ from briq_api.storage.file.file_client import FileClient
 def small_set():
     return """
 {
-    "id": "0x2ec953378c248dc524a877f4c9c85c3687324ff861d29b45000000000000000",
+    "id": "0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000",
     "name": "Speeder",
     "description": "For when you gotta go fast.",
     "regionSize": 100000,
@@ -41,9 +41,9 @@ def small_set():
             }
         }
     ],
-    "image": "https://api.briq.construction/v1/preview/starknet-testnet/0x2ec953378c248dc524a877f4c9c85c3687324ff861d29b45000000000000000.png",
-    "animation_url": "https://api.briq.construction/v1/model/starknet-testnet/0x2ec953378c248dc524a877f4c9c85c3687324ff861d29b45000000000000000.glb",
-    "external_url": "https://briq.construction/set/starknet-testnet/0x2ec953378c248dc524a877f4c9c85c3687324ff861d29b45000000000000000"
+    "image": "https://api.briq.construction/v1/preview/starknet-testnet/0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000.png",
+    "animation_url": "https://api.briq.construction/v1/model/starknet-testnet/0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000.glb",
+    "external_url": "https://briq.construction/set/starknet-testnet/0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000"
 }"""
 
 
@@ -110,21 +110,21 @@ def test_store_set_inner(small_set, fake_file_client):
     )
     SetIndexer('starknet-testnet', fake_file_client)._store_set(
         set_data,
-        '0x2ec953378c248dc524a877f4c9c85c3687324ff861d29b45000000000000000'
+        '0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000'
     )
     assert fake_file_client.has_set_metadata(SetRID(
         chain_id='starknet-testnet',
-        token_id='0x2ec953378c248dc524a877f4c9c85c3687324ff861d29b45000000000000000')
+        token_id='0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000')
     )
     assert fake_file_client.load_set_metadata(SetRID(
         chain_id='starknet-testnet',
-        token_id='0x2ec953378c248dc524a877f4c9c85c3687324ff861d29b45000000000000000')
+        token_id='0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000')
     ) == json.loads(small_set)
 
 
 @pytest.fixture
 def mock_set_indexer(fake_file_client):
-    with mock.patch('briq_api.set_indexer.server.set_indexer', SetIndexer('starknet-testnet', fake_file_client)) as f:
+    with mock.patch('briq_api.set_indexer.server.set_indexer', { "starknet-testnet": SetIndexer('starknet-testnet', fake_file_client) }) as f:
         yield f
 
 
@@ -132,30 +132,30 @@ def mock_set_indexer(fake_file_client):
 async def test_server(fake_file_client, mock_set_indexer, small_set, assemble_transaction):
     await store_new_set(NewSetStorageRequest(
         chain_id="starknet-testnet",
-        token_id="0x2ec953378c248dc524a877f4c9c85c3687324ff861d29b45000000000000000",
+        token_id="0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000",
         transaction_data=assemble_transaction,
     ))
 
-    mock_set_indexer.store_set("0x2ec953378c248dc524a877f4c9c85c3687324ff861d29b45000000000000000")
+    mock_set_indexer["starknet-testnet"].store_set("0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000")
 
     assert fake_file_client.has_set_metadata(SetRID(
         chain_id='starknet-testnet',
-        token_id='0x2ec953378c248dc524a877f4c9c85c3687324ff861d29b45000000000000000')
+        token_id='0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000')
     )
 
     assert fake_file_client.load_set_metadata(SetRID(
         chain_id='starknet-testnet',
-        token_id='0x2ec953378c248dc524a877f4c9c85c3687324ff861d29b45000000000000000')
+        token_id='0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000')
     ) == json.loads(small_set)
 
     # Try again
 
     await store_new_set(NewSetStorageRequest(
         chain_id="starknet-testnet",
-        token_id="0x2ec953378c248dc524a877f4c9c85c3687324ff861d29b45000000000000000",
+        token_id="0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000",
         transaction_data=assemble_transaction,
     ))
 
-    with mock.patch.object(mock_set_indexer, '_verify_correct_storage', wraps=mock_set_indexer._verify_correct_storage) as f:
-        mock_set_indexer.store_set("0x2ec953378c248dc524a877f4c9c85c3687324ff861d29b45000000000000000")
+    with mock.patch.object(mock_set_indexer["starknet-testnet"], '_verify_correct_storage', wraps=mock_set_indexer["starknet-testnet"]._verify_correct_storage) as f:
+        mock_set_indexer["starknet-testnet"].store_set("0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000")
         assert f.call_count == 1

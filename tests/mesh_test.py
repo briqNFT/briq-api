@@ -24,4 +24,4 @@ def test_large_briq_to_vox(too_large_for_vox_briq_data):
     voxFile = briq.to_vox("test.vox")
     voxFile.to_bytes()
     # Truncated
-    assert len(voxFile.vox.models[0].voxels) == 255
+    assert len(voxFile.vox.models[0].voxels) == 256

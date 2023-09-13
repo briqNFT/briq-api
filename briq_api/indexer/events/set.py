@@ -1,4 +1,4 @@
-from typing import Any, Sequence
+from typing import Any, Sequence, Tuple
 import logging
 import requests
 
@@ -119,30 +119,73 @@ class SetIndexer(EventIndexer):
         """Find all assembly transactions and send them to the set indexer."""
         try:
             # Need to decode the transaction to find the right offset. There might be several.
-            assembly_calls = []
-            calls = felt.to_int(calldata[0])
-            for i in range(calls):
-                callarray = calldata[1 + i * 4: 1 + (i + 1) * 4]
-                if felt.to_int(callarray[0]) == int(self.address, 16):
-                    # Check the selector matches 'assemble_'
-                    if felt.to_int(callarray[1]) == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3:
-                        assembly_calls.append([felt.to_int(x) for x in callarray[2:4]])  # offset, length
-            # Now send all transactions to the set indexer
-            # We don't care if there are repeats, the indexer handles that.
-            for call in assembly_calls:
-                set_calldata = calldata[calls * 4 + 2 + call[0]:calls * 4 + 2 + call[0] + call[1]]
-                # Request storage in the set indexer. Short timeout, we don't care outrageously if this fails.
-                req = requests.post(f"http://{SET_INDEXER_URL}:5432/store", json={
-                    "chain_id": NETWORK.id,
-                    "transaction_data": [felt.to_int(x) for x in set_calldata],
-                }, timeout=1)
-                try:
-                    req.raise_for_status()
-                except Exception as e:
-                    logger.warn("Error while storing set data for TX %(tx)s.", {
-                        "tx": tx_hash,
-                        "call": call,
-                    }, exc_info=e)
+            # So first - older contracts seemed to use different __execute__ ABI.
+            # Cairo 1 has skipped a few things. I need to try and detect that.
+            # The sanest move seems to be to check position 4, which would be the offset of the
+            # first transaction in the OG __execute__, which will usually be 0,
+            # but that is the size of the calldata in the new __execute__, and not 0 for our entrypoint.
+            assembly_tx_starts = []
+            use_old_abi = False
 
+            calls = felt.to_int(calldata[0])
+            # Check the selector matches 'assemble_'
+            if felt.to_int(calldata[1]) == int(self.address, 16) and felt.to_int(calldata[2]) == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3:
+                # Here, if the next value is 0, we're in the old execute.
+                if felt.to_int(calldata[3]) == 0:
+                    use_old_abi = True
+
+            if not use_old_abi:
+                # Gonna be trickier, let's try to parse the whole thing as the new ABI and see if we fail.
+                i = 1
+                while i < len(calldata):
+                    try:
+                        i += 3 + felt.to_int(calldata[i + 2])
+                    except:
+                        use_old_abi = True
+                        break
+                if i != len(calldata):
+                    use_old_abi = True
+
+            # Now we process
+            if use_old_abi:
+                for i in range(calls):
+                    callarray = calldata[1 + i * 4: 1 + (i + 1) * 4]
+                    if felt.to_int(callarray[0]) == int(self.address, 16):
+                        # Check the selector matches 'assemble_'
+                        if felt.to_int(callarray[1]) == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3:
+                            assembly_tx_starts.append([felt.to_int(x) for x in callarray[2:4]])
+                # Now send all transactions to the set indexer
+                # We don't care if there are repeats, the indexer handles that.
+                for call in assembly_tx_starts:
+                    set_calldata = calldata[calls * 4 + 2 + call[0]:calls * 4 + 2 + call[0] + call[1]]
+                    self.send_set_calldata(set_calldata, tx_hash, call)
+            else:
+                i = 1
+                while i < len(calldata):
+                    # print([hex(felt.to_int(x)) for x in calldata[i:]])
+                    if felt.to_int(calldata[i]) == int(self.address, 16):
+                        # Check the selector matches 'assemble_'
+                        if felt.to_int(calldata[i + 1]) == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3:
+                            set_calldata = calldata[i + 3:i + 3 + felt.to_int(calldata[i + 2])]
+                            self.send_set_calldata(set_calldata, tx_hash, (i + 3, i + 3 + felt.to_int(calldata[i + 2])))
+                            i += felt.to_int(calldata[i + 2]) + 3
+                        else:
+                            i += felt.to_int(calldata[i + 2]) + 3
+                    else:
+                        i += felt.to_int(calldata[i + 2]) + 3
         except Exception as f:
             logger.warn("Failed to send data to set indexer", exc_info=f)
+
+    def send_set_calldata(self, set_calldata: Sequence[FieldElement], tx_hash: str, call: Tuple[int, int]):
+        # Request storage in the set indexer. Short timeout, we don't care outrageously if this fails.
+        req = requests.post(f"http://{SET_INDEXER_URL}:5432/store", json={
+            "chain_id": NETWORK.id,
+            "transaction_data": [felt.to_int(x) for x in set_calldata],
+        }, timeout=1)
+        try:
+            req.raise_for_status()
+        except Exception as e:
+            logger.warn("Error while storing set data for TX %(tx)s.", {
+                "tx": tx_hash,
+                "call": call,
+            }, exc_info=e)
