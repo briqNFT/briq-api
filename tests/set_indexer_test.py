@@ -64,6 +64,22 @@ def assemble_transaction():
 
 
 @pytest.fixture
+def dojo_assemble_transaction():
+    return [int(x, 16) for x in [
+        '0x59df66af2e0e350842b11ea6b5a903b94640c4ff0418b04ccedcc320f531a08',
+        '0x8ca581fb82ec435ca2a38eb4026afd00',
+        '0x1', '0x537065656572',
+        '0x2', '0x466f72207768656e20796f7520676f', '0x74746120676f20666173742e',
+        '0x1', '0x1', '0xfc',
+        '0x3',
+            '0x233466656361620000000000000000000000000000000001', '0x7ffffffffffffff880000000000000017ffffffffffffffc',
+            '0x233030636431350000000000000000000000000000000001', '0x7ffffffffffffff880000000000000017ffffffffffffffd',
+            '0x233030636431350000000000000000000000000000000001', '0x7ffffffffffffff880000000000000018ffffffffffffffd',
+        '0x2', '0x11000000000000000000000000000000000000000000000001', '0x2'
+    ]]
+
+
+@pytest.fixture
 def fake_file_client() -> FileClient:
     class FakeFileClient(FileClient):
         data = {}
@@ -129,11 +145,17 @@ def mock_set_indexer(fake_file_client):
 
 
 @pytest.mark.asyncio
-async def test_server(fake_file_client, mock_set_indexer, small_set, assemble_transaction):
+async def test_server(fake_file_client, mock_set_indexer, small_set, assemble_transaction, dojo_assemble_transaction):
     await store_new_set(NewSetStorageRequest(
         chain_id="starknet-testnet",
         token_id="0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000",
         transaction_data=assemble_transaction,
+    ))
+
+    await store_new_set(NewSetStorageRequest(
+        chain_id="starknet-testnet",
+        token_id="0x5996470c4ff85fc84e92232db145156ed33710bee8b1d27fea22d990a781d7b",
+        transaction_data=dojo_assemble_transaction,
     ))
 
     mock_set_indexer["starknet-testnet"].store_set("0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000")
