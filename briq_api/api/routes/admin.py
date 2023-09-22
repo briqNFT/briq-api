@@ -15,6 +15,7 @@ from pydantic import BaseModel
 from typing import Any, List, Optional, Tuple
 
 from briq_api.api.theme import list_booklets_of_theme
+from briq_api.auth import IsAdminDep
 from briq_api.chain.networks import get_gateway_client, get_network_metadata
 from briq_api.set_identifier import SetRID
 from briq_api.set_indexer.create_set_metadata import create_booklet_metadata, create_set_metadata
@@ -29,7 +30,131 @@ from .common import ExceptionWrapperRoute
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(route_class=ExceptionWrapperRoute(logger))
+router = APIRouter(route_class=ExceptionWrapperRoute(logger), dependencies=[IsAdminDep])
+
+COLLECTIONS_METADATA = {
+    "ducks_everywhere": {
+        "name": "Ducks Everywhere",
+        "artist": "OutSmth",
+    }
+}
+
+
+@router.get("/admin/authorized")
+def check_authorized():
+    return "ok"
+
+
+class StoreThemeObjectRequest(BaseModel):
+    data: dict[str, Any]
+    preview_base64: bytes
+    booklet_base64: bytes
+    background_color: Optional[str] = None
+
+
+async def generate_object_data(set: StoreThemeObjectRequest, chain_id: str, theme_id: str, object_id: str):
+    metadata = create_set_metadata(
+        token_id="",
+        name=set.data["name"],
+        description=set.data["description"],
+        network=chain_id,
+        briqs=set.data["briqs"],
+    )
+    if set.background_color:
+        metadata["background_color"] = set.background_color
+        # Check format matches 6 hex values without preceding #
+        if not re.match(r"^[0-9a-fA-F]{6}$", set.background_color):
+            raise HTTPException(status_code=400, detail="Invalid background color")
+
+    data = BriqData()
+    data.load(metadata)
+    glb_briq_by_level, glb_current_briqs = generate_layered_glb(data)
+
+    booklet_metadata = create_booklet_metadata(
+        theme_id=theme_id,
+        booklet_id=object_id,
+        theme_name=COLLECTIONS_METADATA[theme_id]["name"],
+        theme_artist=COLLECTIONS_METADATA[theme_id]["artist"],
+        theme_date=datetime.now().strftime("%Y-%m-%d"),
+        name=set.data["name"],
+        description=set.data["description"],
+        network=chain_id,
+        briqs=set.data["briqs"],
+        nb_steps=len(glb_briq_by_level),
+        step_progress_data=[len(level) for level in glb_briq_by_level],
+    )
+
+    @dataclass
+    class Output:
+        metadata: dict
+        booklet_metadata: dict
+        glb_briq_by_level: list[list[dict[str, Any]]]
+        glb_current_briqs: list[list[dict[str, Any]]]
+
+    return Output(metadata=metadata,
+                  booklet_metadata=booklet_metadata,
+                  glb_briq_by_level=glb_briq_by_level,
+                  glb_current_briqs=glb_current_briqs)
+
+
+def gen_lower_res_image(img: bytes):
+    image = Image.open(io.BytesIO(img))
+    # If there is a background color, presumably the image is not transparent,
+    # so it doesn't really matter if we paste it on a white background or not.
+    bg = Image.new("RGBA", image.size, (255, 255, 255, 255))
+    try:
+        bg.paste(image, mask=image.getchannel('A'))
+    except:
+        bg.paste(image)
+    output = io.BytesIO()
+    bg.convert('RGB').save(output, format='JPEG', quality=60)
+    return output.getvalue()
+
+
+
+@router.head("/admin/store_theme_object/{chain_id}/{theme_id}/{object_id}")
+@router.post("/admin/store_theme_object/{chain_id}/{theme_id}/{object_id}")
+async def store_theme_object(set: StoreThemeObjectRequest, chain_id: str, theme_id: str, object_id: str):
+    raise_if_replacing_data(chain_id, theme_id, object_id)
+
+    # In this mode, we need to ensure that the object already exists, we're just filling in data.
+    booklet_spec = theme_storage.get_booklet_spec(chain_id)
+    if f"{theme_id}/{object_id}" not in booklet_spec:
+        raise HTTPException(status_code=400, detail="Object does not exist: " + booklet_spec[f"{theme_id}/{object_id}"])
+
+    data = await generate_object_data(set, chain_id, theme_id, object_id)
+    booklet_metadata, _ = data.booklet_metadata, data.metadata
+
+    # Convert those beforehand in case of errors
+    preview = decode_base64(set.preview_base64)
+    booklet = decode_base64(set.booklet_base64)
+    preview_lower = gen_lower_res_image(preview)
+    booklet_lower = gen_lower_res_image(booklet)
+
+    PATH = f"genesis_themes/{theme_id}/{object_id}"
+    file_storage.get_backend(chain_id).store_json(PATH + "/metadata_booklet.json", booklet_metadata)
+    file_storage.get_backend(chain_id).store_bytes(PATH + "/cover.png", preview)
+    file_storage.get_backend(chain_id).store_bytes(PATH + "/booklet_cover.png", booklet)
+
+    file_storage.get_backend(chain_id).store_bytes(PATH + "/cover.jpg", preview_lower)
+    file_storage.get_backend(chain_id).store_bytes(PATH + "/booklet_cover.jpg", booklet_lower)
+
+    briq_by_level, current_briqs = data.glb_briq_by_level, data.glb_current_briqs
+    glb_data = BriqData()
+
+    i = 0
+    for lev in briq_by_level:
+        glb_data.briqs = lev
+        file_storage.get_backend(chain_id).store_bytes(f"{PATH}/step_{i}.glb", b''.join(glb_data.to_gltf(separate_any_color=True).save_to_bytes()))
+        i += 1
+
+    i = 0
+    for lev in current_briqs:
+        glb_data.briqs = lev
+        file_storage.get_backend(chain_id).store_bytes(f"{PATH}/step_level_{i}.glb", b''.join(glb_data.to_gltf(separate_any_color=True).save_to_bytes()))
+        i += 1
+
+    theme_storage.reset_cache()
 
 
 class NewNFTRequest(BaseModel):
@@ -300,7 +425,7 @@ async def generate_data(set: NewNFTRequest, chain_id: str, auction_theme: str):
 
     serial = len(booklets) + 1
 
-    run_validation(set, chain_id, auction_theme)
+    #run_validation(set, chain_id, auction_theme)
 
     @dataclass
     class Output:
@@ -311,16 +436,8 @@ async def generate_data(set: NewNFTRequest, chain_id: str, auction_theme: str):
     return Output(metadata=metadata, booklet_metadata=booklet_metadata, serial=serial)
 
 
-def run_validation(set: NewNFTRequest, chain_id: str, auction_theme: str):
-    # TODO move to validate
-    booklet_spec = theme_storage.get_booklet_spec(chain_id)
-    if f"{auction_theme}/{set.data['name']}" in booklet_spec:
-        raise HTTPException(status_code=400, detail="Booklet already exists")
-
-    if file_storage.get_backend(chain_id).has_path(f"sets/{chain_id}/{set.token_id}_metadata.json"):
-        raise HTTPException(status_code=400, detail="Set JSON already exists")
-
-    PATH = f"genesis_themes/{auction_theme}/{set.data['name']}"
+def raise_if_replacing_data(chain_id: str, theme_id: str, object_id: str):
+    PATH = f"genesis_themes/{theme_id}/{object_id}"
     if file_storage.get_backend(chain_id).has_path(PATH + "/metadata_booklet.json"):
         raise HTTPException(status_code=400, detail="Booklet already exists")
     if file_storage.get_backend(chain_id).has_path(PATH + "/cover.png"):
