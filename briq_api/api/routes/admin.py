@@ -9,12 +9,11 @@ import asyncio
 from dataclasses import dataclass
 from datetime import datetime
 from fastapi import APIRouter, HTTPException
-from pathlib import Path
 from PIL import Image
 from pydantic import BaseModel
 from typing import Any, List, Optional, Tuple
 
-from briq_api.api.theme import list_booklets_of_theme
+from briq_api.api.theme import get_all_theme_object_ids
 from briq_api.auth import IsAdminDep
 from briq_api.chain.networks import get_gateway_client, get_network_metadata
 from briq_api.set_identifier import SetRID
@@ -22,15 +21,18 @@ from briq_api.set_indexer.create_set_metadata import create_booklet_metadata, cr
 from briq_api.stores import file_storage, theme_storage
 from briq_api.mesh.briq import BriqData
 
+from briq_protocol.binomial_ifs import generate_shape_check, generate_binary_search_function, ShapeItem, HEADER
+
 from starknet_py.contract import Contract
 from starknet_py.utils.typed_data import TypedData
-
 
 from .common import ExceptionWrapperRoute
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(route_class=ExceptionWrapperRoute(logger), dependencies=[IsAdminDep])
+
+STARKNET_COMPILE_PATH = os.getenv("STARKNET_COMPILE_PATH") or "starknet-compile"
 
 COLLECTIONS_METADATA = {
     "ducks_everywhere": {
@@ -157,6 +159,48 @@ async def store_theme_object(set: StoreThemeObjectRequest, chain_id: str, theme_
     theme_storage.reset_cache()
 
 
+class CompileShapeContractRequest(BaseModel):
+    shapes_by_attribute_id: dict[str, List[Any]]
+
+
+@router.head("/admin/compile_shape_contract/")
+@router.post("/admin/compile_shape_contract/")
+async def store_theme_object(shapes: CompileShapeContractRequest):
+    ids = {}
+    for attr_id in shapes.shapes_by_attribute_id:
+        items = []
+        for shape in shapes.shapes_by_attribute_id[attr_id]:
+            items.append(ShapeItem(
+                shape['pos'][0],
+                shape['pos'][1],
+                shape['pos'][2],
+                shape['data']['color'].lower(),
+                int(shape['data']['material'], 16)
+            ))
+        ids[int(attr_id, 16)] = generate_shape_check(items)
+    sorted_ids = list(ids.keys())
+    sorted_ids.sort()
+    code = HEADER + generate_binary_search_function(sorted_ids, lambda x: ids[x]) + "\n}"
+
+    # Call starknet-compile via subprocess
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        code_path = os.path.join(tmpdirname, "code.cairo")
+        with open(code_path, "w") as f:
+            f.write(code)
+
+        process = await asyncio.create_subprocess_exec(
+            STARKNET_COMPILE_PATH,
+            code_path, "--single-file", os.path.join(tmpdirname, "code.json"),
+        )
+        await process.communicate()
+
+        if process.returncode != 0:
+            raise HTTPException(status_code=400, detail="Compilation failed")
+
+        with open(os.path.join(tmpdirname, "code.json")) as f:
+            return f.read()
+
+
 class NewNFTRequest(BaseModel):
     token_id: str
     data: dict[str, Any]
@@ -204,7 +248,7 @@ async def compile_shape(cr: CompileRequest, chain_id: str):
 
     loop = asyncio.get_event_loop()
     thread_pool = concurrent.futures.ThreadPoolExecutor(1)
-    contract_json, class_hash = await loop.run_in_executor(thread_pool, compile_shape_contract, cr.serial_number, data)
+    contract_json, class_hash = (0, 1) # await loop.run_in_executor(thread_pool, compile_shape_contract, cr.serial_number, data)
     return {
         "contract_json": contract_json,
         "class_hash": class_hash,
@@ -407,7 +451,7 @@ async def generate_data(set: NewNFTRequest, chain_id: str, auction_theme: str):
     data.load(metadata)
     briq_by_level, current_briqs = generate_layered_glb(data)
 
-    booklets = list_booklets_of_theme(chain_id, auction_theme)
+    booklets = list(get_all_theme_object_ids(chain_id, auction_theme).keys())
 
     booklet_metadata = create_booklet_metadata(
         theme_id=auction_theme,
@@ -444,42 +488,6 @@ def raise_if_replacing_data(chain_id: str, theme_id: str, object_id: str):
         raise HTTPException(status_code=400, detail="Cover already exists")
     if file_storage.get_backend(chain_id).has_path(PATH + "/booklet_cover.png"):
         raise HTTPException(status_code=400, detail="Booklet cover already exists")
-
-
-from starkware.starknet.compiler.compile import compile_starknet_files
-from briq_protocol.generate_shape import generate_shape_code
-from briq_protocol.shape_utils import compress_shape_item
-import briq_protocol
-from starkware.starknet.core.os.class_hash import compute_class_hash
-
-def compile_shape_contract(serial_num: int, data: BriqData):
-    shape_data = []
-    for briq in data.briqs:
-        int_mat = int(briq['data']['material'], 16)
-        shape_data.append(('any_color_any_material' if 'any_color' in briq['data'] else briq['data']['color'], int_mat, *briq['pos']))
-    shape_data.sort(key=lambda x: compress_shape_item('#000000', 1, x[2], x[3], x[4])[1])
-    data_code = generate_shape_code([(shape_data, [])])
-    # Compile the contract by setting up an env in which the data is our higher-priority temp folder.
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        Path(tmpdirname + '/contracts/shape').mkdir(parents=True, exist_ok=True)
-        with open(os.path.join(tmpdirname, "contracts/shape/data_ducks.cairo"), "w") as f:
-            f.write(data_code)
-        path = os.path.dirname(briq_protocol.__file__)
-        with open(os.path.join(path, "contracts/shape/shape_store_ducks.cairo"), "r") as f:
-            shape_store = f.read()
-        with open(os.path.join(tmpdirname, "contracts/shape/shape_store_ducks.cairo"), "w") as f:
-            # robust AF
-            f.write(shape_store.replace(
-                '(global_index - DUCKS_COLLECTION) / (2 ** 192) - 1',
-                f'(global_index - DUCKS_COLLECTION) / (2 ** 192) - {serial_num}')
-            )
-        compile = compile_starknet_files(
-            files=[os.path.join(tmpdirname, "contracts/shape/shape_store_ducks.cairo")],
-            cairo_path=[tmpdirname, path],
-            debug_info=False,
-            disable_hint_validation=False
-        )
-    return compile.dumps(), hex(compute_class_hash(compile))
 
 
 def decode_base64(image_base64: bytes):

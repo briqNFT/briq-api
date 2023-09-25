@@ -6,7 +6,7 @@ from starlette.responses import JSONResponse, StreamingResponse
 from fastapi import APIRouter
 from briq_api.api.api import get_metadata
 
-from briq_api.api.theme import list_booklets_of_theme, list_sets_of_theme
+from briq_api.api.theme import get_all_theme_object_ids, list_sets_of_theme
 from briq_api.indexer.events.common import encode_int_as_bytes
 from briq_api.set_identifier import SetRID
 from briq_api.indexer.storage import mongo_storage
@@ -115,8 +115,8 @@ async def get_all_boxes_data(chain_id: str, theme_id: str):
 
 @router.head("/{chain_id}/{theme_id}/object_ids")
 @router.get("/{chain_id}/{theme_id}/object_ids")
-async def get_all_theme_object_ids(chain_id: str, theme_id: str):
-    return list_booklets_of_theme(chain_id, theme_id)
+async def route_get_all_theme_object_ids(chain_id: str, theme_id: str):
+    return get_all_theme_object_ids(chain_id, theme_id)
 
 
 @router.head("/{chain_id}/{theme_id}/all_sets_static_data")

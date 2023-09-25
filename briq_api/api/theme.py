@@ -1,5 +1,5 @@
 from base64 import encode
-from typing import Union
+from typing import Dict, Union
 from briq_api.indexer.events.common import encode_int_as_bytes
 from briq_api.memory_cache import CacheData
 from briq_api.stores import get_auction_json_data
@@ -34,8 +34,8 @@ async def list_sets_of_theme(chain_id: str, theme_id: str) -> list[str]:
     return await list_duck_sets(chain_id)
 
 
-def list_booklets_of_theme(chain_id: str, theme_id: str) -> list[str]:
-    return [key for key in theme_storage.get_booklet_spec(chain_id).keys() if key.startswith(theme_id)]
+def get_all_theme_object_ids(chain_id: str, theme_id: str) -> Dict[str, str]:
+    return {key: value for (key, value) in theme_storage.get_booklet_spec(chain_id).items() if key.startswith(theme_id)}
 
 
 def get_booklet_id_from_token_id(chain_id: str, booklet_token_id: str) -> Union[str, None]:
