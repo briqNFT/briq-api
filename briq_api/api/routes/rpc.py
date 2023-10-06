@@ -3,6 +3,7 @@ import aiohttp
 
 from fastapi import APIRouter, HTTPException, Request
 from briq_api.auth import is_admin
+from briq_api.chain.networks import get_network_metadata
 from briq_api.chain.rpcs import alchemy_endpoint
 from briq_api.memory_cache import CacheData
 
@@ -57,11 +58,10 @@ async def post_rpc(chain_id: str, request: Request):
             "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",  # eth-usd contracts
             "0x0011ff172f1a9f3af71e77ef67036e81dcdb4c4d294d74bf5440d0d4c6ae61b7",  # testnet briq factory
             "0x05b021b6743c4f420e20786baa7fb9add1d711302c267afbc171252a74687376",  # mainnet briq factory
-            "0x2bef66bac33c7c8a668049a870b9795a468800ec54e398d592fd84f831ae2c",    # testnet world
-            "0x0213556a61d17f369eddf0b531b25f8deb7e5ceaac9263fa00e35a9d3de64b90",  # dojo testnet briq factory
+            get_network_metadata(chain_id).factory_address,
         ] and not is_admin(request):
             raise HTTPException(status_code=400, detail="Invalid contract address")
-        if contract_address == '0x05b021b6743c4f420e20786baa7fb9add1d711302c267afbc171252a74687376':
+        if get_network_metadata(chain_id).factory_address:
             return await get_rpc_call_factory(chain_id, await request.body(), body.get("params").get("request").get("entry_point_selector"))
         return await get_rpc_call(chain_id, await request.body())
 

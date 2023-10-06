@@ -39,10 +39,15 @@ async def add_process_time_header(request, call_next):
         logger.info('Request for "%(url)s" processing in %(time_s)s seconds', {'url': str(request.url), 'time_s': t})
     return response
 
-# This is a public API, so allow any CORS origin.
+# Because of credentials, I had to CORS restrict the API.
+# If I had time I'd split the admin and non-admin endpoints, but meh.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "https://test.sltech.company",
+        "https://briq.construction",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

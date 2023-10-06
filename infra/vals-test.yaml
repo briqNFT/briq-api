@@ -15,5 +15,5 @@ defaultLabels:
 indexer:
   name: dev-briq-indexer
   image_store: mongo:latest
-  indexer_id: "dojo-0"
+  indexer_id: "dojo-1"
   network_name: 'starknet-testnet-dojo'

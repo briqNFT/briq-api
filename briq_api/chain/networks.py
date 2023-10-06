@@ -17,6 +17,7 @@ class NetworkMetadata:
     erc20_address: str = ''
     attributes_registry_address: str = ''
     world_address: str = ''
+    factory_address: str = ''
 
 
 DEVNET = NetworkMetadata(
@@ -45,10 +46,11 @@ TESTNET_DOJO = NetworkMetadata(
     id="starknet-testnet-dojo",
     storage_bucket="briq-bucket-test-1",
 
-    world_address="0x2bef66bac33c7c8a668049a870b9795a468800ec54e398d592fd84f831ae2c",
+    world_address="0x224ad60c7cac93cc53ac324b2c6289a335a1f914e009344520b7bea5cba7195",
 
-    briq_address="0x251cd76d4f31f1c0a1a719a315d524a6338697120e5bede50bc7949819c93e5",
-    set_address="0x43045108736ec538ac6a4f57ea6da423ad18787eb2da8c7d644a91b4ebd5cc4",
+    briq_address="0x1d1b0fea4ed52bc6459a537ffd687a98bce5dcb33491294ef79b6d13a4ff20b",
+    set_address="0x704f5c989fc68cd845125ff378b6fe42679477a26de68a03ac8cbe5fc4dea47",
+    factory_address="0x59152f8e204f008814c1cf5472e91ba53a723ebbd3c62a415f6571a35724abd",
 
     auction_address="0x06a780187cfd58ad6ce1279cb4291bcf4f8acb2806dc1dccc9aee8183a9c1c40",
     box_address="0x06a780187cfd58ad6ce1279cb4291bcf4f8acb2806dc1dccc9aee8183a9c1c40",
