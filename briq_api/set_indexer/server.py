@@ -2,7 +2,7 @@ import asyncio
 import logging
 import math
 import os
-from typing import Union
+from typing import List, Union
 from briq_api.chain.networks import MAINNET
 from briq_api.config import ENV
 from briq_api.set_indexer.config import NETWORK
@@ -59,6 +59,15 @@ def uncompress_shape_item(col_nft_mat: int, x_y_z: int):
     return color.to_bytes(7, 'big').decode('ascii'), mat, x, y, z, has_token_id
 
 
+def uncompress_shape_item_dojo(col_mat: int, x_y_z: int):
+    color: int = col_mat // 2 ** 64
+    mat: int = col_mat & 0xffffffff
+    x: int = x_y_z // 2 ** 64 - 2 ** 31
+    y: int = ((x_y_z // 2 ** 32) & 0xffffffff) - 2 ** 31
+    z: int = (x_y_z & 0xffffffff) - 2 ** 31
+    return color.to_bytes(7, 'big').decode('ascii'), mat, x, y, z
+
+
 def parse_dojo_transaction(data: list[int]):
     owner = data[0]
     token_id_hint = data[1]
@@ -68,18 +77,19 @@ def parse_dojo_transaction(data: list[int]):
     description = decode_string(data, cursor)
     cursor += 1 + data[cursor]
     cursor += 1 + data[cursor] * 2 # FTs have two items
-    token_id = hex(get_dojo_token_id_from_calldata(owner, token_id_hint, data[cursor]))
     briqs = []
     for i in range(0, data[cursor] * 2, 2):
-        bd = uncompress_shape_item(*data[cursor + i + 1:cursor + i + 3])
+        bd = uncompress_shape_item_dojo(*data[cursor + i + 1:cursor + i + 3])
         briqs.append({
             "pos": bd[2:5],
             "data": {
                 'color': bd[0].lower(),
                 'material': hex(bd[1]),
             },
-            #  'has_token_id': bd[5],
         })
+    cursor += 1 + data[cursor] * 2 # Packed shapes have two items
+    attributes = data[cursor + 1:data[cursor] + cursor + 1]
+    token_id = hex(get_dojo_token_id_from_calldata(owner, token_id_hint, len(briqs), attributes))
     return (token_id, StorableSetData(name=name, description=description, briqs=briqs))
 
 
@@ -106,11 +116,12 @@ def parse_transaction(data: list[int]):
     return (token_id, StorableSetData(name=name, description=description, briqs=briqs))
 
 
-def get_dojo_token_id_from_calldata(owner: int, hint: int, nb_briqs: int):
+def get_dojo_token_id_from_calldata(owner: int, hint: int, nb_briqs: int, attributes: List[int] = []):
     raw_tid = pedersen_hash(0, owner)
     raw_tid = pedersen_hash(raw_tid, hint)
     raw_tid = pedersen_hash(raw_tid, nb_briqs)
-    return raw_tid % 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+    raw_tid = raw_tid % 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+    return raw_tid & 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000
 
 
 def get_token_id_from_calldata(owner: int, hint: int, uri: list[int]):

@@ -10,9 +10,9 @@ from briq_api.storage.file.file_client import FileClient
 
 @pytest.fixture
 def small_set():
-    return """
+    return lambda token_id: '''
 {
-    "id": "0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000",
+    "id": "''' + token_id + '''",
     "name": "Speeder",
     "description": "For when you gotta go fast.",
     "regionSize": 100000,
@@ -39,12 +39,23 @@ def small_set():
                 "material": "0x1",
                 "color": "#00cd15"
             }
+        },
+        {
+            "pos": [
+                -8,
+                2,
+                -3
+            ],
+            "data": {
+                "material": "0x1",
+                "color": "#00cd15"
+            }
         }
     ],
-    "image": "https://api.briq.construction/v1/preview/starknet-testnet/0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000.png",
-    "animation_url": "https://api.briq.construction/v1/model/starknet-testnet/0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000.glb",
-    "external_url": "https://briq.construction/set/starknet-testnet/0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000"
-}"""
+    "image": "https://api.briq.construction/v1/preview/starknet-testnet/''' + token_id + '''.png",
+    "animation_url": "https://api.briq.construction/v1/model/starknet-testnet/''' + token_id + '''.glb",
+    "external_url": "https://briq.construction/set/starknet-testnet/''' + token_id + '''"
+}'''
 
 
 @pytest.fixture
@@ -56,9 +67,10 @@ def assemble_transaction():
         '0x2', '0x466f72207768656e20796f7520676f', '0x74746120676f20666173742e',
         '0x1', '0x1', '0xfc',
         '0x0',
-        '0x2',
+        '0x3',
             '0x233466656361620000000000000000000000000000000001', '0x7ffffffffffffff880000000000000017ffffffffffffffc',
             '0x233030636431350000000000000000000000000000000001', '0x7ffffffffffffff880000000000000017ffffffffffffffd',
+            '0x233030636431350000000000000000000000000000000001', '0x7ffffffffffffff880000000000000027ffffffffffffffd',
         '0x2', '0x11000000000000000000000000000000000000000000000001', '0x2'
     ]]
 
@@ -68,13 +80,13 @@ def dojo_assemble_transaction():
     return [int(x, 16) for x in [
         '0x59df66af2e0e350842b11ea6b5a903b94640c4ff0418b04ccedcc320f531a08',
         '0x8ca581fb82ec435ca2a38eb4026afd00',
-        '0x1', '0x537065656572',
+        '0x1', '0x53706565646572',
         '0x2', '0x466f72207768656e20796f7520676f', '0x74746120676f20666173742e',
         '0x1', '0x1', '0xfc',
         '0x3',
-            '0x233466656361620000000000000000000000000000000001', '0x7ffffffffffffff880000000000000017ffffffffffffffc',
-            '0x233030636431350000000000000000000000000000000001', '0x7ffffffffffffff880000000000000017ffffffffffffffd',
-            '0x233030636431350000000000000000000000000000000001', '0x7ffffffffffffff880000000000000018ffffffffffffffd',
+            '0x233466656361620000000000000001', '0x7ffffff8800000017ffffffc',
+            '0x233030636431350000000000000001', '0x7ffffff8800000017ffffffd',
+            '0x233030636431350000000000000001', '0x7ffffff8800000027ffffffd',
         '0x2', '0x11000000000000000000000000000000000000000000000001', '0x2'
     ]]
 
@@ -121,6 +133,13 @@ def test_store_set_inner(small_set, fake_file_client):
                     "material": "0x1",
                     "color": "#00cd15"
                 }
+            },
+            {
+                "pos": [-8, 2, -3],
+                "data": {
+                    "material": "0x1",
+                    "color": "#00cd15"
+                }
             }
         ]
     )
@@ -135,7 +154,7 @@ def test_store_set_inner(small_set, fake_file_client):
     assert fake_file_client.load_set_metadata(SetRID(
         chain_id='starknet-testnet',
         token_id='0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000')
-    ) == json.loads(small_set)
+    ) == json.loads(small_set('0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000'))
 
 
 @pytest.fixture
@@ -154,21 +173,33 @@ async def test_server(fake_file_client, mock_set_indexer, small_set, assemble_tr
 
     await store_new_set(NewSetStorageRequest(
         chain_id="starknet-testnet",
-        token_id="0x5996470c4ff85fc84e92232db145156ed33710bee8b1d27fea22d990a781d7b",
+        token_id="0x5996470c4ff85fc84e92232db145156ed33710bee8b1d27fea22d9900000000",
         transaction_data=dojo_assemble_transaction,
     ))
 
     mock_set_indexer["starknet-testnet"].store_set("0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000")
+
+    mock_set_indexer["starknet-testnet"].store_set("0x5996470c4ff85fc84e92232db145156ed33710bee8b1d27fea22d9900000000")
 
     assert fake_file_client.has_set_metadata(SetRID(
         chain_id='starknet-testnet',
         token_id='0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000')
     )
 
+    assert fake_file_client.has_set_metadata(SetRID(
+        chain_id='starknet-testnet',
+        token_id='0x5996470c4ff85fc84e92232db145156ed33710bee8b1d27fea22d9900000000')
+    )
+
     assert fake_file_client.load_set_metadata(SetRID(
         chain_id='starknet-testnet',
         token_id='0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000')
-    ) == json.loads(small_set)
+    ) == json.loads(small_set('0x2aa4ce6935801fc7a15aa9dd29728dbfafe9aa7d2fa26719800000000000000'))
+
+    assert fake_file_client.load_set_metadata(SetRID(
+        chain_id='starknet-testnet',
+        token_id='0x5996470c4ff85fc84e92232db145156ed33710bee8b1d27fea22d9900000000')
+    ) == json.loads(small_set('0x5996470c4ff85fc84e92232db145156ed33710bee8b1d27fea22d9900000000'))
 
     # Try again
 
