@@ -1,5 +1,6 @@
 import logging
 import os
+from briq_api.theme_storage import ThemeStorage
 
 from briq_api.config import ENV
 
@@ -14,32 +15,9 @@ from .storage.file.file_client import FileClient
 
 from briq_api.indexer.config import INDEXER_ID
 from briq_api.memory_cache import CacheData
-from briq_api.storage.file.file_client import FileStorageBackend
-from briq_api.storage.multi_backend_client import StorageClient
 
 
 logger = logging.getLogger(__name__)
-
-
-class ThemeStorage(StorageClient[FileStorageBackend]):
-    _memcache: dict[str, CacheData[dict[str, str]]] = {}
-
-    def __init__(self) -> None:
-        super().__init__()
-        # Decorate out of band so I can use self (so I can reset the cache).
-        # (this feels kinda horrible, but alternatives have bad tradeoffs as well)
-        # Guess I could just not reuse the cache decorator.
-        self.get_booklet_spec = CacheData.memory_cache(lambda chain_id: f'{chain_id}_booklet_spec', timeout=5 * 60, memcache=self._memcache)(self.get_booklet_spec)
-
-    @staticmethod
-    def booklet_path():
-        return "genesis_themes/booklet_spec.json"
-
-    def get_booklet_spec(self, chain_id: str) -> dict[str, str]:
-        return self.get_backend(chain_id).load_json(self.booklet_path())
-
-    def reset_cache(self):
-        self._memcache.clear()
 
 
 @CacheData.memory_cache(lambda chain_id, theme_id: f'{chain_id}_{theme_id}_auction_json_data', timeout=5 * 60)

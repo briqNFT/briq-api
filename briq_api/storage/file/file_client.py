@@ -48,7 +48,8 @@ class FileStorageBackend(ABC):
 class FileClient(StorageClient[FileStorageBackend]):
     """
     This is basically a bare-bones ORM.
-    TODO: expand logically upon this structure.
+    TODO: This initially seemed like a good idea, but I think it's overall much more sensible
+    to abstract at a much higher level, so this should be removed.
     """
 
     # Set Metadata

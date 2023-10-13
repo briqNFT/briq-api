@@ -15,8 +15,9 @@ class FileStorage(FileStorageBackend):
     This storage backend is intended for local testing.
     It just stores data on the local computer filesystem.
     """
-    def __init__(self, path="temp/", slowdown=0.0) -> None:
+    def __init__(self, path="temp/", ensure_paths=False, slowdown=0.0) -> None:
         self.path = path
+        self.ensure_paths = ensure_paths
         # Fake slowdown for testing
         self.slowdown = slowdown
         try:
@@ -26,8 +27,8 @@ class FileStorage(FileStorageBackend):
             raise
 
     def ensure_path(self, path):
-        # Create paths if necessary, we'll assume that's OK for debug usage.
-        Path(self.path + path).parent.mkdir(parents=True, exist_ok=True)
+        if self.ensure_paths:
+            Path(self.path + path).parent.mkdir(parents=True, exist_ok=True)
 
     def store_json(self, path, data):
         logger.info("storing JSON")
@@ -36,7 +37,6 @@ class FileStorage(FileStorageBackend):
             time.sleep(self.slowdown)
         with open(self.path + path, "w+") as f:
             json.dump(data, f)
-        return True
 
     def load_json(self, path):
         logger.info("loading JSON")

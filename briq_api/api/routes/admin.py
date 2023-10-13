@@ -13,7 +13,6 @@ from PIL import Image
 from pydantic import BaseModel
 from typing import Any, List, Optional, Tuple
 
-from briq_api.api.theme import get_all_theme_object_ids
 from briq_api.auth import IsAdminDep
 from briq_api.chain.networks import get_gateway_client, get_network_metadata
 from briq_api.set_identifier import SetRID
@@ -451,7 +450,7 @@ async def generate_data(set: NewNFTRequest, chain_id: str, auction_theme: str):
     data.load(metadata)
     briq_by_level, current_briqs = generate_layered_glb(data)
 
-    booklets = list(get_all_theme_object_ids(chain_id, auction_theme).keys())
+    booklets = list(theme_storage.get_all_theme_object_ids(chain_id, auction_theme).keys())
 
     booklet_metadata = create_booklet_metadata(
         theme_id=auction_theme,

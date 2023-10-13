@@ -1,8 +1,5 @@
-from base64 import encode
-from typing import Dict, Union
 from briq_api.indexer.events.common import encode_int_as_bytes
 from briq_api.memory_cache import CacheData
-from briq_api.stores import get_auction_json_data
 from briq_api.stores import theme_storage, mongo_storage
 
 
@@ -29,26 +26,9 @@ async def list_duck_sets(chain_id: str) -> list[str]:
 
 
 async def list_sets_of_theme(chain_id: str, theme_id: str) -> list[str]:
+    """
+    List all minted NFTs belonging to a particular theme.
+    """
     if theme_id != 'ducks_everywhere':
         raise NotImplementedError()
     return await list_duck_sets(chain_id)
-
-
-def get_all_theme_object_ids(chain_id: str, theme_id: str) -> Dict[str, str]:
-    return {key: value for (key, value) in theme_storage.get_booklet_spec(chain_id).items() if key.startswith(theme_id)}
-
-
-def get_booklet_id_from_token_id(chain_id: str, booklet_token_id: str) -> Union[str, None]:
-    booklet_data = theme_storage.get_booklet_spec(chain_id)
-    try:
-        return [booklet_id for booklet_id in booklet_data if int(booklet_data[booklet_id], 16) == int(booklet_token_id, 16)][0]
-    except:
-        return None
-
-
-def get_booklet_token_id_from_id(chain_id: str, booklet_id: str) -> Union[str, None]:
-    booklet_data = theme_storage.get_booklet_spec(chain_id)
-    try:
-        return booklet_data[booklet_id]
-    except:
-        return None

@@ -51,10 +51,11 @@ TESTNET_DOJO = NetworkMetadata(
     briq_address="0x1d1b0fea4ed52bc6459a537ffd687a98bce5dcb33491294ef79b6d13a4ff20b",
     set_address="0x704f5c989fc68cd845125ff378b6fe42679477a26de68a03ac8cbe5fc4dea47",
     factory_address="0x59152f8e204f008814c1cf5472e91ba53a723ebbd3c62a415f6571a35724abd",
+    box_address="0x317fb0ae04fb8eae8bd032bf7c217bcef7e2a152ea89e17a08e21537a75d7e0",
+    # briqmas
+    booklet_address="0x4aa9169992298aa98981c781040a9312726b3865f868c55a38fcceadf6ef563",
 
     auction_address="0x06a780187cfd58ad6ce1279cb4291bcf4f8acb2806dc1dccc9aee8183a9c1c40",
-    box_address="0x06a780187cfd58ad6ce1279cb4291bcf4f8acb2806dc1dccc9aee8183a9c1c40",
-    booklet_address="0x06a780187cfd58ad6ce1279cb4291bcf4f8acb2806dc1dccc9aee8183a9c1c40",
     attributes_registry_address="0x06a780187cfd58ad6ce1279cb4291bcf4f8acb2806dc1dccc9aee8183a9c1c40",
 
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
