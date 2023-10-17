@@ -110,7 +110,7 @@ async def validate_challenge(typed_data, signature: List[str]):
             "stateMutability": "view"
         }
     ], client)
-    signature_as_int = [int(x, 16) for x in signature]
+    signature_as_int = [int(x, 16) if x.startswith("0x") else int(x) for x in signature]
     try:
         (value,) = await contract.functions["is_valid_signature"].call(
             TypedData.from_dict(typed_data).message_hash(int(typed_data['message']['address'], 16)), signature_as_int
