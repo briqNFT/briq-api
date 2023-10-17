@@ -149,14 +149,6 @@ class SetIndexer:
         else:
             logger.info("Verified set %(token)s", {"token": token_id})
 
-        # Request an update on the mintsquare metadata, in case they indexed us too fast.
-        if ENV == 'prod':
-            try:
-                requests.post(f"https://api.mintsquare.io/nft/metadata/{self.network}/{get_network_metadata(self.network).set_address}/{token_id}/")
-                logger.debug("Pinged mintsquare API to update token %(token_id)s", {"token_id": token_id})
-            except Exception as e:
-                logger.debug("Could not ping mintsquare API for token %(token_id)s",{'token_id': token_id}, exc_info=e)
-
 
     def _store_set(self, data: StorableSetData, token_id: str):
         self.storage.store_set_metadata(SetRID(chain_id=self.network, token_id=token_id), self._get_storage_data(data, token_id))

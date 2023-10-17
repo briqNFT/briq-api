@@ -2,7 +2,7 @@ from abc import abstractmethod
 from starknet_py.serialization import PayloadSerializer
 from apibara.starknet import felt
 from apibara.starknet.proto.starknet_pb2 import Event
-from typing import Any, List, NamedTuple
+from typing import Any, List, NamedTuple, Sequence
 
 from apibara.starknet import EventFilter, felt
 from starkware.starknet.public.abi import get_selector_from_name
@@ -16,9 +16,10 @@ class EventIndexer:
     contract_prefix: str
     filters: list[EventFilter]
 
-    def __init__(self, contract_prefix: str, address: str) -> None:
+    def __init__(self, contract_prefix: str, addresses: list[str]) -> None:
         self.contract_prefix = contract_prefix
-        self.address = address
+        self.addresses = addresses
+        self.addresses_int = [int(address, 16) for address in addresses]
 
     @abstractmethod
     async def process_transfers(self, data: Block, info: Info[Any, Any]):

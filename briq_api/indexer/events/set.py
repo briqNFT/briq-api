@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 class SetIndexer(EventIndexer):
-    def __init__(self, address: str) -> None:
-        super().__init__("set", address)
-        self.filters = [get_event_filter(address, "Transfer")]
+    def __init__(self, addresses: str) -> None:
+        super().__init__("set", addresses)
+        self.filters = [get_event_filter(address, "Transfer") for address in addresses]
         self.event_serializer = get_event_serializer({
             "name": "Transfer",
             "type": "event",
@@ -47,7 +47,7 @@ class SetIndexer(EventIndexer):
 
         documents = []
         for event_with_tx in data.events:
-            if felt.to_int(event_with_tx.event.from_address) != int(self.address, 16):
+            if felt.to_int(event_with_tx.event.from_address) not in self.addresses_int:
                 continue
             tx_hash = felt.to_hex(event_with_tx.transaction.meta.hash)
             parsed_event = decode_event(self.event_serializer, event_with_tx.event)
@@ -129,7 +129,7 @@ class SetIndexer(EventIndexer):
 
             calls = felt.to_int(calldata[0])
             # Check the selector matches 'assemble_'
-            if felt.to_int(calldata[1]) == int(self.address, 16) and felt.to_int(calldata[2]) == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3:
+            if felt.to_int(calldata[1]) in self.addresses_int and felt.to_int(calldata[2]) == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3:
                 # Here, if the next value is 0, we're in the old execute.
                 if felt.to_int(calldata[3]) == 0:
                     use_old_abi = True
@@ -150,7 +150,7 @@ class SetIndexer(EventIndexer):
             if use_old_abi:
                 for i in range(calls):
                     callarray = calldata[1 + i * 4: 1 + (i + 1) * 4]
-                    if felt.to_int(callarray[0]) == int(self.address, 16):
+                    if felt.to_int(callarray[0]) in self.addresses_int:
                         # Check the selector matches 'assemble_'
                         if felt.to_int(callarray[1]) == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3:
                             assembly_tx_starts.append([felt.to_int(x) for x in callarray[2:4]])
@@ -163,7 +163,7 @@ class SetIndexer(EventIndexer):
                 i = 1
                 while i < len(calldata):
                     # print([hex(felt.to_int(x)) for x in calldata[i:]])
-                    if felt.to_int(calldata[i]) == int(self.address, 16):
+                    if felt.to_int(calldata[i]) in self.addresses_int:
                         # Check the selector matches 'assemble_'
                         if felt.to_int(calldata[i + 1]) == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3:
                             set_calldata = calldata[i + 3:i + 3 + felt.to_int(calldata[i + 2])]

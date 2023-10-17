@@ -1,3 +1,4 @@
+from typing import Sequence
 from starknet_py.net.gateway_client import GatewayClient
 from starknet_py.net.models import StarknetChainId
 from dataclasses import dataclass
@@ -18,6 +19,7 @@ class NetworkMetadata:
     attributes_registry_address: str = ''
     world_address: str = ''
     factory_address: str = ''
+    sets_addresses: Sequence[str] = ()
 
 
 DEVNET = NetworkMetadata(
@@ -46,20 +48,30 @@ TESTNET_DOJO = NetworkMetadata(
     id="starknet-testnet-dojo",
     storage_bucket="briq-bucket-test-1",
 
-    world_address="0x224ad60c7cac93cc53ac324b2c6289a335a1f914e009344520b7bea5cba7195",
+    world_address="0x472f425f84a736a4fb59e9aa7d8c2f664a04b91e36b92230db93abb0566cb7b",
 
-    briq_address="0x1d1b0fea4ed52bc6459a537ffd687a98bce5dcb33491294ef79b6d13a4ff20b",
-    set_address="0x704f5c989fc68cd845125ff378b6fe42679477a26de68a03ac8cbe5fc4dea47",
-    factory_address="0x59152f8e204f008814c1cf5472e91ba53a723ebbd3c62a415f6571a35724abd",
-    box_address="0x317fb0ae04fb8eae8bd032bf7c217bcef7e2a152ea89e17a08e21537a75d7e0",
+    briq_address="0x16dffb1ef41055a45e37c9f4189cc2748141c81cf2ca1f5f929d9ae727d67e8",
+    set_address="0x30d94b5cad19b465667f1f7298c747be883b1ba6db9ed7f4d8e20ebaf336bc8",
+    factory_address="0x15e6c5cf2766fdf71494359389ad710ab79f597833200a887c4ae6948e123b0",
+
     # briqmas
-    booklet_address="0x4aa9169992298aa98981c781040a9312726b3865f868c55a38fcceadf6ef563",
+    box_address="0x150915cb2822785ff97ddab53b5d7fa05cd2522e41963f67a772c110b72aa23",
+    # briqmas
+    booklet_address="0x20943fb1e326d8ac6575568e4384ffd4720e17835ec6d31c82ba3131cb0f9aa",
 
-    auction_address="0x06a780187cfd58ad6ce1279cb4291bcf4f8acb2806dc1dccc9aee8183a9c1c40",
-    attributes_registry_address="0x06a780187cfd58ad6ce1279cb4291bcf4f8acb2806dc1dccc9aee8183a9c1c40",
+    sets_addresses=[
+        # generic
+        "0x30d94b5cad19b465667f1f7298c747be883b1ba6db9ed7f4d8e20ebaf336bc8",
+        # briqmas
+        "0x4661b144606e0dff664a8a3f98b999b48b51c959c3ce484bff3e4b728102526",
+    ],
+
+    auction_address="",
+    attributes_registry_address="",
 
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
 )
+
 
 MAINNET = NetworkMetadata(
     id="starknet-mainnet",

@@ -13,7 +13,7 @@ class Erc1155Indexer(EventIndexer):
     contract_prefix: str
 
     def __init__(self, contract_prefix: str, address: str) -> None:
-        super().__init__(contract_prefix, address)
+        super().__init__(contract_prefix, [address])
         self.contract_prefix = contract_prefix
         self.filters = [get_event_filter(address, "TransferSingle")]
         self.event_serializer = get_event_serializer({
@@ -47,7 +47,7 @@ class Erc1155Indexer(EventIndexer):
         # Store each in Mongo
         documents = []
         for event_with_tx in data.events:
-            if felt.to_int(event_with_tx.event.from_address) != int(self.address, 16):
+            if felt.to_int(event_with_tx.event.from_address) not in self.addresses_int:
                 continue
             tx_hash = felt.to_hex(event_with_tx.transaction.meta.hash)
             parsed_event = decode_event(self.event_serializer, event_with_tx.event)
