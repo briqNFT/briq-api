@@ -1,10 +1,10 @@
 import logging
-import aiohttp
 
 from fastapi import APIRouter, HTTPException, Request
 from briq_api.auth import is_admin
 from briq_api.chain.networks import get_network_metadata
-from briq_api.chain.rpcs import alchemy_endpoint
+from briq_api.chain.rpcs import end_rpc_session, setup_rpc_session, rpc_post
+from briq_api.config import ENV
 from briq_api.memory_cache import CacheData
 
 from .common import ExceptionWrapperRoute
@@ -13,29 +13,23 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(route_class=ExceptionWrapperRoute(logger))
 
-alchemy_session = None
-
 @CacheData.memory_cache(lambda chain_id, _, tx_hash: f'{chain_id}_{tx_hash}_rpc_tx_data', timeout=30)
 async def get_rpc_tx_data(chain_id: str, data, tx_hash: str):
-    async with alchemy_session.post(alchemy_endpoint[chain_id], data=data) as response:
-        return await response.json()
+    return await rpc_post(chain_id, data)
 
 
 @CacheData.memory_cache(lambda chain_id, _: f'{chain_id}_rpc_chain_id', timeout=3600)
 async def get_rpc_chain_id(chain_id: str, data):
-    async with alchemy_session.post(alchemy_endpoint[chain_id], data=data) as response:
-        return await response.json()
+    return await rpc_post(chain_id, data)
 
 
 @CacheData.memory_cache(lambda chain_id, _, entrypoint: f'{chain_id}_{entrypoint}_rpc_factory', timeout=60)
 async def get_rpc_call_factory(chain_id: str, data, entrypoint: str):
-    async with alchemy_session.post(alchemy_endpoint[chain_id], data=data) as response:
-        return await response.json()
+    return await rpc_post(chain_id, data)
 
 
 async def get_rpc_call(chain_id: str, data):
-    async with alchemy_session.post(alchemy_endpoint[chain_id], data=data) as response:
-        return await response.json()
+    return await rpc_post(chain_id, data)
 
 
 @router.post("/node/{chain_id}/rpc")
@@ -70,13 +64,20 @@ async def post_rpc(chain_id: str, request: Request):
 
     raise HTTPException(status_code=400, detail="Invalid method")
 
+if ENV == 'dev':
+    # Temporary - for local dojo deployment
+    @router.post("/node/{chain_id}/rpc_local")
+    async def post_rpc_local(chain_id: str, request: Request):
+        body = await request.body()
+        resp = await get_rpc_call(chain_id, body)
+        return resp
+
 
 @router.on_event("startup")
 async def on_startup():
-    global alchemy_session
-    alchemy_session = aiohttp.ClientSession()
+    setup_rpc_session()
 
 
 @router.on_event("shutdown")
 async def on_shutdown():
-    await alchemy_session.close()
+    await end_rpc_session()
