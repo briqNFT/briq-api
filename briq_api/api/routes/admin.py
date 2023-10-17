@@ -164,7 +164,7 @@ class CompileShapeContractRequest(BaseModel):
 
 @router.head("/admin/compile_shape_contract/")
 @router.post("/admin/compile_shape_contract/")
-async def store_theme_object(shapes: CompileShapeContractRequest):
+async def compile_shape_contract(shapes: CompileShapeContractRequest):
     ids = {}
     for attr_id in shapes.shapes_by_attribute_id:
         items = []
@@ -176,6 +176,7 @@ async def store_theme_object(shapes: CompileShapeContractRequest):
                 shape['data']['color'].lower(),
                 int(shape['data']['material'], 16)
             ))
+        items.sort(key=lambda x: x.x_y_z)
         ids[int(attr_id, 16)] = generate_shape_check(items)
     sorted_ids = list(ids.keys())
     sorted_ids.sort()
@@ -189,15 +190,27 @@ async def store_theme_object(shapes: CompileShapeContractRequest):
 
         process = await asyncio.create_subprocess_exec(
             STARKNET_COMPILE_PATH,
-            code_path, "--single-file", os.path.join(tmpdirname, "code.json"),
+            code_path, "--single-file", os.path.join(tmpdirname, "sierra.json"),
         )
         await process.communicate()
 
-        if process.returncode != 0:
+        casm_process = await asyncio.create_subprocess_exec(
+            STARKNET_COMPILE_PATH.replace('starknet-compile', 'starknet-sierra-compile'),
+            os.path.join(tmpdirname, "sierra.json"), os.path.join(tmpdirname, "casm.json"),
+        )
+        await casm_process.communicate()
+
+        if process.returncode != 0 or casm_process.returncode != 0:
             raise HTTPException(status_code=400, detail="Compilation failed")
 
-        with open(os.path.join(tmpdirname, "code.json")) as f:
-            return f.read()
+        with open(os.path.join(tmpdirname, "sierra.json")) as f:
+            sierra = f.read()
+        with open(os.path.join(tmpdirname, "casm.json")) as f:
+            casm = f.read()
+        return {
+            "sierra": sierra,
+            "casm": casm,
+        }
 
 
 class NewNFTRequest(BaseModel):
