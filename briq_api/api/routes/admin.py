@@ -21,6 +21,7 @@ from briq_api.stores import file_storage, theme_storage
 from briq_api.mesh.briq import BriqData
 
 from briq_protocol.binomial_ifs import generate_shape_check, generate_binary_search_function, ShapeItem, HEADER
+from briq_protocol.gen_shape_check import ANY_MATERIAL_ANY_COLOR
 
 from starknet_py.contract import Contract
 from starknet_py.utils.typed_data import TypedData
@@ -174,7 +175,7 @@ async def compile_shape_contract(shapes: CompileShapeContractRequest):
                 shape['pos'][1],
                 shape['pos'][2],
                 shape['data']['color'].lower(),
-                int(shape['data']['material'], 16)
+                ANY_MATERIAL_ANY_COLOR if ("any_color" in shape['data'] and shape['data']['any_color']) else int(shape['data']['material'], 16)
             ))
         items.sort(key=lambda x: x.x_y_z)
         ids[int(attr_id, 16)] = generate_shape_check(items)
