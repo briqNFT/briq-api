@@ -19,9 +19,9 @@ from .events.box import Erc1155Indexer
 logger = logging.getLogger(__name__)
 
 set_indexer = SetIndexer(NETWORK.sets_addresses)
-box_indexer = Erc1155Indexer("box", NETWORK.box_address)
-booklet_indexer = Erc1155Indexer("booklet", NETWORK.booklet_address)
-briq_indexer = Erc1155Indexer("briq", NETWORK.briq_address)
+box_indexer = Erc1155Indexer("box", NETWORK.box_addresses)
+booklet_indexer = Erc1155Indexer("booklet", NETWORK.booklet_addresses)
+briq_indexer = Erc1155Indexer("briq", [NETWORK.briq_address])
 
 
 class BriqIndexer(StarkNetIndexer):

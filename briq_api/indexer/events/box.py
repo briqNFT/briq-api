@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Any, List
 from apibara.starknet import felt
 
 from .common import (
@@ -12,10 +12,10 @@ logger = logging.getLogger(__name__)
 class Erc1155Indexer(EventIndexer):
     contract_prefix: str
 
-    def __init__(self, contract_prefix: str, address: str) -> None:
-        super().__init__(contract_prefix, [address])
+    def __init__(self, contract_prefix: str, addresses: List[str]) -> None:
+        super().__init__(contract_prefix, addresses)
         self.contract_prefix = contract_prefix
-        self.filters = [get_event_filter(address, "TransferSingle")]
+        self.filters = [get_event_filter(address, "TransferSingle") for address in addresses]
         self.event_serializer = get_event_serializer({
             "name": "TransferSingle",
             "type": "event",

@@ -1,7 +1,7 @@
-from typing import Sequence
+from typing import List
 from starknet_py.net.gateway_client import GatewayClient
 from starknet_py.net.models import StarknetChainId
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -9,17 +9,18 @@ class NetworkMetadata:
     id: str
     chain_id: int = 0
     storage_bucket: str = ''
-    auction_address: str = ''
-    auction_ducks: str = ''
-    box_address: str = ''
-    briq_address: str = ''
-    booklet_address: str = ''
-    set_address: str = ''
-    erc20_address: str = ''
-    attributes_registry_address: str = ''
-    world_address: str = ''
-    factory_address: str = ''
-    sets_addresses: Sequence[str] = ()
+    auction_address: str = '0'
+    auction_ducks: str = '0'
+    box_address: str = '0'
+    briq_address: str = '0'
+    booklet_address: str = '0'
+    set_address: str = '0'
+    erc20_address: str = '0'
+    attributes_registry_address: str = '0'
+    factory_address: str = '0'
+    box_addresses: List[str] = field(default_factory=list)
+    booklet_addresses: List[str] = field(default_factory=list)
+    sets_addresses: List[str] = field(default_factory=list)
 
 
 DEVNET = NetworkMetadata(
@@ -48,26 +49,35 @@ TESTNET_DOJO = NetworkMetadata(
     id="starknet-testnet-dojo",
     storage_bucket="briq-bucket-test-1",
 
-    world_address="0x472f425f84a736a4fb59e9aa7d8c2f664a04b91e36b92230db93abb0566cb7b",
-
-    briq_address="0x16dffb1ef41055a45e37c9f4189cc2748141c81cf2ca1f5f929d9ae727d67e8",
-    set_address="0x30d94b5cad19b465667f1f7298c747be883b1ba6db9ed7f4d8e20ebaf336bc8",
-    factory_address="0x15e6c5cf2766fdf71494359389ad710ab79f597833200a887c4ae6948e123b0",
+    briq_address="0x3fc9bfbf5e373f5bf52b1c895885c85de76863772511c467df882ca44826962",
+    factory_address="0x24081ab73c27537806ce23d93b40befd8946bdede1f031298a032ccb2b74d96",
 
     # briqmas
-    box_address="0x150915cb2822785ff97ddab53b5d7fa05cd2522e41963f67a772c110b72aa23",
+    box_address="0x10fda9480706cef65c9d7eb90a2ce32751ac80898fc826cc74e6331b781992a",
     # briqmas
-    booklet_address="0x20943fb1e326d8ac6575568e4384ffd4720e17835ec6d31c82ba3131cb0f9aa",
+    booklet_address="0x761a05da11813527b02f503000b74c0e83743e1f836111ca987772a19fca3bb",
 
-    sets_addresses=[
-        # generic
-        "0x30d94b5cad19b465667f1f7298c747be883b1ba6db9ed7f4d8e20ebaf336bc8",
-        # briqmas
-        "0x4661b144606e0dff664a8a3f98b999b48b51c959c3ce484bff3e4b728102526",
+    box_addresses=[
+        "0x6e10789a603f768da43d9797dc97fc53ad4c3b52db504ff102be232aa8eb527",  # starknet_planet
+        "0x10fda9480706cef65c9d7eb90a2ce32751ac80898fc826cc74e6331b781992a",  # briqmas
     ],
 
-    auction_address="",
-    attributes_registry_address="",
+    booklet_addresses=[
+        "0x748f4162442c60a6e228503e078ff8b003f331695bffda99c74e5a7bc235656",  # booklet_ducks
+        "0x4e549e6a2e8401909ab03d20c9a6fbef4613a1354b74b0e52cf80fc4cdcc2e6",  # booklet_starknet_planet
+        "0x761a05da11813527b02f503000b74c0e83743e1f836111ca987772a19fca3bb",  # booklet_briqmas
+        "0x34b7c0de8199f5acc07fe3b95e009750ee32de6f341251e46a448210d4e700a",  # booklet_lil_ducks
+        "0x22a626c03cb1320e31ed4deaa174088419697bf44f4e1fe2d7e1ecc61e1d607",  # booklet_frens_ducks
+    ],
+
+    sets_addresses=[
+        "0x34fcb874cbc85d0a6f8c473d433e9ebd0bccfa76ad75232945a1f0115b62ba1",  # set_nft
+        "0x765fca82c4690a15c8c33985b7045ec8f8fdd1a7cba231a1c5f3a9c9767adc8",  # set_nft_ducks
+        "0x30e11394a3c0e2fd712b0bd161027c49d96df1a010693c3f2794428b0b03df9",  # set_nft_sp
+        "0x774c404feeb97675c47145140a0f8d92c70f02d52a4aa640c11064f1d9380a3",  # set_nft_briqmas
+        "0x2f888a745a97123db6265a1db9f09a47d59f47e223dd272a3223e652bde806a",  # set_nft_1155_lil_ducks
+        "0x4f72b6668def25e048f8877e4d200602dd90d10cb1bedfba5758a67e3c7da13",  # set_nft_1155_frens_ducks
+    ],
 
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
 )
@@ -86,6 +96,7 @@ MAINNET = NetworkMetadata(
     set_address="0x01435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672",
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
 )
+
 
 TESTNET_LEGACY = NetworkMetadata(id="starknet-testnet-legacy", storage_bucket="briq-bucket-prod-1")
 

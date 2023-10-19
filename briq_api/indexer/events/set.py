@@ -1,4 +1,4 @@
-from typing import Any, Sequence, Tuple
+from typing import Any, List, Sequence, Tuple
 import logging
 import requests
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class SetIndexer(EventIndexer):
-    def __init__(self, addresses: str) -> None:
+    def __init__(self, addresses: List[str]) -> None:
         super().__init__("set", addresses)
         self.filters = [get_event_filter(address, "Transfer") for address in addresses]
         self.event_serializer = get_event_serializer({
