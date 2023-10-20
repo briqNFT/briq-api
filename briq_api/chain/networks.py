@@ -44,6 +44,10 @@ TESTNET = NetworkMetadata(
     attributes_registry_address="0x06a780187cfd58ad6ce1279cb4291bcf4f8acb2806dc1dccc9aee8183a9c1c40",
     set_address="0x038bf557306ab58c7e2099036b00538b51b37bdad3b8abc31220001fb5139365",
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+
+    box_addresses=["0x043bafcb15f12c137229406f96735eba51018fe75e5330058479556bc77dfd94"],
+    booklet_addresses=["0x018734a90e5df97235c0ff83f92174cf6f16ad3ec572e38e2e146e47c8878839"],
+    sets_addresses=["0x038bf557306ab58c7e2099036b00538b51b37bdad3b8abc31220001fb5139365"],
 )
 
 TESTNET_DOJO = NetworkMetadata(
@@ -99,6 +103,10 @@ MAINNET = NetworkMetadata(
     attributes_registry_address="0x008d4f5b0830bd49a88730133a538ccaca3048ccf2b557114b1076feeff13c11",
     set_address="0x01435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672",
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+
+    box_addresses=["0x01e1f972637ad02e0eed03b69304344c4253804e528e1a5dd5c26bb2f23a8139"],
+    booklet_addresses=["0x05faa82e2aec811d3a3b14c1f32e9bbb6c9b4fd0cd6b29a823c98c7360019aa4"],
+    sets_addresses=["0x01435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672"],
 )
 
 

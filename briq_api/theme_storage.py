@@ -36,7 +36,11 @@ class ThemeStorage(StorageClient[FileStorageBackend]):
     # Booklet stuff
 
     def get_booklet_spec(self, chain_id: str) -> dict[str, str]:
-        return self.get_backend(chain_id).load_json(self.booklet_path())
+        json_data = self.get_backend(chain_id).load_json(self.booklet_path())
+        # For forward-compatible-changes, I support this optionally.
+        if chain_id in json_data:
+            return json_data[chain_id]
+        return json_data
 
     def get_booklet_id_from_token_id(self, chain_id: str, booklet_token_id: str) -> str:
         booklet_data = self.get_booklet_spec(chain_id)
