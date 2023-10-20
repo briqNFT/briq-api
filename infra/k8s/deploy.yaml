@@ -287,14 +287,14 @@ spec:
     kind: Deployment
     name: #@ data.values.name
   minReplicas: 1
-  maxReplicas: 4
+  maxReplicas: 16
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 30
+      stabilizationWindowSeconds: 300
       policies:
       - type: Pods
         value: 1
-        periodSeconds: 30
+        periodSeconds: 120
   metrics:
   - type: Resource
     resource:

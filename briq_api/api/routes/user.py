@@ -1,8 +1,7 @@
-import io
 import logging
 
-from starlette.responses import JSONResponse, StreamingResponse
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+from pydantic import BaseModel
 
 from briq_api.api import auctions
 
@@ -31,3 +30,14 @@ async def get_user_briqs(chain_id: str, user_id: str):
 @router.get("/user/bids/{chain_id}/{auction_theme}/{user_id}")
 async def get_user_bids_auction(chain_id: str, auction_theme: str, user_id: str):
     return await auctions.get_user_bids(chain_id, auction_theme, user_id)
+
+
+class UserBillingInfo(BaseModel):
+    wallet_address: str
+    outside_eu: bool
+    eu_country: str
+
+
+@router.post("/user/billing_country")
+async def log_user_billing_country(data: UserBillingInfo):
+    logger.info("User billing data: %(wallet_address)s %(outside_eu)s %(eu_country)s", data.dict())
