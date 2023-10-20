@@ -21,6 +21,7 @@ class NetworkMetadata:
     box_addresses: List[str] = field(default_factory=list)
     booklet_addresses: List[str] = field(default_factory=list)
     sets_addresses: List[str] = field(default_factory=list)
+    sets_1155_addresses: List[str] = field(default_factory=list)
 
 
 DEVNET = NetworkMetadata(
@@ -75,6 +76,9 @@ TESTNET_DOJO = NetworkMetadata(
         "0x765fca82c4690a15c8c33985b7045ec8f8fdd1a7cba231a1c5f3a9c9767adc8",  # set_nft_ducks
         "0x30e11394a3c0e2fd712b0bd161027c49d96df1a010693c3f2794428b0b03df9",  # set_nft_sp
         "0x774c404feeb97675c47145140a0f8d92c70f02d52a4aa640c11064f1d9380a3",  # set_nft_briqmas
+    ],
+
+    sets_1155_addresses=[
         "0x2f888a745a97123db6265a1db9f09a47d59f47e223dd272a3223e652bde806a",  # set_nft_1155_lil_ducks
         "0x4f72b6668def25e048f8877e4d200602dd90d10cb1bedfba5758a67e3c7da13",  # set_nft_1155_frens_ducks
     ],

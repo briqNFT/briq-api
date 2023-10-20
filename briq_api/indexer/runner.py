@@ -19,6 +19,7 @@ from .events.box import Erc1155Indexer
 logger = logging.getLogger(__name__)
 
 set_indexer = SetIndexer(NETWORK.sets_addresses)
+set_1155_indexer = Erc1155Indexer("set", NETWORK.sets_1155_addresses)
 box_indexer = Erc1155Indexer("box", NETWORK.box_addresses)
 booklet_indexer = Erc1155Indexer("booklet", NETWORK.booklet_addresses)
 briq_indexer = Erc1155Indexer("briq", [NETWORK.briq_address])
@@ -32,7 +33,7 @@ class BriqIndexer(StarkNetIndexer):
 
     def initial_configuration(self) -> IndexerConfiguration[Filter]:
         filters = Filter().with_header(True)
-        for filter in set_indexer.filters + box_indexer.filters + booklet_indexer.filters + briq_indexer.filters:
+        for filter in set_indexer.filters + set_1155_indexer.filters + box_indexer.filters + booklet_indexer.filters + briq_indexer.filters:
             filters = filters.add_event(filter)
         return IndexerConfiguration(
             filter=filters,
@@ -53,6 +54,7 @@ class BriqIndexer(StarkNetIndexer):
         self.last_block = data.header.block_number
 
         await set_indexer.process_transfers(data, info)
+        await set_1155_indexer.process_transfers(data, info)
         await box_indexer.process_transfers(data, info)
         await booklet_indexer.process_transfers(data, info)
         await briq_indexer.process_transfers(data, info)
