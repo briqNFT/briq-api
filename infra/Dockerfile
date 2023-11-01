@@ -1,4 +1,5 @@
-FROM python:3.9-buster as initial
+# This custom docker image provides the starknet compilers and python 3.9-buster
+FROM europe-west3-docker.pkg.dev/healthy-saga-329513/sltech-briq/cairo-compiler:v2.3.1 as initial
 
 WORKDIR /usr/src/app
 RUN pip install --no-cache-dir poetry
