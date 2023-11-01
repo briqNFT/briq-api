@@ -61,7 +61,7 @@ def setup_stores(local: bool, use_mock_chain: bool):
             theme_storage.connect_for_chain(MAINNET.id, backend=cloud_storage)
 
         if ENV != 'prod':
-            mongo_storage.connect_for_chain(TESTNET.id, MongoBackend())
+            mongo_storage.connect_for_chain(TESTNET.id, MongoBackend(db_name="testnet_0"))
             mongo_storage.connect_for_chain(TESTNET_DOJO.id, MongoBackend(db_name="dojo_3"))
             mongo_storage.connect_for_chain(MAINNET.id, MongoBackend(db_name=INDEXER_ID.replace('-', '_') + '_mn'))
         else:
