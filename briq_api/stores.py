@@ -1,5 +1,7 @@
 import logging
 import os
+from briq_api.storage.file.backends.redis_storage import RedisStorage
+from briq_api.storage.multi_backend_client import StorageClient
 from briq_api.theme_storage import ThemeStorage
 
 from briq_api.config import ENV
@@ -11,7 +13,7 @@ from briq_api.storage.file.backends.cloud_storage import CloudStorage
 from briq_api.storage.file.backends.file_storage import FileStorage
 from briq_api.storage.file.backends.legacy_cloud_storage import LegacyCloudStorage
 from briq_api.indexer.storage import mongo_storage, MongoBackend
-from .storage.file.file_client import FileClient
+from .storage.file.file_client import FileClient, FileStorageBackend
 
 from briq_api.indexer.config import INDEXER_ID
 from briq_api.memory_cache import CacheData
@@ -34,13 +36,15 @@ def get_auction_json_data(chain_id: str, theme_id: str):
 file_storage = FileClient()
 genesis_storage = GenesisStorage()
 theme_storage = ThemeStorage()
-
+session_storage: StorageClient[FileStorageBackend] = StorageClient()
 
 def setup_stores(local: bool, use_mock_chain: bool):
     if not local:
         logger.info("Connecting normally.")
 
         file_storage.connect_for_chain(TESTNET_LEGACY.id, backend=LegacyCloudStorage(TESTNET_LEGACY.storage_bucket))
+
+        session_storage.connect(RedisStorage(os.getenv("REDIS_URL") or 'localhost'))
 
         # For now, starknet-testnet is connected to the test bucket only in test env.
         if ENV != 'prod':
@@ -73,6 +77,7 @@ def setup_stores(local: bool, use_mock_chain: bool):
         logger.info("Connecting locally.")
         file_storage.connect(FileStorage())
         theme_storage.connect(FileStorage())
+        session_storage.connect(FileStorage("temp/session/", ensure_paths=True))
         # TODO: change this
         genesis_storage.connect(FileStorage("briq_api/genesis_data/localhost/"))
         mongo_storage.connect(MongoBackend())

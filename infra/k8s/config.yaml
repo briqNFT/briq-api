@@ -17,3 +17,4 @@ data:
   START_BLOCK: #@ data.values.indexer.start_block
   SET_INDEXER_URL: #@ data.values.name + "-set-indexer"
   CLOUD_STORAGE_BUCKET: #@ data.values.storage_bucket
+  REDIS_URL: #@ data.values.name + "-redis.default.svc.cluster.local"

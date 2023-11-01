@@ -31,7 +31,7 @@ class StorageClient(Generic[StorageBackend]):
     def connect_for_chain(self, chain_id: str, backend: Union[None, StorageBackend]):
         self.backend_for[chain_id] = backend
 
-    def get_backend(self, chain_id: str) -> StorageBackend:
+    def get_backend(self, chain_id: Union[str, None] = None) -> StorageBackend:
         # note: this on purpose returns None if that was explicitly specified.
         if chain_id in self.backend_for:
             if not self.backend_for[chain_id]:

@@ -106,3 +106,10 @@ class FileStorage(FileStorageBackend):
             time.sleep(self.slowdown)
         with open(self.path + path, "rb") as f:
             return f.read()
+
+    def delete(self, path: str):
+        logger.info("Deleting %s", path)
+        self.ensure_path(path)
+        if self.slowdown:
+            time.sleep(self.slowdown)
+        os.remove(self.path + path)

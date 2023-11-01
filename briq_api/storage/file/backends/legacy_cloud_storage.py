@@ -59,3 +59,6 @@ class LegacyCloudStorage(FileStorageBackend):
 
     def backup_file(self, path: str):
         raise NotImplementedError()
+
+    def delete(self, path: str):
+        raise NotImplementedError()

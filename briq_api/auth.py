@@ -10,6 +10,7 @@ from briq_api.chain.rpcs import alchemy_endpoint
 
 from fastapi import APIRouter
 from briq_api.api.routes.common import ExceptionWrapperRoute
+from briq_api.stores import session_storage
 
 from starknet_py.contract import Contract
 from starknet_py.net.full_node_client import FullNodeClient
@@ -20,18 +21,17 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(route_class=ExceptionWrapperRoute(logger))
 
-auth_data = {}
-
 
 def is_authenticated(session_id: str):
-    return session_id in auth_data and auth_data[session_id]["authenticated"]
+    data = session_storage.get_backend().load_json(session_id)
+    return data and data["authenticated"]
 
 
 def is_admin(request: Request):
     session_id = request.state.session_id
     if not is_authenticated(session_id):
         raise HTTPException(status_code=401, detail="Not authorized.")
-    data = auth_data[session_id]
+    data = session_storage.get_backend().load_json(session_id)
     if data['verified_network'] == StarknetChainId.TESTNET.value:
         if data['verified_address'] in [
             0x03ef5b02bcc5d30f3f0d35d55f365e6388fe9501eca216cb1596940bf41083e2,  # wraitii
@@ -130,13 +130,13 @@ def auth_start(chain_id: str, address: str, request: Request, response: Response
     challenge = issue_challenge(hex(StarknetChainId.TESTNET.value), address)
     session_id = gen_session_id()
 
-    if request.state.session_id and request.state.session_id in auth_data:
-        del auth_data[request.state.session_id]
+    if request.state.session_id and session_storage.get_backend().has_json(request.state.session_id):
+        session_storage.get_backend().delete(request.state.session_id)
     request.state.session_id = session_id
-    auth_data[session_id] = {
+    session_storage.get_backend().store_json(session_id, {
         "challenge": challenge,
         "authenticated": False,
-    }
+    })
     return {
         "challenge": challenge,
     }
@@ -149,18 +149,22 @@ class AuthFinished(BaseModel):
 @router.post("/finish")
 async def auth_finish(body: AuthFinished, request: Request):
     """Validate the challenge."""
-    if request.state.session_id not in auth_data or "challenge" not in auth_data[request.state.session_id]:
+    if not session_storage.get_backend().has_json(request.state.session_id):
+        return HTTPException(status_code=401, detail="No challenge issued.")
+    data = session_storage.get_backend().load_json(request.state.session_id)
+    if "challenge" not in data:
         return HTTPException(status_code=401, detail="No challenge issued.")
     if is_authenticated(request.state.session_id):
         return "already authenticated"
 
-    challenge = auth_data[request.state.session_id]["challenge"]
+    challenge = data["challenge"]
     signature = body.signature
     validation = await validate_challenge(challenge, signature)
     if not validation:
         return HTTPException(status_code=401, detail="Invalid signature.")
-    auth_data[request.state.session_id]["authenticated"] = True
-    auth_data[request.state.session_id]["verified_address"] = int(challenge["message"]["address"], 16)
-    auth_data[request.state.session_id]["verified_network"] = int(challenge["message"]["chainId"], 16)
-    del auth_data[request.state.session_id]["challenge"]
+    data["authenticated"] = True
+    data["verified_address"] = int(challenge["message"]["address"], 16)
+    data["verified_network"] = int(challenge["message"]["chainId"], 16)
+    del data["challenge"]
+    session_storage.get_backend().store_json(request.state.session_id, data)
     return "authenticated"

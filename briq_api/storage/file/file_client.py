@@ -44,6 +44,10 @@ class FileStorageBackend(ABC):
     def load_bytes(self, path: str) -> bytes:
         pass
 
+    @abstractmethod
+    def delete(self, path: str):
+        pass
+
 
 class FileClient(StorageClient[FileStorageBackend]):
     """

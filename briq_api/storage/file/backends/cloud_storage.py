@@ -65,3 +65,6 @@ class CloudStorage(FileStorageBackend):
     def load_bytes(self, path: str):
         logger.debug("Loading data from %s", path)
         return self.bucket.blob(path).download_as_bytes()
+
+    def delete(self, path: str):
+        raise NotImplementedError()

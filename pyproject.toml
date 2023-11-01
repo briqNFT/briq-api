@@ -28,6 +28,7 @@ motor = "^3.2.0"
 python-jose = "^3.3.0"
 passlib = "^1.7.4"
 itsdangerous = "^2.1.2"
+redis = {extras = ["hiredis"], version = "^5.0.1"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.1.0"

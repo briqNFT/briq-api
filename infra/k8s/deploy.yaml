@@ -60,6 +60,47 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: #@ data.values.name + "-redis"
+  labels: #@ data.values.defaultLabels
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployname: #@ data.values.name + "-redis"
+  template:
+    metadata:
+      labels:
+        _: #@ template.replace(data.values.defaultLabels)
+        deployname: #@ data.values.name + "-redis"
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: node_type
+#@ if data.values.env == 'prod':
+                operator: NotIn
+#@ else:
+                operator: In
+#@ end
+                values:
+                - release_surge
+      containers:
+      - name: redis
+        image: "redis:7"
+        ports:
+        - containerPort: 6379
+          name: redis
+        resources:
+          requests:
+            cpu: #@ "150m"
+            memory: #@ "256Mi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: #@ data.values.indexer.name
   labels: #@ data.values.defaultLabels
 spec:
