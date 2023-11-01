@@ -45,9 +45,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://test.sltech.company",
-        "https://briq.construction",
-    ],
+    ] if ENV == 'dev' else ['*'], # In dev env I don't have the API relay so need to rely on explicit CORS.
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
