@@ -7,9 +7,7 @@ metadata:
   labels: #@ data.values.defaultLabels
 data:
   ENV: #@ data.values.env
-  NETWORK_NAME: #@ data.values.indexer.network_name
   LOGLEVEL: #@ data.values.log_level
-  INDEXER_ID: #@ data.values.indexer.indexer_id
   MONGO_URL: #@ data.values.indexer.name + ".default.svc.cluster.local:27017"
   MONGO_USERNAME: apibara
   MONGO_PASSWORD: apibara

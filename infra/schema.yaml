@@ -18,12 +18,14 @@ defaultLabels:
   appname: briq
   env: test
 
+set_indexer_network_name: starknet-testnet
+
 indexer:
   name: briq-indexer
   image_store: mongo:latest
   image_apibara: apibara/apibara:0.3.2-alpha1
-  indexer_id: "testnet-test-0"
-  network_name: 'starknet-testnet'
+  indexer_ids: ["testnet-test-0"]
+  network_names: ['starknet-testnet']
   apibara_url: ''
   start_block: ''
   resources:

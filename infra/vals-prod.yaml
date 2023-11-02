@@ -16,11 +16,13 @@ resources:
   cpu: "250m"
   memory: "512Mi"
 
+set_indexer_network_name: starknet-mainnet
+
 indexer:
   name: briq-indexer
   image_store: mongo:latest
-  indexer_id: "kub-mainnet-1"
-  network_name: 'starknet-mainnet'
+  indexer_ids: ["kub-mainnet-1"]
+  network_names: ['starknet-mainnet']
   resources:
     cpu_store: "250m"
     memory_store: "512Mi"

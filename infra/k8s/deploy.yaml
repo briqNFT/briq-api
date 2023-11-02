@@ -170,11 +170,13 @@ spec:
           periodSeconds: 5
           timeoutSeconds: 3
           failureThreshold: 10
+#@ arr = data.values.indexer.indexer_ids
+#@ for i in range(len(arr)):
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: #@ data.values.indexer.name + "-runner"
+  name: #@ data.values.indexer.name + "-runner-" + str(i)
   labels: #@ data.values.defaultLabels
 spec:
   replicas: 1
@@ -182,60 +184,12 @@ spec:
     type: "Recreate"
   selector:
     matchLabels:
-      deployname: #@ data.values.indexer.name + "-runner"
+      deployname: #@ data.values.indexer.name + "-runner-" + str(i)
   template:
     metadata:
       labels:
         _: #@ template.replace(data.values.defaultLabels)
-        deployname: #@ data.values.indexer.name + "-runner"
-    spec:
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 1
-            preference:
-              matchExpressions:
-              - key: node_type
-#@ if data.values.env == 'prod':
-                operator: NotIn
-#@ else:
-                operator: In
-#@ end
-                values:
-                - release_surge
-      containers:
-      - name: "indexer-runner"
-        image: #@ "europe-west3-docker.pkg.dev/healthy-saga-329513/sltech-briq/" + data.values.image_name + ":" + data.values.image_tag
-        envFrom:
-        - configMapRef:
-            name: #@ data.values.name
-        - secretRef:
-            name: #@ data.values.name
-        resources:
-          requests:
-            cpu: #@ data.values.indexer.resources.cpu_runner
-            memory: #@ data.values.indexer.resources.memory_runner 
-        command: ["python3"]
-        args: ["-m", "briq_api.indexer.runner"]
-#@ if data.values.env == 'test':
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: #@ data.values.indexer.name + "-mn-runner"
-  labels: #@ data.values.defaultLabels
-spec:
-  replicas: 0
-  strategy:
-    type: "Recreate"
-  selector:
-    matchLabels:
-      deployname: #@ data.values.indexer.name + "-mn-runner"
-  template:
-    metadata:
-      labels:
-        _: #@ template.replace(data.values.defaultLabels)
-        deployname: #@ data.values.indexer.name + "-mn-runner"
+        deployname: #@ data.values.indexer.name + "-runner-" + str(i)
     spec:
       affinity:
         nodeAffinity:
@@ -260,10 +214,10 @@ spec:
         - secretRef:
             name: #@ data.values.name
         env:
-        - name: NETWORK_NAME
-          value: 'starknet-mainnet'
         - name: INDEXER_ID
-          value: #@ data.values.indexer.indexer_id + '-mn'
+          value: #@ data.values.indexer.indexer_ids[i]
+        - name: NETWORK_NAME
+          value: #@ data.values.indexer.network_names[i]
         resources:
           requests:
             cpu: #@ data.values.indexer.resources.cpu_runner
@@ -271,6 +225,7 @@ spec:
         command: ["python3"]
         args: ["-m", "briq_api.indexer.runner"]
 #@ end
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -312,6 +267,9 @@ spec:
         envFrom:
         - configMapRef:
             name: #@ data.values.name
+        env:
+        - name: NETWORK_NAME
+          value: #@ data.values.set_indexer_network_name
         command: ["gunicorn"]
         args: ["briq_api.set_indexer.server:app", "-b", "0.0.0.0:5432", "-w", "1"]
 
