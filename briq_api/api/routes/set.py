@@ -1,3 +1,4 @@
+import base64
 import io
 import json
 import logging
@@ -134,4 +135,43 @@ async def store_set(set: StoreSetRequest):
     logger.info("Stored new set %(rid)s for %(owner)s", {
         "rid": rid.json(),
         "owner": set.owner
+    })
+
+
+class MigrateSetRequest(BaseModel):
+    old_chain_id: str
+    old_token_id: str
+    chain_id: str
+    token_id: str
+
+
+@router.head("/check_migrate_set/{chain_id}/{token_id}")
+@router.get("/check_migrate_set/{chain_id}/{token_id}")
+async def check_migrate_set(chain_id: str, token_id: str):
+    rid = SetRID(chain_id=chain_id, token_id=token_id)
+    preview = api.get_preview(rid)
+    metadata = await api.get_metadata(rid)
+    assert preview is not None
+    assert metadata is not None
+
+
+@router.post("/migrate_set")
+async def migrate_set(set: MigrateSetRequest):
+
+    old_rid = SetRID(chain_id=set.old_chain_id, token_id=set.old_token_id)
+    preview = api.get_preview(old_rid)
+    metadata = await api.get_metadata(old_rid)
+    new_rid = SetRID(chain_id=set.chain_id, token_id=set.token_id)
+
+    # Go through all keys, replace old_token_id with token_id and old_chain_id with chain_id
+    for key in metadata.keys():
+        if isinstance(metadata[key], str):
+            metadata[key] = metadata[key].replace(set.old_token_id, set.token_id)
+            metadata[key] = metadata[key].replace(set.old_chain_id, set.chain_id)
+
+    await api.store_set(new_rid, metadata, b'data:image/png;base64,' + base64.b64encode(preview))
+
+    logger.info("Migrated set %(old_rid)s to %(rid)s", {
+        "old_rid": old_rid.json(),
+        "rid": new_rid.json()
     })
