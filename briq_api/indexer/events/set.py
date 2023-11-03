@@ -184,6 +184,10 @@ class SetIndexer(EventIndexer):
         }, timeout=1)
         try:
             req.raise_for_status()
+            logger.info("Sending data to set-indexer for TX %(tx)s on chain %(chain_id)s.", {
+                "tx": tx_hash,
+                "chain_id": NETWORK.id,
+            })
         except Exception as e:
             logger.warn("Error while storing set data for TX %(tx)s.", {
                 "tx": tx_hash,

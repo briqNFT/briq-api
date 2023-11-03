@@ -139,6 +139,7 @@ async def health():
 @app.post("/store")
 async def store_new_set(request: NewSetStorageRequest):
     if request.chain_id not in set_indexer:
+        logger.warn("Received storage request for unsupported chain %(chain_id)s", {"chain_id": request.chain_id})
         raise HTTPException(status_code=400, detail="Invalid chain ID")
 
     try:
@@ -152,6 +153,10 @@ async def store_new_set(request: NewSetStorageRequest):
             }, exc_info=e)
             raise HTTPException(status_code=400, detail="Invalid transaction data")
 
+    logger.info("Received storage request for token %(token_id)s on chain %(chain_id)s", {
+        "token_id": token_id,
+        "chain_id": request.chain_id,
+    })
     set_indexer[request.chain_id].add_set_to_pending(token_id, set_data)
     return "ok"
 
