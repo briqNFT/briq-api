@@ -13,8 +13,6 @@ from dataclasses import dataclass
 import logging
 from time import time
 from typing import Any, Dict, Union
-import requests
-from briq_api.chain.networks import get_network_metadata
 from briq_api.set_indexer.create_set_metadata import create_set_metadata
 from briq_api.storage.file.file_client import FileClient
 
@@ -152,4 +150,4 @@ class SetIndexer:
 
     def _store_set(self, data: StorableSetData, token_id: str):
         self.storage.store_set_metadata(SetRID(chain_id=self.network, token_id=token_id), self._get_storage_data(data, token_id))
-        logger.info('Stored new set %(token)s', {"token": token_id})
+        logger.info('Stored new set %(token)s at %(chain_id)s', {"token": token_id, "chain_id": self.network})
