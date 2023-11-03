@@ -164,8 +164,8 @@ class SetIndexer(EventIndexer):
                 while i < len(calldata):
                     # print([hex(felt.to_int(x)) for x in calldata[i:]])
                     if felt.to_int(calldata[i]) in self.addresses_int:
-                        # Check the selector matches 'assemble_'
-                        if felt.to_int(calldata[i + 1]) == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3:
+                        # Check the selector matches 'assemble'
+                        if felt.to_int(calldata[i + 1]) == 900515088291907014246024985967390105957655003449706852724539784431876714417:
                             set_calldata = calldata[i + 3:i + 3 + felt.to_int(calldata[i + 2])]
                             self.send_set_calldata(set_calldata, tx_hash, (i + 3, i + 3 + felt.to_int(calldata[i + 2])))
                             i += felt.to_int(calldata[i + 2]) + 3

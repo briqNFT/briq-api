@@ -13,7 +13,7 @@ MONGO_PASSWORD = os.getenv("MONGO_PASSWORD") or "apibara"
 
 START_BLOCK = int(os.getenv("START_BLOCK") or {
     "starknet-testnet": 857000,
-    "starknet-testnet-dojo": 875000,
+    "starknet-testnet-dojo": 894000,
     "starknet-testnet2": 3000,
     "starknet-mainnet": 10400,
 }[NETWORK_NAME])
