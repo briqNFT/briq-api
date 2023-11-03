@@ -44,12 +44,14 @@ class SetIndexer:
         self.storage = storage
 
     def add_set_to_pending(self, token_id: str, data: Union[StorableSetData, None] = None):
+        logger.debug('Adding set %(token)s to pending list for network %(network)s', {"token": token_id, "network": self.network})
         self.pending[token_id] = data
 
     def process_pending_set(self):
         if len(self.pending) == 0:
             return
         token_id = list(self.pending.keys())[0]
+        logger.debug('Processing set %(token)s for network %(network)s', {"token": token_id, "network": self.network})
         self.store_set(token_id)
 
     def store_set(self, token_id: str):
