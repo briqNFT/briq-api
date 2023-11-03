@@ -3,7 +3,7 @@ import logging
 import math
 import os
 from typing import List, Union
-from briq_api.chain.networks import MAINNET
+from briq_api.chain.networks import MAINNET, TESTNET
 from briq_api.config import ENV
 from briq_api.set_indexer.config import NETWORK
 from briq_api.set_indexer.set_indexer import SetIndexer, StorableSetData
@@ -167,9 +167,9 @@ def startup_event():
     setup_stores(os.getenv("LOCAL") or False, False)
 
     set_indexer[NETWORK.id] = SetIndexer(NETWORK.id, file_storage)
-    # In test, add mainnet processing.
+    # In test, add 'legacy' testnet processing.
     if ENV == 'test':
-        set_indexer[MAINNET.id] = SetIndexer(MAINNET.id, file_storage)
+        set_indexer[TESTNET.id] = SetIndexer(TESTNET.id, file_storage)
     pending_task = asyncio.create_task(process_pending_sets())
 
 
