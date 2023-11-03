@@ -32,7 +32,7 @@ class StorableSetData:
 
 class SetIndexer:
     network: str
-    pending: Dict[str, Union[StorableSetData, None]] = {}
+    pending: Dict[str, Union[StorableSetData, None]]
     storage: FileClient
 
     def __init__(
@@ -40,6 +40,7 @@ class SetIndexer:
         network: str,
         storage: FileClient,
     ):
+        self.pending = {}
         self.network = network
         self.storage = storage
 

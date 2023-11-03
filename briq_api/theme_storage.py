@@ -4,10 +4,11 @@ from briq_api.storage.multi_backend_client import StorageClient
 from briq_api.memory_cache import CacheData
 
 class ThemeStorage(StorageClient[FileStorageBackend]):
-    _memcache: dict[str, CacheData[dict[str, str]]] = {}
+    _memcache: dict[str, CacheData[dict[str, str]]]
 
     def __init__(self) -> None:
         super().__init__()
+        self._memcache = {}
         # Decorate out of band so I can use self (so I can reset the cache).
         # (I need to reset the cache because we can upload new box/booklets)
         # (this feels kinda horrible, but alternatives have bad tradeoffs as well)
