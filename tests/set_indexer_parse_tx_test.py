@@ -16,7 +16,7 @@ class FakePost:
 @mock.patch('briq_api.indexer.events.set.requests.post')
 def test_send_to_set_indexer(mock: mock.MagicMock, tx_data):
     mock.side_effect = lambda a, json, timeout: FakePost(a, json)
-    SetIndexer("0x5f9e1c4975b0f71f0b1af2b837166d321af1cdba5c30c09b0d4822b493f1347").send_to_set_indexer('0xfade', tx_data)
+    SetIndexer(["0x5f9e1c4975b0f71f0b1af2b837166d321af1cdba5c30c09b0d4822b493f1347"]).send_to_set_indexer('0xfade', tx_data)
     assert len(mock.call_args_list[0].kwargs['json']['transaction_data']) == 201
     assert mock.call_count == 2
 
@@ -24,7 +24,7 @@ def test_send_to_set_indexer(mock: mock.MagicMock, tx_data):
 @mock.patch('briq_api.indexer.events.set.requests.post')
 def test_send_to_set_indexer_easy(mock: mock.MagicMock, tx_data_easy):
     mock.side_effect = lambda a, json, timeout: FakePost(a, json)
-    SetIndexer("0x5f9e1c4975b0f71f0b1af2b837166d321af1cdba5c30c09b0d4822b493f1347").send_to_set_indexer('0xfade', tx_data_easy)
+    SetIndexer(["0x5f9e1c4975b0f71f0b1af2b837166d321af1cdba5c30c09b0d4822b493f1347"]).send_to_set_indexer('0xfade', tx_data_easy)
     assert len(mock.call_args_list[0].kwargs['json']['transaction_data']) == 201
     assert mock.call_count == 2
 
@@ -32,7 +32,7 @@ def test_send_to_set_indexer_easy(mock: mock.MagicMock, tx_data_easy):
 @mock.patch('briq_api.indexer.events.set.requests.post')
 def test_send_to_set_indexer_new_style(mock: mock.MagicMock, new_style_tx_data):
     mock.side_effect = lambda a, json, timeout: FakePost(a, json)
-    SetIndexer("0x1435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672").send_to_set_indexer('0xfade', new_style_tx_data)
+    SetIndexer(["0x1435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672"]).send_to_set_indexer('0xfade', new_style_tx_data)
     assert len(mock.call_args_list[0].kwargs['json']['transaction_data']) == 0x22
     assert mock.call_count == 1
 
@@ -45,7 +45,7 @@ def new_style_tx_data() -> list[FieldElement]:
         0xfade,
         0,
         0x1435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672,
-        0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3,
+        900515088291907014246024985967390105957655003449706852724539784431876714417,
         0x22,
         0x793d54d5f7779b8266b57c697a3687a5ea432854d98d9fa4967386f7ae42490,
         0xdd2c843ce6634f788e31403c75b38cb9,

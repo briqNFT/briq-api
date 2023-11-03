@@ -129,7 +129,7 @@ class SetIndexer(EventIndexer):
 
             calls = felt.to_int(calldata[0])
             # Check the selector matches 'assemble_'
-            if felt.to_int(calldata[1]) in self.addresses_int and felt.to_int(calldata[2]) == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3:
+            if felt.to_int(calldata[1]) in self.addresses_int and (felt.to_int(calldata[2]) == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3 or felt.to_int(calldata[2]) == 900515088291907014246024985967390105957655003449706852724539784431876714417):
                 # Here, if the next value is 0, we're in the old execute.
                 if felt.to_int(calldata[3]) == 0:
                     use_old_abi = True
@@ -152,7 +152,7 @@ class SetIndexer(EventIndexer):
                     callarray = calldata[1 + i * 4: 1 + (i + 1) * 4]
                     if felt.to_int(callarray[0]) in self.addresses_int:
                         # Check the selector matches 'assemble_'
-                        if felt.to_int(callarray[1]) == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3:
+                        if felt.to_int(callarray[1]) == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3 or felt.to_int(callarray[1]) == 900515088291907014246024985967390105957655003449706852724539784431876714417:
                             assembly_tx_starts.append([felt.to_int(x) for x in callarray[2:4]])
                 # Now send all transactions to the set indexer
                 # We don't care if there are repeats, the indexer handles that.
@@ -165,7 +165,7 @@ class SetIndexer(EventIndexer):
                     # print([hex(felt.to_int(x)) for x in calldata[i:]])
                     if felt.to_int(calldata[i]) in self.addresses_int:
                         # Check the selector matches 'assemble'
-                        if felt.to_int(calldata[i + 1]) == 900515088291907014246024985967390105957655003449706852724539784431876714417:
+                        if felt.to_int(calldata[i + 1]) == 0x2f2e26c65fb52f0e637c698caccdefaa2a146b9ec39f18899efe271f0ed83d3 or felt.to_int(calldata[i + 1]) == 900515088291907014246024985967390105957655003449706852724539784431876714417:
                             set_calldata = calldata[i + 3:i + 3 + felt.to_int(calldata[i + 2])]
                             self.send_set_calldata(set_calldata, tx_hash, (i + 3, i + 3 + felt.to_int(calldata[i + 2])))
                             i += felt.to_int(calldata[i + 2]) + 3
