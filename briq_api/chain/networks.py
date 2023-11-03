@@ -9,6 +9,7 @@ class NetworkMetadata:
     id: str
     chain_id: int = 0
     storage_bucket: str = ''
+    base_domain: str = 'briq.construction'
     auction_address: str = '0'
     auction_ducks: str = '0'
     box_address: str = '0'
@@ -36,6 +37,7 @@ DEVNET = NetworkMetadata(
 TESTNET = NetworkMetadata(
     id="starknet-testnet",
     chain_id=StarknetChainId.TESTNET.value,
+    base_domain='test.sltech.company',
     auction_address="0x033f840d4f7bfa20aaa128e5a69157355478d33182bea6039d55aae3ffb861e2",
     auction_ducks="0x04ef0bd475fb101cc1b5dc2c4fc9d11b4fa233cfa1876924ec84b2f3dcf32f75",
     box_address="0x043bafcb15f12c137229406f96735eba51018fe75e5330058479556bc77dfd94",
@@ -53,6 +55,7 @@ TESTNET = NetworkMetadata(
 TESTNET_DOJO = NetworkMetadata(
     id="starknet-testnet-dojo",
     storage_bucket="briq-bucket-test-1",
+    base_domain='test.sltech.company',
 
     briq_address="0x67e44efc5d1868fde5ff9604b44c3cef2d77dc00e785f6d2c4519c248c8bdf2",
     factory_address="0x651a5b09f83dd7645c406763c4c32f0a369ad4f14729ee3cfd02b4a99fc8363",
@@ -90,6 +93,8 @@ MAINNET = NetworkMetadata(
     id="starknet-mainnet",
     chain_id=StarknetChainId.MAINNET.value,
     storage_bucket="briq-bucket-prod-1",
+    base_domain='briq.construction',
+
     auction_address="0x01712e3e3f133b26d65a3c5aaae78e7405dfca0a3cfe725dd57c4941d9474620",
     auction_ducks="0x00b9bb7650a88f7e375ae8d31d48b4d4f13c6c34344839837d7dae7ffcdd3df0",
     box_address="0x01e1f972637ad02e0eed03b69304344c4253804e528e1a5dd5c26bb2f23a8139",

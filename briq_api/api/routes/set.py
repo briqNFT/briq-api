@@ -7,6 +7,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from starlette.responses import StreamingResponse
+from briq_api.chain.networks import get_network_metadata
 
 from briq_api.set_identifier import SetRID
 from briq_api.storage.file.backends.cloud_storage import NotFoundException
@@ -120,13 +121,14 @@ class StoreSetRequest(BaseModel):
 
 @router.post("/store_set")
 async def store_set(set: StoreSetRequest):
+    domain = get_network_metadata(set.chain_id).base_domain
     # Ensure compliance of the metadata with ERC 721
-    set.data["image"] = f"https://api.briq.construction/v1/preview/{set.chain_id}/{set.token_id}.png"
+    set.data["image"] = f"https://api.{domain}/v1/preview/{set.chain_id}/{set.token_id}.png"
     # Default to showing the GLB version of the mesh.
-    set.data["animation_url"] = f"https://api.briq.construction/v1/model/{set.chain_id}/{set.token_id}.glb"
+    set.data["animation_url"] = f"https://api.{domain}/v1/model/{set.chain_id}/{set.token_id}.glb"
 
     # Point to the builder.
-    set.data["external_url"] = f"https://briq.construction/set/{set.chain_id}/{set.token_id}"
+    set.data["external_url"] = f"https://{domain}/set/{set.chain_id}/{set.token_id}"
 
     rid = SetRID(chain_id=set.chain_id, token_id=set.token_id)
 
