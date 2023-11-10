@@ -116,7 +116,7 @@ async def validate_challenge(typed_data, signature: List[str]):
         (value,) = await contract.functions["is_valid_signature"].call(
             TypedData.from_dict(typed_data).message_hash(int(typed_data['message']['address'], 16)), signature_as_int
         )
-        return value == 1
+        return value == 1 or value == 370462705988
     except:
         return False
 
