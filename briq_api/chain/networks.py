@@ -57,32 +57,32 @@ TESTNET_DOJO = NetworkMetadata(
     storage_bucket="briq-bucket-test-1",
     base_domain='test.sltech.company',
 
-    briq_address="0x67e44efc5d1868fde5ff9604b44c3cef2d77dc00e785f6d2c4519c248c8bdf2",
-    factory_address="0x651a5b09f83dd7645c406763c4c32f0a369ad4f14729ee3cfd02b4a99fc8363",
+    briq_address="0x62d33afa007607ff0eaf008280f72c1033f5a1fda176f20fc36521c80f7a1ba",
+    factory_address="0x227a1cc8dfb791628ef60e73d2676b9a1da43b878e8d14a920ba96cec63c79c",
 
     box_addresses=[
-        "0xd9bfa6936fdd84593a3920937fc556c67c16da8d3d3663f6af299365cc3b10",  # box_nft_sp
-        "0x6baff254582bd7750600b762729bd44b7dea781b17804fb5a529874e3f6d5fb",  # box_nft_briqmas
+        "0x1d23f59c358da797256a3ff346dcce909f4be05342ef5a4e184132945117ef",  # box_nft_sp
+        "0x76fb0333408c9f4de5d898b1fd349b80077e8a22b2608710c1652e090f92a11",  # box_nft_briqmas
     ],
 
     booklet_addresses=[
-        "0x53a545137759dc4d969b9816e809a7f9d89f0e86ad96d7277b33c724b466fa9",  # booklet_ducks
-        "0x4104a0f65e62cce969e9adf103277c2b2681a731bca790f7d04c921488d2ec1",  # booklet_starknet_planet
-        "0x5cce2521148759a6f605e7c7661c9d0441162bbe076cdef8385b3718e6c9afb",  # booklet_briqmas
-        "0x1f582e9ee9f862caccaee12c181740e6f1fe8800df30c8b0c5ca14ef4651c59",  # booklet_lil_ducks
-        "0x55afbd1c3b5e29891cffed94edd86fc60e044e89d9b329a1d31035e160058cb",  # booklet_fren_ducks
+        "0x235aae7d603648452f9bb7ee71b18a9d83e1dbc9f4ed693fb4ab9409962b57a",  # booklet_ducks
+        "0x5ce6ca596712b54cfc04b9a8d74b41b2158dcaad73f456035dbdae1b019fcb9",  # booklet_starknet_planet
+        "0x5c1330e30b7e08cc552baff0c9d76a68d15527671bab44936ad95bdc6c4262e",  # booklet_briqmas
+        "0x7294576a17089d0f8d9920ccda875ab1b60567f3009f6e2b2a598f42bef5036",  # booklet_lil_ducks
+        "0x70970b0319cd1b706a1ad24a158b4b44e536588eebc8972eaf0602a1db523bc",  # booklet_fren_ducks
     ],
 
     sets_addresses=[
-        "0x16a1e2799d18948eeb8d153180169d3ebbd964958ff338d9446fd5834f18836",  # set_nft
-        "0x112c60e1c47f74e3328f9ca0678519de2f962de678bafb3f37c5d5a2e05a58e",  # set_nft_ducks
-        "0x49fbdb572e1b1bc24db67bb9205329227daa838039e344dd33ae91af76812e7",  # set_nft_sp
-        "0x69710c8ee4465f4ea29636bc741224a2ec9456191c88ca52d1a04bc413efafb",  # set_nft_briqmas
+        "0x4b9a60a3acada4322d3348133d6bad63a6309ec40d23d093651e07a6cb28810",  # set_nft
+        "0x14f4eea3d6a7627c0d719cad3dbd55452833514afcbe76e299cef7ef00cb20e",  # set_nft_ducks
+        "0x58206fa33f9aa43f8c0ee52abf390c18006f3f0d52c7c3e464e619fe2a5cfc5",  # set_nft_sp
+        "0x6ebbc1d4a154e7f86957080d19a81a85d2cd1582db03f9d401c42529453f3fa",  # set_nft_briqmas
     ],
 
     sets_1155_addresses=[
-        "0x4499ce1604e2432e26779b97ca6e56250bb612103e3f13233f25dbecabf13f7",  # set_nft_1155_lil_ducks
-        "0x7645accafb7d12f07dcc7abca241f3afbaefc9300aca5ca90b85ea6db50cfe3",  # set_nft_1155_fren_ducks
+        "0x341e9fb783afbf3d15f6377c5e18ce2fa412e39c853ab46d0c55cff40bf8dac",  # set_nft_1155_lil_ducks
+        "0x3eb663fec0a5ee53e88ef8222acfbc39a17e2109cefa79507d6f19e58e2710f",  # set_nft_1155_fren_ducks
     ],
 
     erc20_address="0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
