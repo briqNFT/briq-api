@@ -101,3 +101,19 @@ async def uri_set(chain_id: str, token_id: str):
         # TODO: bump cache for prod
         "Cache-Control": f"public,max-age={2 * 60}"
     })
+
+
+@router.head("/uri/briqs/{chain_id}/{token_id}")
+@router.head("/uri/briqs/{chain_id}/{token_id}.json")
+@router.get("/uri/briqs/{chain_id}/{token_id}")
+@router.get("/uri/briqs/{chain_id}/{token_id}.json")
+async def uri_set(chain_id: str, token_id: str):
+    """
+        Return the URI for briqs
+    """
+    return JSONResponse({
+        
+    }, headers={
+        # TODO: bump cache for prod
+        "Cache-Control": f"public,max-age={2 * 60}"
+    })
