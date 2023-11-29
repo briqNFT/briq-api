@@ -16,7 +16,7 @@ START_BLOCK = int(os.getenv("START_BLOCK") or {
     "starknet-testnet-dojo": 910000,
     "starknet-testnet2": 3000,
     "starknet-mainnet": 10400,
-    "starknet-mainnet-dojo": 444306,
+    "starknet-mainnet-dojo": 445443,
 }[NETWORK_NAME])
 
 APIBARA_URL = os.getenv("APIBARA_URL") or {
