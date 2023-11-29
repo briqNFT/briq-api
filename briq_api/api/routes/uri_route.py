@@ -112,7 +112,12 @@ async def uri_set(chain_id: str, token_id: str):
         Return the URI for briqs
     """
     return JSONResponse({
-        
+        "name": "briq token",
+        "description": "The standard briq token, used to create briq sets!",
+        "image": "https://briq.construction/briq-uri-image.png",
+        "external_url": "https://briq.construction/",
+        "properties": {},
+        "attributes": []
     }, headers={
         # TODO: bump cache for prod
         "Cache-Control": f"public,max-age={2 * 60}"
