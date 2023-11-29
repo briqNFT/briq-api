@@ -16,3 +16,4 @@ data:
   SET_INDEXER_URL: #@ data.values.name + "-set-indexer"
   CLOUD_STORAGE_BUCKET: #@ data.values.storage_bucket
   REDIS_URL: #@ data.values.name + "-redis.default.svc.cluster.local"
+  STARKNET_COMPILE_PATH: /usr/src/app/starknet-compile
