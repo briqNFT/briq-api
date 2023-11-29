@@ -6,7 +6,7 @@ from briq_api.theme_storage import ThemeStorage
 
 from briq_api.config import ENV
 
-from .chain.networks import MAINNET, TESTNET, TESTNET_DOJO, TESTNET_LEGACY
+from .chain.networks import MAINNET, MAINNET_DOJO, TESTNET, TESTNET_DOJO, TESTNET_LEGACY
 
 from briq_api.genesis_data.genesis_storage import GenesisStorage
 from briq_api.storage.file.backends.cloud_storage import CloudStorage
@@ -60,11 +60,16 @@ def setup_stores(local: bool, use_mock_chain: bool):
             file_storage.connect_for_chain(MAINNET.id, backend=cloud_storage)
             theme_storage.connect_for_chain(MAINNET.id, backend=cloud_storage)
 
+            cloud_storage_dojo = CloudStorage(MAINNET_DOJO.storage_bucket)
+            file_storage.connect_for_chain(MAINNET_DOJO.id, backend=cloud_storage_dojo)
+            theme_storage.connect_for_chain(MAINNET_DOJO.id, backend=cloud_storage_dojo)
+
+        # TODO: this is kinda clunky to change in both infra/ and here.
         if ENV != 'prod':
             mongo_storage.connect_for_chain(TESTNET.id, MongoBackend(db_name="testnet_legacy_0"))
             mongo_storage.connect_for_chain(TESTNET_DOJO.id, MongoBackend(db_name="dojo_4"))
         else:
-            mongo_storage.connect_for_chain(MAINNET.id, MongoBackend())
+            mongo_storage.connect_for_chain(MAINNET.id, MongoBackend(db_name="kub_mainnet_1"))
 
         if ENV != 'prod':
             genesis_storage.connect(FileStorage("briq_api/genesis_data/localhost/"))

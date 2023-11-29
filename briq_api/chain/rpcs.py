@@ -1,21 +1,26 @@
 from typing import Any
 import aiohttp
 import os
+from briq_api.config import ENV
 
 rpc_key = {
     'starknet-testnet': os.getenv("ALCHEMY_API_KEY_TESTNET") or "",
     'starknet-testnet-dojo': os.getenv("NETHERMIND_RPC_KEY_TESTNET") or "",
-    'starknet-mainnet': os.getenv("ALCHEMY_API_KEY_MAINNET") or ""
+    'starknet-mainnet': os.getenv("ALCHEMY_API_KEY_MAINNET") or "",
+    'starknet-mainnet-dojo': os.getenv("ALCHEMY_API_KEY_MAINNET") or "",
 }
 
 alchemy_endpoint = {
     'starknet-testnet': "https://starknet-goerli.g.alchemy.com/v2/" + (os.getenv("ALCHEMY_API_KEY_TESTNET") or ""),
     'starknet-testnet-dojo': "https://rpc.nethermind.io/goerli-juno/v0_4",
-    'starknet-mainnet': "https://starknet-mainnet.g.alchemy.com/v2/" + (os.getenv("ALCHEMY_API_KEY_MAINNET") or "")
+    'starknet-mainnet': "https://starknet-mainnet.g.alchemy.com/v2/" + (os.getenv("ALCHEMY_API_KEY_MAINNET") or ""),
+    'starknet-mainnet-dojo': "https://starknet-mainnet.g.alchemy.com/v2/" + (os.getenv("ALCHEMY_API_KEY_MAINNET") or ""),
 }
 
-rpc_session: aiohttp.ClientSession = None
+if ENV == 'dev':
+    alchemy_endpoint['starknet-mainnet-dojo'] = "rpc.nethermind.io/mainnet-juno/v0_4"
 
+rpc_session: aiohttp.ClientSession = None
 
 def setup_rpc_session():
     global rpc_session

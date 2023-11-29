@@ -109,6 +109,12 @@ MAINNET = NetworkMetadata(
     sets_addresses=["0x01435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672"],
 )
 
+MAINNET_DOJO = NetworkMetadata(
+    id="starknet-mainnet-dojo",
+    chain_id=StarknetChainId.MAINNET.value,
+    storage_bucket="briq-bucket-prod-dojo",
+    base_domain='briq.construction',
+)
 
 TESTNET_LEGACY = NetworkMetadata(id="starknet-testnet-legacy", storage_bucket="briq-bucket-prod-1")
 
@@ -119,6 +125,7 @@ def get_network_metadata(network: str):
         'starknet-testnet': TESTNET,
         'starknet-testnet-dojo': TESTNET_DOJO,
         'starknet-mainnet': MAINNET,
+        'starknet-mainnet-dojo': MAINNET_DOJO,
     }[network]
 
 
@@ -128,4 +135,5 @@ def get_gateway_client(network: str):
         'starknet-testnet': 'testnet',
         'starknet-testnet-dojo': 'testnet',
         'starknet-mainnet': 'mainnet',
+        'starknet-mainnet-dojo': 'mainnet',
     }[network])

@@ -16,6 +16,7 @@ START_BLOCK = int(os.getenv("START_BLOCK") or {
     "starknet-testnet-dojo": 910000,
     "starknet-testnet2": 3000,
     "starknet-mainnet": 10400,
+    "starknet-mainnet-dojo": 444306,
 }[NETWORK_NAME])
 
 APIBARA_URL = os.getenv("APIBARA_URL") or {
@@ -23,6 +24,7 @@ APIBARA_URL = os.getenv("APIBARA_URL") or {
     "starknet-testnet-dojo": "goerli.starknet.a5a.ch:443",
     "starknet-testnet2": "goerli-2.starknet.a5a.ch",
     "starknet-mainnet": "mainnet.starknet.a5a.ch",
+    "starknet-mainnet-dojo": "mainnet.starknet.a5a.ch",
 }[NETWORK_NAME]
 
 SET_INDEXER_URL = os.getenv("SET_INDEXER_URL")
