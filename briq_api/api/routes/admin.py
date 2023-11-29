@@ -8,6 +8,7 @@ import concurrent.futures
 import asyncio
 from dataclasses import dataclass
 from datetime import datetime
+from time import time
 from fastapi import APIRouter, HTTPException
 from PIL import Image
 from pydantic import BaseModel
@@ -184,7 +185,9 @@ async def compile_shape_contract(shapes: CompileShapeContractRequest):
     code = HEADER + generate_binary_search_function(sorted_ids, lambda x: ids[x]) + "\n}"
 
     # Call starknet-compile via subprocess
-    with tempfile.TemporaryDirectory() as tmpdirname:
+    tmpdirname = "/usr/src/app/contracts/" + str(time()) + '_' + list(shapes.shapes_by_attribute_id.keys())[0] + "/"
+    os.makedirs(tmpdirname, exist_ok=True)
+    with tempfile.TemporaryDirectory() as tmpdirname_OFF:
         code_path = os.path.join(tmpdirname, "code.cairo")
         with open(code_path, "w") as f:
             f.write(code)
