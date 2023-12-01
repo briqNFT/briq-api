@@ -13,7 +13,7 @@ theme_storage = ThemeStorage()
 mongo = MongoBackend(db_name="kub_mainnet_1")
 cloud_storage = CloudStorage('briq-bucket-prod-1')
 theme_storage.connect_for_chain('starknet-mainnet', cloud_storage)
-cloud_storage_test = CloudStorage('briq-bucket-test-1')
+cloud_storage_test = CloudStorage('briq-bucket-prod-dojo')
 theme_storage.connect_for_chain('starknet-mainnet-dojo', cloud_storage_test)
 #theme_storage.connect(FileStorage())
 
@@ -289,7 +289,7 @@ booklet_name_mapping = {
     "ducks_everywhere/SerialKillerDuck": "ducks_everywhere/Serial Killer Duck",
     "ducks_everywhere/SheriffDuck": "ducks_everywhere/Sheriff Duck",
     "ducks_everywhere/SherlockDuck": "ducks_everywhere/Sherlock Duck",
-    "ducks_everywhere/Shinto Shrine Ducks": "ducks_everywhere/Shinto Shrine Ducks",
+    "ducks_everywhere/Shinto Shrine Ducks": "ducks_everywhere/Shinto Shrine Duck",
     "ducks_everywhere/SiamesesDuck": "ducks_everywhere/Siameses Duck",
     "ducks_everywhere/SickDuck": "ducks_everywhere/Sick Duck",
     "ducks_everywhere/SkaterDuck": "ducks_everywhere/Skater Duck",
@@ -501,13 +501,15 @@ special_booklet_name = { x['token_id']: specific_sets[hex(decode_bytes(x['token_
 
 box_json_output = [{
     "owner": hex(decode_bytes(x['owner'])),
-    "box_id": decode_bytes(x['token_id'])
+    "box_id": decode_bytes(x['token_id']),
+    "quant": decode_bytes(x['quantity']),
 } for x in boxes]
 
 booklet_json_output = [{
     "owner": hex(decode_bytes(x['owner'])),
     "old_token_id": hex(decode_bytes(x['token_id'])),
     "new_booklet_id": new_booklet_ids[booklet_names[x['token_id']]],
+    "quant": decode_bytes(x['quantity']),
 } for x in free_booklets]
 
 sets_json_output = [{
@@ -524,8 +526,8 @@ sets_json_output = [{
 } for x in extra_sets]
 
 print(f"Sets: {len(sets) + len(extra_sets)}")
-print(f"Boxes: {len(boxes)}")
-print(f"Booklets: {len(free_booklets)}")
+print(f"Boxes: {len(boxes)} {sum([x['quant'] for x in box_json_output])})")
+print(f"Booklets: {len(free_booklets)} {sum([x['quant'] for x in booklet_json_output])}")
 
 print(json.dumps({
     "boxes": box_json_output,
