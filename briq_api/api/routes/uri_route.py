@@ -92,7 +92,6 @@ async def uri_set(chain_id: str, token_id: str):
         output = await set_uri(chain_id, token_id)
         output['image'] = output['image'].replace('//preview', '/v1/preview')
         output['animation_url'] = output['animation_url'].replace('//model', '/v1/model')
-        output['external_url'] = f'https://briq.construction/set/starknet-mainnet/{output["id"]}'
     except Exception as e:
         logger.error(e, exc_info=e)
         raise HTTPException(status_code=500, detail="File not found")

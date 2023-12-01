@@ -185,7 +185,7 @@ async def compile_shape_contract(shapes: CompileShapeContractRequest):
     code = HEADER + generate_binary_search_function(sorted_ids, lambda x: ids[x]) + "\n}"
 
     # Call starknet-compile via subprocess
-    tmpdirname = "/usr/src/app/contracts/" + str(time()) + '_' + list(shapes.shapes_by_attribute_id.keys())[0] + "/"
+    tmpdirname = "temp_new_contracts/" + str(time()) + '_' + list(shapes.shapes_by_attribute_id.keys())[0] + "/"
     os.makedirs(tmpdirname, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmpdirname_OFF:
         code_path = os.path.join(tmpdirname, "code.cairo")

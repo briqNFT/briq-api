@@ -70,6 +70,7 @@ def setup_stores(local: bool, use_mock_chain: bool):
             mongo_storage.connect_for_chain(TESTNET_DOJO.id, MongoBackend(db_name="dojo_4"))
         else:
             mongo_storage.connect_for_chain(MAINNET.id, MongoBackend(db_name="kub_mainnet_1"))
+            mongo_storage.connect_for_chain(MAINNET_DOJO.id, MongoBackend(db_name="kub_dojo_mainnet_1"))
 
         if ENV != 'prod':
             genesis_storage.connect(FileStorage("briq_api/genesis_data/localhost/"))
