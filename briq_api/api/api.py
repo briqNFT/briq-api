@@ -76,6 +76,11 @@ async def get_metadata(rid: SetRID):
         if len(booklets.nfts):
             data['booklet_id'] = theme_storage.get_booklet_id_from_token_id(rid.chain_id, booklets.nfts[0])
             booklet_meta = get_booklet_metadata(BoxRID(rid.chain_id, data['booklet_id'].split("/")[0], data['booklet_id'].split("/")[1]))
+
+            # Temp fix for ducks everywhere
+            data['name'] = booklet_meta['name']
+            data['description'] = booklet_meta['description']
+
             data['attributes'] += booklet_meta['attributes']
             for prop in booklet_meta['properties']:
                 if not (prop in data['properties']):
