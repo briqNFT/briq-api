@@ -121,7 +121,8 @@ def get_dojo_token_id_from_calldata(owner: int, hint: int, nb_briqs: int, attrib
     raw_tid = pedersen_hash(raw_tid, hint)
     raw_tid = pedersen_hash(raw_tid, nb_briqs)
     raw_tid = raw_tid % 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
-    return raw_tid & 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000
+    attr_element = attributes[0] if len(attributes) > 0 else 0
+    return raw_tid & 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000 + attr_element
 
 
 def get_token_id_from_calldata(owner: int, hint: int, uri: list[int]):
