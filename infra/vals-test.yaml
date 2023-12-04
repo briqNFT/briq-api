@@ -17,5 +17,5 @@ set_indexer_network_name: starknet-testnet-dojo
 indexer:
   name: dev-briq-indexer
   image_store: mongo:latest
-  indexer_ids: ["dojo-4", "testnet-legacy-0"]
+  indexer_ids: ["dojo-5", "testnet-legacy-0"]
   network_names: ["starknet-testnet-dojo", "starknet-testnet"]

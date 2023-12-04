@@ -67,7 +67,7 @@ def setup_stores(local: bool, use_mock_chain: bool):
         # TODO: this is kinda clunky to change in both infra/ and here.
         if ENV != 'prod':
             mongo_storage.connect_for_chain(TESTNET.id, MongoBackend(db_name="testnet_legacy_0"))
-            mongo_storage.connect_for_chain(TESTNET_DOJO.id, MongoBackend(db_name="dojo_4"))
+            mongo_storage.connect_for_chain(TESTNET_DOJO.id, MongoBackend(db_name="dojo_5"))
         else:
             mongo_storage.connect_for_chain(MAINNET.id, MongoBackend(db_name="kub_mainnet_1"))
             mongo_storage.connect_for_chain(MAINNET_DOJO.id, MongoBackend(db_name="kub_dojo_mainnet_1"))
