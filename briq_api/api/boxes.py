@@ -162,7 +162,7 @@ def get_booklet_metadata(rid: BoxRID):
 
 def list_themes(chain_id: str):
     if ENV != 'dev':
-        return ['starknet_planet', 'ducks_everywhere', 'ducks_frens']
+        return ['starknet_planet', 'ducks_everywhere', 'ducks_frens', 'briqmas' ]
     return box_storage.list_themes(chain_id)
 
 
