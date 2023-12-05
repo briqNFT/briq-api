@@ -20,15 +20,15 @@ async def _list_sets_of_theme(chain_id: str, theme_id: str) -> list[str]:
     return [hex(int.from_bytes(set['token_id'], "big")) async for set in sets]
 
 
-@CacheData.memory_cache(lambda chain_id: chain_id, timeout=60 * 60)
-async def list_duck_sets(chain_id: str) -> list[str]:
-    return await _list_sets_of_theme(chain_id, 'ducks_everywhere')
+@CacheData.memory_cache(lambda chain_id, theme_id: f"{chain_id}_{theme_id}", timeout=60 * 60)
+async def list_duck_sets(chain_id: str, theme_id: str) -> list[str]:
+    return await _list_sets_of_theme(chain_id, theme_id)
 
 
 async def list_sets_of_theme(chain_id: str, theme_id: str) -> list[str]:
     """
     List all minted NFTs belonging to a particular theme.
     """
-    if theme_id != 'ducks_everywhere':
+    if theme_id not in { 'ducks_everywhere', 'ducks_frens' }:
         raise NotImplementedError()
     return await list_duck_sets(chain_id)

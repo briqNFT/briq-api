@@ -26,7 +26,7 @@ router = APIRouter(route_class=ExceptionWrapperRoute(logger))
 @router.get("/{chain_id}/{theme_id}/{quality}/cover.jpg")
 async def get_theme_cover(chain_id: str, theme_id: str, quality: str):
     data = boxes.get_theme_data(chain_id, theme_id)
-    is_post_launch = data['sale_start'] is None or data['sale_start'] > time.time()
+    is_post_launch = data['sale_start'] < time.time() if 'sale_start' in data else True
     if not is_post_launch:
         output = boxes.box_storage.theme_cover_prelaunch(chain_id, theme_id, quality)
     else:
