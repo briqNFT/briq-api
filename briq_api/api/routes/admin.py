@@ -13,6 +13,7 @@ from fastapi import APIRouter, HTTPException
 from PIL import Image
 from pydantic import BaseModel
 from typing import Any, List, Optional, Tuple
+from briq_api.api import boxes
 
 from briq_api.auth import IsAdminDep
 from briq_api.chain.networks import get_gateway_client, get_network_metadata
@@ -39,7 +40,11 @@ COLLECTIONS_METADATA = {
     "ducks_everywhere": {
         "name": "Ducks Everywhere",
         "artist": "OutSmth",
-    }
+    },
+    "ducks_frens": {
+        "name": "Ducks Frens",
+        "artist": "OutSmth",
+    },
 }
 
 
@@ -158,6 +163,43 @@ async def store_theme_object(set: StoreThemeObjectRequest, chain_id: str, theme_
         i += 1
 
     theme_storage.reset_cache()
+
+
+@router.head("/admin/update_glbs/{chain_id}/{theme_id}/{object_id}")
+@router.post("/admin/update_glbs/{chain_id}/{theme_id}/{object_id}")
+async def update_glbs(set: StoreThemeObjectRequest, chain_id: str, theme_id: str, object_id: str):
+    # In this mode, we need to ensure that the object already exists, we're just filling in data.
+    booklet_spec = theme_storage.get_booklet_spec(chain_id)
+    if f"{theme_id}/{object_id}" not in booklet_spec:
+        raise HTTPException(status_code=400, detail="Object does not exist: " + booklet_spec[f"{theme_id}/{object_id}"])
+
+    # Load the existing booklet
+    booklet_metadata = boxes.get_booklet_metadata(rid = boxes.BoxRID(chain_id, theme_id, object_id))
+
+    PATH = f"genesis_themes/{theme_id}/{object_id}"
+
+    data = await generate_object_data(set, chain_id, theme_id, object_id)
+
+    booklet_metadata["nb_pages"] = data.booklet_metadata["nb_pages"]
+    booklet_metadata["steps_progress"] = data.booklet_metadata["steps_progress"]
+
+    briq_by_level, current_briqs = data.glb_briq_by_level, data.glb_current_briqs
+    glb_data = BriqData()
+
+    i = 0
+    for lev in briq_by_level:
+        glb_data.briqs = lev
+        file_storage.get_backend(chain_id).store_bytes(f"{PATH}/step_{i}.glb", b''.join(glb_data.to_gltf(separate_any_color=True).save_to_bytes()))
+        i += 1
+
+    i = 0
+    for lev in current_briqs:
+        glb_data.briqs = lev
+        file_storage.get_backend(chain_id).store_bytes(f"{PATH}/step_level_{i}.glb", b''.join(glb_data.to_gltf(separate_any_color=True).save_to_bytes()))
+        i += 1
+
+    # Store at the end to ensure everything went right.
+    file_storage.get_backend(chain_id).store_json(PATH + "/metadata_booklet.json", booklet_metadata)
 
 
 class CompileShapeContractRequest(BaseModel):

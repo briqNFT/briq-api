@@ -43,7 +43,6 @@ def create_booklet_metadata(
         "steps_progress": step_progress_data,
         "booklet_id": f"{theme_id}/{booklet_id}",
         "image": f"https://api.briq.construction/v1/box/cover_booklet/{network}/{theme_id}/{booklet_id}.png",
-        "external_url": f"https://api.briq.construction/v1/booklet/pdf/{network}/{theme_id}/{booklet_id}.pdf",
         "properties": {
             "collections": {
                 "name": "Collections",
