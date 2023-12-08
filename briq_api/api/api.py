@@ -23,68 +23,46 @@ def cached_set_metadata(rid: SetRID):
 
 
 async def get_metadata(rid: SetRID):
+    # Start the mongo queries first for performance.
+    booklet_promise = mongo_storage.get_user_nfts(rid.chain_id, rid.token_id, 'booklet')
+    dates_promise = mongo_storage.get_mint_burn_dates(rid.chain_id, 'set', int(rid.token_id, 16))
+    # Load the data, hopefully from cache.
     data = cached_set_metadata(rid)
-    data['created_at'] = await mongo_storage.get_mint_date(rid.chain_id, 'set', int(rid.token_id, 16))
     data['attributes'] = [{
         "trait_type": "Number of briqs",
         "value": len(data['briqs'])
     }]
-    if data['created_at'] != -1:
-        data['attributes'].append({
-            "display_type": "date",
-            "trait_type": "Creation Date",
-            "value": datetime.fromtimestamp(data['created_at']).strftime('%Y-%m-%d'),
-        })
     data['properties'] = {
         "nb_briqs": {
             "name": "Number of briqs",
             "value": len(data['briqs'])
         }
     }
-    # Collection hints for POAPs
-    # TODO: make this more general
-    if 'collection_hint' in data and data['collection_hint'] == 'poaps':
-        data['attributes'].append({
-            "trait_type": "Collections",
-            "value": ["briq POAPs"],
-        })
-        data['attributes'].append({
-            "trait_type": "briq POAPs",
-            "value": True,
-        })
-        data['properties']['collections'] = {
-            "name": "Collections",
-            "value": ["briq POAPs"]
-        }
-        data.pop('collection_hint')
-    elif 'collection_hint' in data and data['collection_hint'] == 'unframed':
-        data['attributes'].append({
-            "trait_type": "Collections",
-            "value": ["Ducks Everywhere x Unframed"],
-        })
-        data['attributes'].append({
-            "trait_type": "Ducks Everywhere x Unframed",
-            "value": True,
-        })
-        data['properties']['collections'] = {
-            "name": "Collections",
-            "value": ["Ducks Everywhere x Unframed"]
-        }
-        data.pop('collection_hint')
-    else:
-        booklets = await mongo_storage.get_user_nfts(rid.chain_id, rid.token_id, 'booklet')
-        if len(booklets.nfts):
-            data['booklet_id'] = theme_storage.get_booklet_id_from_token_id(rid.chain_id, booklets.nfts[0])
-            booklet_meta = get_booklet_metadata(BoxRID(rid.chain_id, data['booklet_id'].split("/")[0], data['booklet_id'].split("/")[1]))
+    # Check for a collection
+    # TODO -> this should probably be cached
+    booklets = await booklet_promise
+    if len(booklets.nfts):
+        data['booklet_id'] = theme_storage.get_booklet_id_from_token_id(rid.chain_id, booklets.nfts[0])
+        booklet_meta = get_booklet_metadata(BoxRID(rid.chain_id, data['booklet_id'].split("/")[0], data['booklet_id'].split("/")[1]))
 
-            # Temp fix for ducks everywhere
-            data['name'] = booklet_meta['name']
-            data['description'] = booklet_meta['description']
+        # Temp fix for ducks everywhere
+        data['name'] = booklet_meta['name']
+        data['description'] = booklet_meta['description']
 
-            data['attributes'] += booklet_meta['attributes']
-            for prop in booklet_meta['properties']:
-                if not (prop in data['properties']):
-                    data['properties'][prop] = booklet_meta['properties'][prop]
+        data['attributes'] += booklet_meta['attributes']
+        for prop in booklet_meta['properties']:
+            if not (prop in data['properties']):
+                data['properties'][prop] = booklet_meta['properties'][prop]
+    
+    mint_date, burn_date = await dates_promise
+    data['created_at'] = mint_date
+    if data['created_at'] != -1:
+        data['attributes'].append({
+            "display_type": "date",
+            "trait_type": "Creation Date",
+            "value": datetime.fromtimestamp(data['created_at']).strftime('%Y-%m-%d'),
+        })
+    data['disassembled'] = burn_date != -1
     return data
 
 

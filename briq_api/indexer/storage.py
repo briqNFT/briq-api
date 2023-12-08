@@ -78,16 +78,21 @@ class MongoStorage(StorageClient[MongoBackend]):
             block_nb = max(block_nb, nft['updated_block'])
         return UserNFTs(block_nb, nft_list)
 
-    async def get_mint_date(self, chain_id: str, collection: str, token_id: int):
-        data = await self.get_backend(chain_id).async_db[collection + "_transfers"].find_one({
+    async def get_mint_burn_dates(self, chain_id: str, collection: str, token_id: int):
+        mint = self.get_backend(chain_id).async_db[collection + "_transfers"].find_one({
             "from": (0).to_bytes(32, "big"),
             "token_id": token_id.to_bytes(32, "big"),
             "_chain.valid_to": None,
         })
+        burn = self.get_backend(chain_id).async_db[collection + "_transfers"].find_one({
+            "to": (0).to_bytes(32, "big"),
+            "token_id": token_id.to_bytes(32, "big"),
+            "_chain.valid_to": None,
+        })
         try:
-            return data['_timestamp'].timestamp()
+            return (await mint)['_timestamp'].timestamp(), (await burn)['_timestamp'].timestamp()
         except:
-            return -1
+            return -1, -1
 
     async def get_user_briqs(self, chain_id: str, user_id: str) -> list[Any]:
         data = self.get_backend(chain_id).async_db["briq_tokens"].find({
