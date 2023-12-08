@@ -28,7 +28,7 @@ async def get_forest_data(chain_id: str):
         })
 
     trees = mongo_storage.get_backend(chain_id).async_db["booklet_tokens"].find({
-        "token_id": ((2**192 * 10) + 1).to_bytes(32, "big"),
+        "token_id": (0x20000000000000001).to_bytes(32, "big"),
         "_chain.valid_to": None,
     })
     potential_sets = []
