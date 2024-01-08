@@ -80,8 +80,8 @@ def setup_stores(local: bool, use_mock_chain: bool):
         # Don't attempt connecting to the cloud in that mode,
         # we expect to run locally and it makes it faster to reload the API
         logger.info("Connecting locally.")
-        file_storage.connect(FileStorage())
-        theme_storage.connect(FileStorage())
+        file_storage.connect(FileStorage(ensure_paths=True))
+        theme_storage.connect(FileStorage(ensure_paths=True))
         session_storage.connect(FileStorage("temp/session/", ensure_paths=True))
         # TODO: change this
         genesis_storage.connect(FileStorage("briq_api/genesis_data/localhost/"))

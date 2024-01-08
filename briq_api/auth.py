@@ -168,3 +168,7 @@ async def auth_finish(body: AuthFinished, request: Request):
     del data["challenge"]
     session_storage.get_backend().store_json(request.state.session_id, data)
     return "authenticated"
+
+@router.get("/check", dependencies=[IsAdminDep])
+def check_authorized():
+    return "ok"

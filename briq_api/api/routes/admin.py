@@ -45,12 +45,34 @@ COLLECTIONS_METADATA = {
         "name": "Ducks Frens",
         "artist": "OutSmth",
     },
+    "lil_ducks": {
+        "name": "Lil Ducks",
+        "artist": "OutSmth",
+    },
 }
 
 
-@router.get("/admin/authorized")
-def check_authorized():
-    return "ok"
+class UpdateBookletSpecRequest(BaseModel):
+    booklet_spec: dict[str, str]
+
+
+@router.head("/admin/update_booklet_spec/{chain_id}/{theme_id}")
+@router.post("/admin/update_booklet_spec/{chain_id}/{theme_id}")
+async def update_booklet_spec(data: UpdateBookletSpecRequest, chain_id: str, theme_id: str):
+    # Backup the file
+    theme_storage.get_backend(chain_id).backup_file(theme_storage.booklet_path())
+    # Validate new file is sequential by reading all values, sorting, checking for holes
+    new_booklet_spec_ids = list(data.booklet_spec.values())
+    new_booklet_spec_ids.sort()
+    last_id = new_booklet_spec_ids[0] # fail if no items, is OK
+    for i in range(1, len(new_booklet_spec_ids)):
+        if int(new_booklet_spec_ids[i], 16) != int(last_id, 16) + 1:
+            raise HTTPException(status_code=400, detail="Booklet spec is not sequential")
+        last_id = new_booklet_spec_ids[i]
+    # Append the new keys to the existing file
+    booklet_spec = theme_storage.get_booklet_spec(chain_id)
+    booklet_spec.update(data.booklet_spec)
+    theme_storage.get_backend(chain_id).store_json(theme_storage.booklet_path(), booklet_spec)
 
 
 class StoreThemeObjectRequest(BaseModel):
