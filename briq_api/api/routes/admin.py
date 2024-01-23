@@ -144,6 +144,7 @@ def gen_lower_res_image(img: bytes):
 @router.post("/admin/store_theme_object/{chain_id}/{theme_id}/{object_id}")
 async def store_theme_object(set: StoreThemeObjectRequest, chain_id: str, theme_id: str, object_id: str):
     # In this mode, we need to ensure that the object already exists, we're just filling in data.
+    theme_storage.reset_cache()
     booklet_spec = theme_storage.get_booklet_spec(chain_id)
     if f"{theme_id}/{object_id}" not in booklet_spec:
         raise HTTPException(status_code=400, detail="Object does not exist: " + booklet_spec[f"{theme_id}/{object_id}"])
