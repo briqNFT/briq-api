@@ -70,7 +70,9 @@ async def update_booklet_spec(data: UpdateBookletSpecRequest, chain_id: str, the
     booklet_spec = theme_storage.get_booklet_spec(chain_id)
     for key in booklet_spec:
         if booklet_spec[key] in data.booklet_spec.values():
-            raise HTTPException(status_code=400, detail="Booklet spec has value collision")
+            # Fine if it's the same K/V
+            if booklet_spec[key] != data.booklet_spec[key]:
+                raise HTTPException(status_code=400, detail="Booklet spec has value collision")
     # Append the new keys to the existing file
     booklet_spec.update(data.booklet_spec)
     theme_storage.get_backend(chain_id).store_json(theme_storage.booklet_path(), booklet_spec)
