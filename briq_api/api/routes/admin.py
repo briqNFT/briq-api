@@ -66,8 +66,12 @@ async def update_booklet_spec(data: UpdateBookletSpecRequest, chain_id: str, the
         if int(new_booklet_spec_ids[i], 16) != int(last_id, 16) + 1:
             raise HTTPException(status_code=400, detail="Booklet spec is not sequential")
         last_id = new_booklet_spec_ids[i]
-    # Append the new keys to the existing file
+    # Ensure there are no value collisions
     booklet_spec = theme_storage.get_booklet_spec(chain_id)
+    for key in booklet_spec:
+        if booklet_spec[key] in data.booklet_spec.values():
+            raise HTTPException(status_code=400, detail="Booklet spec has value collision")
+    # Append the new keys to the existing file
     booklet_spec.update(data.booklet_spec)
     theme_storage.get_backend(chain_id).store_json(theme_storage.booklet_path(), booklet_spec)
     theme_storage.reset_cache()
