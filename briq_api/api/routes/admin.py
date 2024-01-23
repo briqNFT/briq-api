@@ -195,6 +195,7 @@ class UpdateTraitsRequest(BaseModel):
 @router.head("/admin/update_traits/{chain_id}/{theme_id}")
 @router.post("/admin/update_traits/{chain_id}/{theme_id}")
 async def update_traits(set: UpdateTraitsRequest, chain_id: str, theme_id: str):
+    theme_storage.reset_cache()
     booklet_spec = theme_storage.get_booklet_spec(chain_id)
     updated_booklets = {}
     for object_id in set.data:
