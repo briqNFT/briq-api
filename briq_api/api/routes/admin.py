@@ -292,6 +292,9 @@ async def compile_shape_contract(shapes: CompileShapeContractRequest):
         if ENV == "dev":
             tmpdirname = "tmp_contracts/"
             os.makedirs(tmpdirname, exist_ok=True)
+        elif ENV == "test":
+            tmpdirname = "/tmp/tmp_contracts/"
+            os.makedirs(tmpdirname, exist_ok=True)
         code_path = os.path.join(tmpdirname, "code.cairo")
         with open(code_path, "w") as f:
             f.write(code)
