@@ -29,6 +29,6 @@ async def list_sets_of_theme(chain_id: str, theme_id: str) -> list[str]:
     """
     List all minted NFTs belonging to a particular theme.
     """
-    if theme_id not in { 'ducks_everywhere', 'ducks_frens' }:
+    if theme_id not in { 'ducks_everywhere', 'ducks_frens', 'lil_ducks' }:
         raise NotImplementedError()
     return await list_duck_sets(chain_id, theme_id)

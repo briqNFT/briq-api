@@ -4,7 +4,6 @@ import logging
 import os
 import re
 import tempfile
-import concurrent.futures
 import asyncio
 from dataclasses import dataclass
 from datetime import datetime
@@ -12,12 +11,12 @@ from time import time
 from fastapi import APIRouter, HTTPException
 from PIL import Image
 from pydantic import BaseModel
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional
 from briq_api.api import boxes
 
 from briq_api.auth import IsAdminDep
-from briq_api.chain.networks import get_gateway_client, get_network_metadata
-from briq_api.set_identifier import SetRID
+from briq_api.chain.networks import get_network_metadata
+from briq_api.config import ENV
 from briq_api.set_indexer.create_set_metadata import create_booklet_metadata, create_set_metadata
 from briq_api.stores import file_storage, theme_storage
 from briq_api.mesh.briq import BriqData
@@ -25,8 +24,6 @@ from briq_api.mesh.briq import BriqData
 from briq_protocol.binomial_ifs import generate_shape_check, generate_binary_search_function, ShapeItem, HEADER
 from briq_protocol.gen_shape_check import ANY_MATERIAL_ANY_COLOR
 
-from starknet_py.contract import Contract
-from starknet_py.utils.typed_data import TypedData
 
 from .common import ExceptionWrapperRoute
 
@@ -73,6 +70,7 @@ async def update_booklet_spec(data: UpdateBookletSpecRequest, chain_id: str, the
     booklet_spec = theme_storage.get_booklet_spec(chain_id)
     booklet_spec.update(data.booklet_spec)
     theme_storage.get_backend(chain_id).store_json(theme_storage.booklet_path(), booklet_spec)
+    theme_storage.reset_cache()
 
 
 class StoreThemeObjectRequest(BaseModel):
@@ -145,8 +143,6 @@ def gen_lower_res_image(img: bytes):
 @router.head("/admin/store_theme_object/{chain_id}/{theme_id}/{object_id}")
 @router.post("/admin/store_theme_object/{chain_id}/{theme_id}/{object_id}")
 async def store_theme_object(set: StoreThemeObjectRequest, chain_id: str, theme_id: str, object_id: str):
-    raise_if_replacing_data(chain_id, theme_id, object_id)
-
     # In this mode, we need to ensure that the object already exists, we're just filling in data.
     booklet_spec = theme_storage.get_booklet_spec(chain_id)
     if f"{theme_id}/{object_id}" not in booklet_spec:
@@ -162,6 +158,8 @@ async def store_theme_object(set: StoreThemeObjectRequest, chain_id: str, theme_
     booklet_lower = gen_lower_res_image(booklet)
 
     PATH = f"genesis_themes/{theme_id}/{object_id}"
+    if file_storage.get_backend(chain_id).has_path(PATH + "/metadata_booklet.json"):
+        file_storage.get_backend(chain_id).backup_file(PATH + "/metadata_booklet.json")
     file_storage.get_backend(chain_id).store_json(PATH + "/metadata_booklet.json", booklet_metadata)
     file_storage.get_backend(chain_id).store_bytes(PATH + "/cover.png", preview)
     file_storage.get_backend(chain_id).store_bytes(PATH + "/booklet_cover.png", booklet)
@@ -185,6 +183,46 @@ async def store_theme_object(set: StoreThemeObjectRequest, chain_id: str, theme_
         i += 1
 
     theme_storage.reset_cache()
+
+class UpdateTraitsRequest(BaseModel):
+    data: dict[str, dict[str, str]]
+
+@router.head("/admin/update_traits/{chain_id}/{theme_id}")
+@router.post("/admin/update_traits/{chain_id}/{theme_id}")
+async def update_traits(set: UpdateTraitsRequest, chain_id: str, theme_id: str):
+    booklet_spec = theme_storage.get_booklet_spec(chain_id)
+    updated_booklets = {}
+    for object_id in set.data:
+        if f"{theme_id}/{object_id}" not in booklet_spec:
+            raise HTTPException(status_code=400, detail="Object does not exist: " + booklet_spec[f"{theme_id}/{object_id}"])
+    
+        # Load the existing booklet
+        booklet_metadata = boxes.get_booklet_metadata(rid = boxes.BoxRID(chain_id, theme_id, object_id))
+
+        for trait_key in set.data[object_id]:
+            booklet_metadata["properties"][trait_key.lower()] = {
+                "name": trait_key,
+                "value": set.data[object_id][trait_key]
+            }
+            # Dumb but it works
+            found = False
+            for trait in booklet_metadata["attributes"]:
+                if trait["trait_type"] == trait_key:
+                    trait["value"] = set.data[object_id][trait_key]
+                    found = True
+            if not found:
+                booklet_metadata["attributes"].append({
+                    "trait_type": trait_key,
+                    "value": set.data[object_id][trait_key],
+                })
+
+        updated_booklets[object_id] = booklet_metadata
+
+    for object_id in updated_booklets:
+        # backup file
+        file_storage.get_backend(chain_id).backup_file(f"genesis_themes/{theme_id}/{object_id}/metadata_booklet.json")
+        # Store at the end to ensure everything went right.
+        file_storage.get_backend(chain_id).store_json(f"genesis_themes/{theme_id}/{object_id}/metadata_booklet.json", updated_booklets[object_id])
 
 
 @router.head("/admin/update_glbs/{chain_id}/{theme_id}/{object_id}")
@@ -249,9 +287,10 @@ async def compile_shape_contract(shapes: CompileShapeContractRequest):
     code = HEADER + generate_binary_search_function(sorted_ids, lambda x: ids[x]) + "\n}"
 
     # Call starknet-compile via subprocess
-    tmpdirname = "temp_new_contracts/" + str(time()) + '_' + list(shapes.shapes_by_attribute_id.keys())[0] + "/"
-    os.makedirs(tmpdirname, exist_ok=True)
-    with tempfile.TemporaryDirectory() as tmpdirname_OFF:
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        if ENV == "dev":
+            tmpdirname = "tmp_contracts/"
+            os.makedirs(tmpdirname, exist_ok=True)
         code_path = os.path.join(tmpdirname, "code.cairo")
         with open(code_path, "w") as f:
             f.write(code)
@@ -265,6 +304,7 @@ async def compile_shape_contract(shapes: CompileShapeContractRequest):
         casm_process = await asyncio.create_subprocess_exec(
             STARKNET_COMPILE_PATH.replace('starknet-compile', 'starknet-sierra-compile'),
             os.path.join(tmpdirname, "sierra.json"), os.path.join(tmpdirname, "casm.json"),
+            "--add-pythonic-hints"
         )
         await casm_process.communicate()
 
@@ -275,299 +315,61 @@ async def compile_shape_contract(shapes: CompileShapeContractRequest):
             sierra = f.read()
         with open(os.path.join(tmpdirname, "casm.json")) as f:
             casm = f.read()
-        return {
-            "sierra": sierra,
-            "casm": casm,
-        }
+        
+        return await declare_contract(chain_id="starknet-testnet", sierra=sierra, casm=casm)
 
 
-class NewNFTRequest(BaseModel):
-    token_id: str
-    data: dict[str, Any]
-    owner: str
-    signature: Tuple[int, int]
-    preview_base64: bytes
-    booklet_base64: bytes
-    background_color: Optional[str] = None
+async def declare_contract(chain_id: str, sierra: str, casm: str):
+    from briq_api.chain.rpcs import alchemy_endpoint
+    from starknet_py.net.account.account import Account
+    from starknet_py.net.full_node_client import FullNodeClient
+    from starknet_py.net.signer.stark_curve_signer import KeyPair
+    from starknet_py.common import create_casm_class
+    from starknet_py.hash.casm_class_hash import compute_casm_class_hash
+    from starknet_py.hash.sierra_class_hash import compute_sierra_class_hash
+    from starknet_py.net.client_errors import ClientError
 
+    DECLARER_ADDRESS = (os.getenv("DECLARER_ADDRESS") or "0xcafe")
+    DECLARER_PUBLIC_KEY = (os.getenv("DECLARER_PUBLIC_KEY") or "0xdeadbeef")
+    DECLARER_PRIVATE_KEY = (os.getenv("DECLARER_PRIVATE_KEY") or "0xdeadbeef")
 
-@router.post("/admin/{chain_id}/{auction_theme}/validate_new_nft")
-async def validate_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
-    if auction_theme != "ducks_everywhere":
-        raise HTTPException(status_code=400, detail="Invalid auction theme")
-
-    # TODO:
-    # - Check token_id is not already used
-
-    await check_signature(chain_id, set.owner, set.token_id, set.signature)
-
-    data = await generate_data(set, chain_id, auction_theme)
-    serial, booklet_metadata, metadata = data.serial, data.booklet_metadata, data.metadata
-
-    return {
-        "set_meta": metadata,
-        "booklet_meta": booklet_metadata,
-        "serial_number": serial,
-    }
-
-
-class CompileRequest(BaseModel):
-    data: dict[str, Any]
-    serial_number: int
-    owner: str
-    signature: Tuple[int, int]
-    token_id: str
-
-
-@router.post("/admin/{chain_id}/{auction_theme}/compile_shape")
-async def compile_shape(cr: CompileRequest, chain_id: str):
-    await check_signature(chain_id, cr.owner, cr.token_id, cr.signature)
-
-    data = BriqData()
-    data.load(cr.data)
-
-    loop = asyncio.get_event_loop()
-    thread_pool = concurrent.futures.ThreadPoolExecutor(1)
-    contract_json, class_hash = (0, 1) # await loop.run_in_executor(thread_pool, compile_shape_contract, cr.serial_number, data)
-    return {
-        "contract_json": contract_json,
-        "class_hash": class_hash,
-    }
-
-
-@router.post("/admin/{chain_id}/{auction_theme}/mint_new_nft")
-async def mint_new_nft(set: NewNFTRequest, chain_id: str, auction_theme: str):
-    if auction_theme != "ducks_everywhere":
-        raise HTTPException(status_code=400, detail="Invalid auction theme")
-
-    await check_signature(chain_id, set.owner, set.token_id, set.signature)
-
-    data = await generate_data(set, chain_id, auction_theme)
-    serial, booklet_metadata, metadata = data.serial, data.booklet_metadata, data.metadata
-
-    # This doesn't reuse the API function because it skips the validation.
-    rid = SetRID(chain_id=chain_id, token_id=set.token_id)
-    file_storage.store_set_metadata(rid, metadata)
-
-    PATH = f"genesis_themes/{auction_theme}/{set.data['name']}"
-    file_storage.get_backend(chain_id).store_json(PATH + "/metadata_booklet.json", booklet_metadata)
-    file_storage.get_backend(chain_id).store_bytes(PATH + "/cover.png", decode_base64(set.preview_base64))
-    file_storage.get_backend(chain_id).store_bytes(PATH + "/booklet_cover.png", decode_base64(set.booklet_base64))
-
-    # No existence check for those, subsumed by the HQ ones.
-    image = Image.open(io.BytesIO(decode_base64(set.preview_base64)))
-    # If there is a background color, presumably the image is not transparent,
-    # so it doesn't really matter if we paste it on a white background or not.
-    bg = Image.new("RGBA", image.size, (255, 255, 255, 255))
-    try:
-        bg.paste(image, mask=image.getchannel('A'))
-    except:
-        bg.paste(image)
-    output = io.BytesIO()
-    bg.convert('RGB').save(output, format='JPEG', quality=60)
-    preview_bytes = output.getvalue()
-    file_storage.get_backend(chain_id).store_bytes(PATH + "/cover.jpg", preview_bytes)
-    file_storage.store_set_preview(rid, preview_bytes)
-
-    image = Image.open(io.BytesIO(decode_base64(set.booklet_base64)))
-    # If there is a background color, presumably the image is not transparent,
-    # so it doesn't really matter if we paste it on a white background or not.
-    bg = Image.new("RGBA", image.size, (255, 255, 255, 255))
-    try:
-        bg.paste(image, mask=image.getchannel('A'))
-    except:
-        bg.paste(image)
-    output = io.BytesIO()
-    bg.convert('RGB').save(output, format='JPEG', quality=50)
-    file_storage.get_backend(chain_id).store_bytes(PATH + "/booklet_cover.jpg", output.getvalue())
-
-    data = BriqData()
-    data.load(metadata)
-    briq_by_level, current_briqs = generate_layered_glb(data)
-
-    i = 0
-    for lev in briq_by_level:
-        data.briqs = lev
-        file_storage.get_backend(chain_id).store_bytes(f"{PATH}/step_{i}.glb", b''.join(data.to_gltf(separate_any_color=True).save_to_bytes()))
-        i += 1
-
-    i = 0
-    for lev in current_briqs:
-        data.briqs = lev
-        file_storage.get_backend(chain_id).store_bytes(f"{PATH}/step_level_{i}.glb", b''.join(data.to_gltf(separate_any_color=True).save_to_bytes()))
-        i += 1
-
-    # Update booklet spec
-    booklet_spec = theme_storage.get_booklet_spec(chain_id)
-    # Backup the file
-    theme_storage.get_backend(chain_id).backup_file(theme_storage.booklet_path())
-
-    duck_collection_id = 3
-    booklet_spec[f"{auction_theme}/{set.data['name']}"] = hex(duck_collection_id + 2**192 * serial)
-    # TODO check properly serial
-    theme_storage.get_backend(chain_id).store_json(theme_storage.booklet_path(), booklet_spec)
-    # Reset the cache, otherwise for some time the old file keeps being used (it's cached)
-    # NB -> if there are several instances of the API, this won't clear all of them.
-    theme_storage.reset_cache()
-
-
-async def check_signature(chain_id: str, owner: str, token_id: str, signature: Tuple[int, int]):
-    if chain_id == "starknet-mainnet":
-        if int(owner, 16) not in {
-            0x03eF5B02BCC5D30F3f0d35D55f365E6388fE9501ECA216cb1596940Bf41083E2,
-            0x059df66Af2E0E350842b11eA6b5a903b94640C4ff0418b04cCedCC320f531a08,
-            0x02ef9325a17d3ef302369fd049474bc30bfeb60f59cca149daa0a0b7bcc278f8  # OutSmth
-        }:
-            raise HTTPException(status_code=400, detail="You are not authorized to call this function")
-    elif int(owner, 16) not in {
-        0x069cfa382ea9d2e81aea2d868b0dd372f70f523fa49a765f4da320f38f9343b3,
-        0x059df66Af2E0E350842b11eA6b5a903b94640C4ff0418b04cCedCC320f531a08,  # sylve
-        0x03eF5B02BCC5D30F3f0d35D55f365E6388fE9501ECA216cb1596940Bf41083E2,
-        0x00c658ff012e337f56af9bf8d986e544092e6b81959218be9c6ae69b15fcf6cb,  # OutSmth
-    }:
-        raise HTTPException(status_code=400, detail="You are not authorized to call this function")
-
-    contract = Contract(owner, [{
-            "name": "is_valid_signature",
-            "type": "function",
-            "inputs": [
-            {
-                "name": "hash",
-                "type": "felt"
-            },
-            {
-                "name": "signature_len",
-                "type": "felt"
-            },
-            {
-                "name": "signature",
-                "type": "felt*"
-            }
-            ],
-            "outputs": [
-            {
-                "name": "is_valid",
-                "type": "felt"
-            }
-            ],
-            "stateMutability": "view"
-        },
-        {
-            "name": "isValidSignature",
-            "type": "function",
-            "inputs": [
-            {
-                "name": "hash",
-                "type": "felt"
-            },
-            {
-                "name": "signature_len",
-                "type": "felt"
-            },
-            {
-                "name": "signature",
-                "type": "felt*"
-            }
-            ],
-            "outputs": [
-            {
-                "name": "isValid",
-                "type": "felt"
-            }
-            ],
-            "stateMutability": "view"
-        },
-    ], get_gateway_client(chain_id))
-
-    # Or if just a message hash is needed
-    data = TypedData.from_dict({
-        "types": {
-            "StarkNetDomain": [
-                {"name": 'name', "type": 'felt'},
-                {"name": 'version', "type": 'felt'},
-                {"name": 'chainId', "type": 'felt'},
-            ],
-            "Message": [
-                {
-                    "name": 'tokenId',
-                    "type": 'felt',
-                },
-            ],
-        },
-        "domain": {
-            "name": 'briq', "version": "1", "chainId": get_network_metadata(chain_id).chain_id
-        },
-        "primaryType": 'Message',
-        "message": {
-            "tokenId": int(token_id, 16),
-        },
-    })
-    message_hash = data.message_hash(int(owner, 16))
-    try:
-        (value,) = await contract.functions["is_valid_signature"].call(
-            message_hash, signature
-        )
-        if value != 1:
-            raise
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid signature")
-
-
-async def generate_data(set: NewNFTRequest, chain_id: str, auction_theme: str):
-    metadata = create_set_metadata(
-        token_id=set.token_id,
-        name=set.data["name"],
-        description=set.data["description"],
-        network=chain_id,
-        briqs=set.data["briqs"],
-    )
-    if set.background_color:
-        metadata["background_color"] = set.background_color
-        # Check format matches 6 hex values without preceding #
-        if not re.match(r"^[0-9a-fA-F]{6}$", set.background_color):
-            raise HTTPException(status_code=400, detail="Invalid background color")
-
-    data = BriqData()
-    data.load(metadata)
-    briq_by_level, current_briqs = generate_layered_glb(data)
-
-    booklets = list(theme_storage.get_all_theme_object_ids(chain_id, auction_theme).keys())
-
-    booklet_metadata = create_booklet_metadata(
-        theme_id=auction_theme,
-        booklet_id=set.data["name"],
-        theme_name="Ducks Everywhere",
-        theme_artist="OutSmth",
-        theme_date=datetime.now().strftime("%Y-%m-%d"),
-        name=set.data["name"],
-        description=set.data["description"],
-        network=chain_id,
-        briqs=set.data["briqs"],
-        nb_steps=len(briq_by_level),
-        step_progress_data=[len(level) for level in briq_by_level],
+    client = FullNodeClient(node_url=alchemy_endpoint[chain_id])
+    account = Account(
+        client=client,
+        #address="0x4a51bd929bf274c66768908e2355a56181d3dc25bad2502c2319c786828e6e1",
+        #key_pair=KeyPair(private_key=0x0176c9450e105a76362e53129e8ebcefb03571c0b58cf8785e7d6473cea554b7, public_key=0x3d7642db8ea33140afb852477670b0224f69f38fa1e0ed6eb721c6c80cabf69),
+        address=DECLARER_ADDRESS,
+        key_pair=KeyPair(private_key=DECLARER_PRIVATE_KEY, public_key=DECLARER_PUBLIC_KEY),
+        chain=get_network_metadata(chain_id).chain_id,
     )
 
-    serial = len(booklets) + 1
+    # contract_compiled_casm is a string containing the content of the starknet-sierra-compile (.casm file)
+    casm_class = create_casm_class(casm)
 
-    #run_validation(set, chain_id, auction_theme)
+    # Compute Casm class hash
+    casm_class_hash = compute_casm_class_hash(casm_class)
 
-    @dataclass
-    class Output:
-        serial: int
-        metadata: dict
-        booklet_metadata: dict
+    # Create Declare v2 transaction (to create Declare v3 transaction use `sign_declare_v3_transaction` method)
+    declare_v2_transaction = await account.sign_declare_v2_transaction(
+        # compiled_contract is a string containing the content of the starknet-compile (.json file)
+        compiled_contract=sierra,
+        compiled_class_hash=casm_class_hash,
+        max_fee=10**16,
+    )
 
-    return Output(metadata=metadata, booklet_metadata=booklet_metadata, serial=serial)
+    class_hash = compute_sierra_class_hash(declare_v2_transaction.contract_class)
+    try:
+        tx = await account.client.declare(transaction=declare_v2_transaction)
+        logger.info(f"Declared contract with TX hash {hex(tx.transaction_hash)} - {hex(tx.class_hash)} (expected {hex(class_hash)}))")
+    except ClientError as err:
+        logger.info(f"Failed to declare contract with expected class hash {hex(class_hash)}, got {err.message}")
+        if str(err.code) == "59":  # TX already exists (also they lie about the type of err.code here)
+            pass
+        else:
+            raise err
 
-
-def raise_if_replacing_data(chain_id: str, theme_id: str, object_id: str):
-    PATH = f"genesis_themes/{theme_id}/{object_id}"
-    if file_storage.get_backend(chain_id).has_path(PATH + "/metadata_booklet.json"):
-        raise HTTPException(status_code=400, detail="Booklet already exists")
-    if file_storage.get_backend(chain_id).has_path(PATH + "/cover.png"):
-        raise HTTPException(status_code=400, detail="Cover already exists")
-    if file_storage.get_backend(chain_id).has_path(PATH + "/booklet_cover.png"):
-        raise HTTPException(status_code=400, detail="Booklet cover already exists")
+    # Don't wait for it, return immediately
+    return { "class_hash": hex(class_hash) }
 
 
 def decode_base64(image_base64: bytes):
@@ -584,7 +386,6 @@ def decode_base64(image_base64: bytes):
     #    raise Exception("Image is too large, acceptable size range from 10x10 to 2000x2000")
 
     return png_data
-
 
 # Print a layer-by-layer set of GLB files.
 def generate_layered_glb(data: BriqData):

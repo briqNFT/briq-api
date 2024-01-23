@@ -37,6 +37,7 @@ def is_admin(request: Request):
             0x03ef5b02bcc5d30f3f0d35d55f365e6388fe9501eca216cb1596940bf41083e2,  # wraitii
             0x044Fb5366f2a8f9f8F24c4511fE86c15F39C220dcfecC730C6Ea51A335BC99CB,
             0x009fa2C8FB501C57140E79fc720ab7160E9BBF41186d89eC45722A1d1Eb4D567,  # Alternative wraitii testnet wallet
+            0x02ef9325a17d3ef302369fd049474bc30bfeb60f59cca149daa0a0b7bcc278f8,  # OutSmth
         ]:
             return
     elif data['verified_network'] == StarknetChainId.MAINNET.value:
