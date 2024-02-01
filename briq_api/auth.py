@@ -12,6 +12,7 @@ from fastapi import APIRouter
 from briq_api.api.routes.common import ExceptionWrapperRoute
 from briq_api.stores import session_storage
 
+from briq_api.chain.networks import get_network_metadata
 from starknet_py.contract import Contract
 from starknet_py.net.full_node_client import FullNodeClient
 from starknet_py.net.models import StarknetChainId
@@ -128,7 +129,7 @@ def gen_session_id():
 @router.get("/start/{chain_id}/{address}")
 def auth_start(chain_id: str, address: str, request: Request, response: Response):
     """Create a challenge, with some replay prevention, and return it to the user to be signed."""
-    challenge = issue_challenge(hex(StarknetChainId.TESTNET.value), address)
+    challenge = issue_challenge(hex(get_network_metadata(chain_id).chain_id), address)
     session_id = gen_session_id()
 
     if request.state.session_id and session_storage.get_backend().has_json(request.state.session_id):
