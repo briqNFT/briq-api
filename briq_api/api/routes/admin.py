@@ -274,9 +274,9 @@ class CompileShapeContractRequest(BaseModel):
     shapes_by_attribute_id: dict[str, List[Any]]
 
 
-@router.head("/admin/compile_shape_contract/")
-@router.post("/admin/compile_shape_contract/")
-async def compile_shape_contract(shapes: CompileShapeContractRequest):
+@router.head("/admin/compile_shape_contract/{chain_id}")
+@router.post("/admin/compile_shape_contract/{chain_id}")
+async def compile_shape_contract(shapes: CompileShapeContractRequest, chain_id: str):
     ids = {}
     for attr_id in shapes.shapes_by_attribute_id:
         items = []
@@ -327,7 +327,7 @@ async def compile_shape_contract(shapes: CompileShapeContractRequest):
         with open(os.path.join(tmpdirname, "casm.json")) as f:
             casm = f.read()
         
-        return await declare_contract(chain_id="starknet-testnet", sierra=sierra, casm=casm)
+        return await declare_contract(chain_id=chain_id, sierra=sierra, casm=casm)
 
 
 async def declare_contract(chain_id: str, sierra: str, casm: str):
