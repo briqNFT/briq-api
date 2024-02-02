@@ -44,7 +44,8 @@ def is_admin(request: Request):
     elif data['verified_network'] == StarknetChainId.MAINNET.value:
         if data['verified_address'] in [
             0x03ef5b02bcc5d30f3f0d35d55f365e6388fe9501eca216cb1596940bf41083e2,
-            0x044Fb5366f2a8f9f8F24c4511fE86c15F39C220dcfecC730C6Ea51A335BC99CB, 
+            0x044Fb5366f2a8f9f8F24c4511fE86c15F39C220dcfecC730C6Ea51A335BC99CB,
+            0x2ef9325a17d3ef302369fd049474bc30bfeb60f59cca149daa0a0b7bcc278f8,  # OutSmth 
         ]:
             return
     raise HTTPException(status_code=401, detail="Not authorized.")
