@@ -140,14 +140,15 @@ def store_preview_image(rid: SetRID, image_base64: bytes):
     HEADER = b'data:image/png;base64,'
     if image_base64[0:len(HEADER)] != HEADER:
         raise Exception("Only base-64 encoded PNGs are accepted.")
-    if len(image_base64) > 20000 * 1000:
-        raise Exception("Image is too heavy, max size is 10MB")
 
     png_data = base64.decodebytes(image_base64[len(HEADER):])
+    if len(png_data) > 10 * 1000 * 1000:
+        raise Exception("Image is too large, only images under 10MB are accepted")
+
     image = Image.open(io.BytesIO(png_data))
 
-    if image.width > 5000 or image.height > 5000 or image.width < 10 or image.height < 10:
-        raise Exception("Image is too large, acceptable size range from 10x10 to 5000x5000")
+    if image.width > 2500 or image.height > 2500 or image.width < 10 or image.height < 10:
+        raise Exception("Image is too large, acceptable size range from 10x10 to 2500x2500")
 
     file_storage.store_set_preview(rid, png_data)
 
