@@ -25,7 +25,10 @@ router = APIRouter(route_class=ExceptionWrapperRoute(logger))
 
 def is_authenticated(session_id: str):
     data = session_storage.get_backend().load_json(session_id)
-    return data and data["authenticated"]
+    try:
+        return data["authenticated"] and data["expires_at"] > time.time()
+    except:
+        return False
 
 
 def is_admin(request: Request):
@@ -168,6 +171,7 @@ async def auth_finish(body: AuthFinished, request: Request):
     data["authenticated"] = True
     data["verified_address"] = int(challenge["message"]["address"], 16)
     data["verified_network"] = int(challenge["message"]["chainId"], 16)
+    data["expires_at"] = int(time.time() + 60 * 60 * 24)
     del data["challenge"]
     session_storage.get_backend().store_json(request.state.session_id, data)
     return "authenticated"
