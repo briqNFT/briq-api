@@ -16,19 +16,7 @@ from apibara.starknet import felt
 from briq_api.indexer.config import AUTH_TOKEN, NETWORK, APIBARA_URL, MONGO_URL, MONGO_USERNAME, MONGO_PASSWORD
 from briq_api.indexer.events.common import decode_event, get_event_serializer
 
-
-"""
-To query total balance:
-# auction contract
-starknet call --address 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 --abi cabi.json --function balanceOf --inputs 0x1712e3e3f133b26d65a3c5aaae78e7405dfca0a3cfe725dd57c4941d9474620 --block_number
-# funding wallet
-starknet call --address 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 --abi cabi.json --function balanceOf --inputs 0x00E838d30a24e0b7014ccd5Cf4E43B006f4Db1b122664F77fD4dfa0C6A1Ed285 --block_number
-
-starkli call 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 balanceOf 0x00E838d30a24e0b7014ccd5Cf4E43B006f4Db1b122664F77fD4dfa0C6A1Ed285 --network mainnet
-
-"""
-
-
+# Run with
 # python -m asyncio
 import pandas as pd
 from starknet_py.contract import Contract
@@ -46,7 +34,17 @@ call = Call(
     selector=get_selector_from_name("balanceOf"),
     calldata=[0x00E838d30a24e0b7014ccd5Cf4E43B006f4Db1b122664F77fD4dfa0C6A1Ed285],
 )
-await client.call_contract(call, block_number=489986)
+start = 489986
+end = 526895
+for block_number in range(start, end, (end-start) // 10):
+    print(block_number, (await client.call_contract(call, block_number=block_number))[0] / 10**18)
+
+(await client.call_contract(call, block_number=526895))[0] / 10**18
+
+#############################################
+## End of updated code
+#############################################
+#############################################
 
 # Note that a Contract instance cannot be used here, since it needs ABI to generate the functions
 

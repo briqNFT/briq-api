@@ -28,18 +28,18 @@ starknet call --address 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b8
 """
 Run like so:
 source .env.prod
-APIBARA_AUTH_TOKEN=$APIBARA_AUTH_TOKEN LOGHUMAN=1 LOGLEVEL=DEBUG NETWORK_NAME=starknet-mainnet python3 jobs/compta_briq_sell_apibara.py
+APIBARA_AUTH_TOKEN=$APIBARA_AUTH_TOKEN LOGHUMAN=1 LOGLEVEL=DEBUG NETWORK_NAME=starknet-mainnet-dojo python3 jobs/compta_briq_sell_apibara.py
 
 import pandas as pd
 df = pd.read_csv('briq_price.csv')
 df['date'] = pd.to_datetime(df['date'])
 df['nb'] = 1
-df.set_index('date').loc['2023-12'].reset_index()[['amount', 'price', 'nb']].groupby(df.date.dt.date).sum()
+df.set_index('date').loc['2024-01'].reset_index()[['amount', 'price', 'nb']].groupby(df.date.dt.date).sum().to_csv(sep='\t')
 """
 
 
-START_BLOCK = 461975
-END_BLOCK = 550000
+START_BLOCK = 489986
+END_BLOCK = 526895 # end of jan
 INDEXER_ID = 'xplorer_briq_price'
 should_reset = True
 
