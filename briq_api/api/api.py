@@ -140,7 +140,7 @@ def store_preview_image(rid: SetRID, image_base64: bytes):
     HEADER = b'data:image/png;base64,'
     if image_base64[0:len(HEADER)] != HEADER:
         raise Exception("Only base-64 encoded PNGs are accepted.")
-    if len(image_base64) > 10000 * 1000:
+    if len(image_base64) > 20000 * 1000:
         raise Exception("Image is too heavy, max size is 10MB")
 
     png_data = base64.decodebytes(image_base64[len(HEADER):])
