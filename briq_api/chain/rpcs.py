@@ -19,7 +19,7 @@ alchemy_endpoint = {
 
 if ENV == 'dev':
     rpc_key['starknet-mainnet-dojo'] = os.getenv("NETHERMIND_RPC_KEY_TESTNET") or ""
-    alchemy_endpoint['starknet-mainnet-dojo'] = "https://rpc.nethermind.io/mainnet-juno/v0_4"
+    alchemy_endpoint['starknet-mainnet-dojo'] = "https://rpc.nethermind.io/mainnet-juno/v0_5"
 
 rpc_session: aiohttp.ClientSession = None
 

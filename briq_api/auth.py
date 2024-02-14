@@ -12,7 +12,7 @@ from fastapi import APIRouter
 from briq_api.api.routes.common import ExceptionWrapperRoute
 from briq_api.stores import session_storage
 
-from briq_api.chain.networks import get_network_metadata
+from briq_api.chain.networks import MAINNET_DOJO, get_network_metadata
 from starknet_py.contract import Contract
 from starknet_py.net.full_node_client import FullNodeClient
 from starknet_py.net.models import StarknetChainId
@@ -90,7 +90,12 @@ def issue_challenge(chainId: str, address: str):
 
 
 async def validate_challenge(typed_data, signature: List[str]):
-    client = FullNodeClient(node_url=alchemy_endpoint["starknet-testnet"])
+    chain_id = int(typed_data["domain"]["chainId"], 16)
+    if chain_id == MAINNET_DOJO.chain_id:
+        chain_id = "starknet-mainnet-dojo"
+    else:
+        chain_id = "starknet-testnet-dojo"
+    client = FullNodeClient(node_url=alchemy_endpoint[chain_id])
     contract = Contract(typed_data['message']['address'], [{
             "name": "is_valid_signature",
             "type": "function",
