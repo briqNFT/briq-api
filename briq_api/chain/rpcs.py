@@ -36,8 +36,13 @@ async def end_rpc_session():
         rpc_session = None
 
 
+def get_rpc_session(chain_id: str):
+    global rpc_session
+    rpc_session.headers['x-apikey'] = rpc_key[chain_id]
+    return rpc_session
+
+
 async def rpc_post(chain_id: str, data: Any):
-    print("rpc_post", chain_id, rpc_key[chain_id])
     rpc_session.headers['x-apikey'] = rpc_key[chain_id]
     async with rpc_session.post(alchemy_endpoint[chain_id], data=data) as response:
         return await response.json()

@@ -16,6 +16,7 @@ from briq_api.api import boxes
 
 from briq_api.auth import IsAdminDep
 from briq_api.chain.networks import get_network_metadata
+from briq_api.chain.rpcs import get_rpc_session
 from briq_api.config import ENV
 from briq_api.set_indexer.create_set_metadata import create_booklet_metadata, create_set_metadata
 from briq_api.stores import file_storage, theme_storage
@@ -344,7 +345,7 @@ async def declare_contract(chain_id: str, sierra: str, casm: str):
     DECLARER_PUBLIC_KEY = (os.getenv("DECLARER_PUBLIC_KEY") or "0xdeadbeef")
     DECLARER_PRIVATE_KEY = (os.getenv("DECLARER_PRIVATE_KEY") or "0xdeadbeef")
 
-    client = FullNodeClient(node_url=alchemy_endpoint[chain_id])
+    client = FullNodeClient(node_url=alchemy_endpoint[chain_id], session=get_rpc_session(chain_id))
     account = Account(
         client=client,
         #address="0x4a51bd929bf274c66768908e2355a56181d3dc25bad2502c2319c786828e6e1",

@@ -54,6 +54,7 @@ TESTNET = NetworkMetadata(
 
 TESTNET_DOJO = NetworkMetadata(
     id="starknet-testnet-dojo",
+    chain_id=StarknetChainId.TESTNET.value,
     storage_bucket="briq-bucket-test-1",
     base_domain='test.sltech.company',
 

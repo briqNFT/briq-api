@@ -6,7 +6,7 @@ from typing import List
 from fastapi import Depends, HTTPException, Request, Response
 from pydantic import BaseModel
 
-from briq_api.chain.rpcs import alchemy_endpoint
+from briq_api.chain.rpcs import alchemy_endpoint, get_rpc_session
 
 from fastapi import APIRouter
 from briq_api.api.routes.common import ExceptionWrapperRoute
@@ -95,7 +95,7 @@ async def validate_challenge(typed_data, signature: List[str]):
         chain_id = "starknet-mainnet-dojo"
     else:
         chain_id = "starknet-testnet-dojo"
-    client = FullNodeClient(node_url=alchemy_endpoint[chain_id])
+    client = FullNodeClient(node_url=alchemy_endpoint[chain_id], session=get_rpc_session(chain_id))
     contract = Contract(typed_data['message']['address'], [{
             "name": "is_valid_signature",
             "type": "function",
