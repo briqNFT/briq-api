@@ -10,6 +10,7 @@ from briq_api.chain.rpcs import alchemy_endpoint, get_rpc_session
 
 from fastapi import APIRouter
 from briq_api.api.routes.common import ExceptionWrapperRoute
+from briq_api.config import ENV
 from briq_api.stores import session_storage
 
 from briq_api.chain.networks import MAINNET_DOJO, get_network_metadata
@@ -130,7 +131,9 @@ async def validate_challenge(typed_data, signature: List[str]):
             TypedData.from_dict(typed_data).message_hash(int(typed_data['message']['address'], 16)), signature_as_int
         )
         return value == 1 or value == 370462705988
-    except:
+    except Exception as e:
+        if ENV != "prod":
+            logger.exception(e)
         return False
 
 
