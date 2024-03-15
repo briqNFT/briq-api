@@ -1,5 +1,4 @@
 from typing import List
-from starknet_py.net.gateway_client import GatewayClient
 from starknet_py.net.models import StarknetChainId
 from dataclasses import dataclass, field
 
@@ -36,7 +35,7 @@ DEVNET = NetworkMetadata(
 
 TESTNET = NetworkMetadata(
     id="starknet-testnet",
-    chain_id=StarknetChainId.TESTNET.value,
+    chain_id=StarknetChainId.GOERLI.value,
     base_domain='test.sltech.company',
     auction_address="0x033f840d4f7bfa20aaa128e5a69157355478d33182bea6039d55aae3ffb861e2",
     auction_ducks="0x04ef0bd475fb101cc1b5dc2c4fc9d11b4fa233cfa1876924ec84b2f3dcf32f75",
@@ -54,7 +53,7 @@ TESTNET = NetworkMetadata(
 
 TESTNET_DOJO = NetworkMetadata(
     id="starknet-testnet-dojo",
-    chain_id=StarknetChainId.TESTNET.value,
+    chain_id=StarknetChainId.GOERLI.value,
     storage_bucket="briq-bucket-test-1",
     base_domain='test.sltech.company',
 
@@ -155,12 +154,3 @@ def get_network_metadata(network: str):
         'starknet-mainnet-dojo': MAINNET_DOJO,
     }[network]
 
-
-def get_gateway_client(network: str):
-    return GatewayClient({
-        'localhost': 'http://localhost:8000',
-        'starknet-testnet': 'testnet',
-        'starknet-testnet-dojo': 'testnet',
-        'starknet-mainnet': 'mainnet',
-        'starknet-mainnet-dojo': 'mainnet',
-    }[network])

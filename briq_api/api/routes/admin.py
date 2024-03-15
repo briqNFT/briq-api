@@ -361,12 +361,11 @@ async def declare_contract(chain_id: str, sierra: str, casm: str):
     # Compute Casm class hash
     casm_class_hash = compute_casm_class_hash(casm_class)
 
-    # Create Declare v2 transaction (to create Declare v3 transaction use `sign_declare_v3_transaction` method)
-    declare_v2_transaction = await account.sign_declare_v2_transaction(
+    declare_v2_transaction = await account.sign_declare_v2(
         # compiled_contract is a string containing the content of the starknet-compile (.json file)
         compiled_contract=sierra,
         compiled_class_hash=casm_class_hash,
-        max_fee=10**16,
+        max_fee=2 * 10**17, # 0.2 eth
     )
 
     class_hash = compute_sierra_class_hash(declare_v2_transaction.contract_class)
@@ -376,6 +375,8 @@ async def declare_contract(chain_id: str, sierra: str, casm: str):
     except ClientError as err:
         logger.info(f"Failed to declare contract with expected class hash {hex(class_hash)}, got {err.message}")
         if str(err.code) == "59":  # TX already exists (also they lie about the type of err.code here)
+            pass
+        elif str(err.code) == "41":  # Class hash already declared
             pass
         else:
             raise err
