@@ -90,9 +90,14 @@ class MongoStorage(StorageClient[MongoBackend]):
             "_chain.valid_to": None,
         })
         try:
-            return (await mint)['_timestamp'].timestamp(), (await burn)['_timestamp'].timestamp()
+            mint_date = (await mint)['_timestamp'].timestamp()
         except:
-            return -1, -1
+            mint_date = -1
+        try:
+            burn_date = (await burn)['_timestamp'].timestamp()
+        except:
+            burn_date = -1
+        return mint_date, burn_date
 
     async def get_user_briqs(self, chain_id: str, user_id: str) -> list[Any]:
         data = self.get_backend(chain_id).async_db["briq_tokens"].find({
